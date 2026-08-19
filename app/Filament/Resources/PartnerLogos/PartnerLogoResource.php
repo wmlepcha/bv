@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\PartnerLogos;
 
+use App\Filament\Clusters\FrontendEditsCluster;
 use App\Filament\Resources\PartnerLogos\Pages\CreatePartnerLogo;
 use App\Filament\Resources\PartnerLogos\Pages\EditPartnerLogo;
 use App\Filament\Resources\PartnerLogos\Pages\ListPartnerLogos;
@@ -23,9 +24,16 @@ class PartnerLogoResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'Header';
 
+    protected static ?string $cluster = FrontendEditsCluster::class;
+
     protected static ?string $navigationLabel = 'Partner Logos';
 
     protected static ?int $navigationSort = 3;
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
 
     public static function form(Schema $schema): Schema
     {

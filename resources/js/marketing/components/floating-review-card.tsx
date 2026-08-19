@@ -28,13 +28,14 @@ export function FloatingReviewCard({
         className,
     );
 
+    // Always light text — card sits on a dark glass overlay over photos.
     const content = (
         <>
-            <p className="text-sm leading-relaxed text-foreground/90">&ldquo;{quote}&rdquo;</p>
+            <p className="text-sm leading-relaxed text-white/95">&ldquo;{quote}&rdquo;</p>
             <div className="mt-4">
-                <p className="text-sm font-semibold">{author}</p>
+                <p className="text-sm font-semibold text-white">{author}</p>
                 {role && (
-                    <p className="text-xs text-muted-foreground">{role}</p>
+                    <p className="text-xs text-white/70">{role}</p>
                 )}
             </div>
         </>

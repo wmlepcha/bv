@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Clusters\FrontendEditsCluster;
 use App\Models\SiteSetting;
 use App\Services\ServicesPageService;
 use BackedEnum;
@@ -34,6 +35,8 @@ class ManageServicesPageSettings extends Page
 
     protected static string|UnitEnum|null $navigationGroup = 'Services Page';
 
+    protected static ?string $cluster = FrontendEditsCluster::class;
+
     protected static ?string $navigationLabel = 'Services Page Settings';
 
     protected static ?int $navigationSort = 1;
@@ -53,7 +56,7 @@ class ManageServicesPageSettings extends Page
             'seo_title' => SiteSetting::getValue('services.seo.title', 'Products & Services'),
             'seo_description' => SiteSetting::getValue(
                 'services.seo.description',
-                'Explore Bilingual Vitae courses in German, Japanese, French, and Spanish, employability training, expatriate programmes, and placement support in Germany and Austria.',
+                'Explore Bilingual Vitae® courses in German, Japanese, French, and Spanish, employability training, expatriate programmes, and placement support in Germany and Austria.',
             ),
         ]);
     }

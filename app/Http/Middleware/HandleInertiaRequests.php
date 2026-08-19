@@ -2,7 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Plan;
+use App\Services\InquiryOptionsService;
 use App\Services\SiteLayoutService;
+use App\Support\RegistrationTerms;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -49,10 +52,25 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user()?->toAuthArray(),
             ],
-            'razorpayKey' => config('razorpay.key'),
-            'registrationFeeAmount' => (int) config('razorpay.registration_fee_amount'),
+            'cashfreeAppId' => config('cashfree.app_id'),
+            'registrationPlans' => Plan::query()
+                ->active()
+                ->ordered()
+                ->get()
+                ->map(fn (Plan $plan): array => $plan->toCheckoutArray())
+                ->values()
+                ->all(),
+            'registrationTermsHtml' => RegistrationTerms::html(),
+            'studentPhone' => $request->user()?->studentProfile?->mobile_whatsapp,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
+            ],
             'siteLayout' => app(SiteLayoutService::class)->toInertiaProps(),
+            'inquiryOptions' => [
+                'educationLevels' => app(InquiryOptionsService::class)->educationLevels(),
+            ],
         ];
     }
 }

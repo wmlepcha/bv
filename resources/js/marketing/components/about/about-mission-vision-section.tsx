@@ -10,7 +10,7 @@ export function AboutMissionVisionSection({ mission, vision }: AboutMissionVisio
         <section className="px-4 py-16 sm:px-6 sm:py-24 md:py-32">
             <div className="mx-auto w-full max-w-7xl 2xl:max-w-[90rem]">
                 <StaggerChildren className="grid gap-8 md:grid-cols-2">
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 md:p-10">
+                    <div className="rounded-2xl border marketing-panel p-8 md:p-10">
                         <p className="text-sm font-medium uppercase tracking-widest text-primary">
                             Mission
                         </p>
@@ -19,7 +19,7 @@ export function AboutMissionVisionSection({ mission, vision }: AboutMissionVisio
                         </p>
                     </div>
 
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 md:p-10">
+                    <div className="rounded-2xl border marketing-panel p-8 md:p-10">
                         <p className="text-sm font-medium uppercase tracking-widest text-brand-cool-light">
                             Vision
                         </p>

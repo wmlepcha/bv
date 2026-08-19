@@ -8,11 +8,12 @@ import { ProjectPostSidebar } from '@marketing/components/projects/project-post-
 import { FadeUp } from '@marketing/components/animations/primitives';
 import { buildArticleJsonLd } from '@marketing/seo/article-json-ld';
 import type { ProjectShowPageProps } from '@marketing/types/projects-page';
+import { BRAND_NAME_TM } from '@shared/lib/brand';
 
 export default function ProjectShow() {
     const { post } = usePage<ProjectShowPageProps>().props;
     const { appUrl } = usePage().props;
-    const canonical = `/projects/${post.slug}`;
+    const canonical = `/success-stories/${post.slug}`;
     const shareUrl = `${appUrl}${canonical}`;
 
     const jsonLd = buildArticleJsonLd({
@@ -21,7 +22,7 @@ export default function ProjectShow() {
         description: post.seo.description,
         image: post.seo.ogImage ?? post.heroImageUrl ?? undefined,
         datePublished: post.publishedAt ?? undefined,
-        authorName: post.author.name ?? 'Bilingual Vitae Editorial',
+        authorName: post.author.name ?? `${BRAND_NAME_TM} Editorial`,
         url: shareUrl,
     });
 
@@ -41,7 +42,7 @@ export default function ProjectShow() {
                 <div className="mx-auto w-full max-w-7xl 2xl:max-w-[90rem]">
                     <FadeUp>
                         <Link
-                            href="/projects"
+                            href="/success-stories"
                             className="mb-8 inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary"
                         >
                             <span aria-hidden>←</span>

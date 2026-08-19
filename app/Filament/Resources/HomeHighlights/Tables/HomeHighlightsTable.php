@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\HomeHighlights\Tables;
 
+use App\Models\HomeHighlight;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -17,6 +18,12 @@ class HomeHighlightsTable
             ->columns([
                 TextColumn::make('label')
                     ->searchable(),
+                TextColumn::make('group')
+                    ->label('Column')
+                    ->formatStateUsing(
+                        fn (?string $state): string => HomeHighlight::groupOptions()[$state] ?? ($state ?? ''),
+                    )
+                    ->sortable(),
                 IconColumn::make('is_visible')
                     ->label('Visible')
                     ->boolean(),

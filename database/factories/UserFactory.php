@@ -36,7 +36,14 @@ class UserFactory extends Factory
             'two_factor_confirmed_at' => null,
             'role' => UserRole::Student,
             'student_number' => null,
+            'first_name' => null,
+            'last_name' => null,
+            'state_code' => null,
+            'special_id' => null,
+            'registration_year' => null,
             'registration_paid_at' => null,
+            'registration_expires_at' => null,
+            'registration_plan_id' => null,
             'registration_fee_paid_via' => null,
         ];
     }
@@ -45,6 +52,10 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'role' => UserRole::Student,
+            'student_number' => $attributes['student_number'] ?? 'SK-COI-2026-'.fake()->unique()->numerify('##'),
+            'state_code' => $attributes['state_code'] ?? 'SK',
+            'special_id' => $attributes['special_id'] ?? 'COI',
+            'registration_year' => $attributes['registration_year'] ?? 2026,
         ]);
     }
 
@@ -72,11 +83,43 @@ class UserFactory extends Factory
         ]);
     }
 
+    public function teacher(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => UserRole::Teacher,
+            'registration_paid_at' => now(),
+        ]);
+    }
+
+    public function trainingManager(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => UserRole::TrainingManager,
+            'registration_paid_at' => now(),
+        ]);
+    }
+
     public function paid(): static
     {
         return $this->state(fn (array $attributes) => [
             'registration_paid_at' => now(),
-            'student_number' => fake()->unique()->numerify('###-####-####'),
+            'registration_expires_at' => now()->addYears(2),
+            'student_number' => $attributes['student_number'] ?? 'SK-COI-2026-'.fake()->unique()->numerify('##'),
+            'state_code' => $attributes['state_code'] ?? 'SK',
+            'special_id' => $attributes['special_id'] ?? 'COI',
+            'registration_year' => $attributes['registration_year'] ?? 2026,
+        ]);
+    }
+
+    public function expired(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'registration_paid_at' => now()->subYears(2),
+            'registration_expires_at' => now()->subDay(),
+            'student_number' => $attributes['student_number'] ?? 'SK-COI-2026-'.fake()->unique()->numerify('##'),
+            'state_code' => $attributes['state_code'] ?? 'SK',
+            'special_id' => $attributes['special_id'] ?? 'COI',
+            'registration_year' => $attributes['registration_year'] ?? 2026,
         ]);
     }
 
@@ -84,7 +127,12 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'registration_paid_at' => null,
-            'student_number' => null,
+            'registration_expires_at' => null,
+            'registration_plan_id' => null,
+            'student_number' => $attributes['student_number'] ?? 'SK-COI-2026-'.fake()->unique()->numerify('##'),
+            'state_code' => $attributes['state_code'] ?? 'SK',
+            'special_id' => $attributes['special_id'] ?? 'COI',
+            'registration_year' => $attributes['registration_year'] ?? 2026,
         ]);
     }
 

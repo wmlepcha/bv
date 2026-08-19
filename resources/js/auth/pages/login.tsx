@@ -11,19 +11,23 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { AuthRecruiterInquiryModal } from '@auth/components/auth-recruiter-inquiry-modal';
+import { BRAND_NAME_TM } from '@shared/lib/brand';
 import { login } from '@/routes';
 import { create as studentRegister } from '@/routes/student/register';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 
 type Props = {
-    portal: 'student' | 'staff';
+    portal: 'student' | 'staff' | 'teacher' | 'training_manager';
     status?: string;
     canResetPassword: boolean;
 };
 
 export default function Login({ portal, status, canResetPassword }: Props) {
     const isStudentPortal = portal === 'student';
+    const isStaffPortal = portal === 'staff';
+    const isTeacherPortal = portal === 'teacher';
+    const isTrainingManagerPortal = portal === 'training_manager';
     const [recruiterInquiryOpen, setRecruiterInquiryOpen] = useState(false);
 
     return (
@@ -112,11 +116,11 @@ export default function Login({ portal, status, canResetPassword }: Props) {
                                     Sign up
                                 </TextLink>
                             </div>
-                        ) : (
+                        ) : isStaffPortal ? (
                             <div className="rounded-lg border border-border bg-muted/40 p-4 text-center text-sm text-muted-foreground">
                                 <p>
                                     Recruiter and employee accounts are created
-                                    by Bilingual Vitae after you apply.
+                                    by {BRAND_NAME_TM} after you apply.
                                 </p>
                                 <button
                                     type="button"
@@ -126,16 +130,34 @@ export default function Login({ portal, status, canResetPassword }: Props) {
                                     Submit a recruiter inquiry
                                 </button>
                             </div>
-                        )}
+                        ) : isTrainingManagerPortal ? (
+                            <div className="rounded-lg border border-border bg-muted/40 p-4 text-center text-sm text-muted-foreground">
+                                <p>
+                                    Training manager accounts are created by{' '}
+                                    {BRAND_NAME_TM}. Contact your administrator
+                                    if you need access.
+                                </p>
+                            </div>
+                        ) : isTeacherPortal ? (
+                            <div className="rounded-lg border border-border bg-muted/40 p-4 text-center text-sm text-muted-foreground">
+                                <p>
+                                    Trainer and teacher accounts are created by{' '}
+                                    {BRAND_NAME_TM}. Contact your administrator
+                                    if you need access.
+                                </p>
+                            </div>
+                        ) : null}
 
-                        <div className="text-center text-sm">
-                            <Link
-                                href={login()}
-                                className="text-muted-foreground underline-offset-4 hover:underline"
-                            >
-                                Choose a different account type
-                            </Link>
-                        </div>
+                        {!isTrainingManagerPortal && (
+                            <div className="text-center text-sm">
+                                <Link
+                                    href={login()}
+                                    className="text-muted-foreground underline-offset-4 hover:underline"
+                                >
+                                    Choose a different account type
+                                </Link>
+                            </div>
+                        )}
                     </>
                 )}
             </Form>
@@ -146,7 +168,7 @@ export default function Login({ portal, status, canResetPassword }: Props) {
                 </div>
             )}
 
-            {!isStudentPortal && (
+            {isStaffPortal && (
                 <AuthRecruiterInquiryModal
                     open={recruiterInquiryOpen}
                     onOpenChange={setRecruiterInquiryOpen}

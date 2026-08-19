@@ -4,6 +4,7 @@ import { HeroSection } from '@marketing/components/hero-section';
 import { CraftingSection } from '@marketing/components/crafting-section';
 import { RecruitersSection } from '@marketing/components/recruiters-section';
 import { ServicesSection } from '@marketing/components/services-section';
+import { ProgramsSection } from '@marketing/components/programs-section';
 import { LearnMoreInquiryModal } from '@marketing/components/learn-more-inquiry-modal';
 import { ScrollProgressIndicator } from '@marketing/components/animations/progress';
 import { useInquiryModal } from '@marketing/hooks/use-inquiry-modal';
@@ -30,9 +31,10 @@ export default function Home() {
             <ScrollProgressIndicator />
             <main>
                 <HeroSection hero={homePage.hero} />
-                <CraftingSection crafting={homePage.crafting} onLearnMore={() => openModal()} />
-                <RecruitersSection recruiters={homePage.recruiters} onLearnMore={() => openModal()} />
+                <CraftingSection crafting={homePage.crafting} onRegisterNow={() => openModal()} />
+                <RecruitersSection recruiters={homePage.recruiters} onRegisterNow={() => openModal()} />
                 <ServicesSection services={homePage.services} />
+                <ProgramsSection programs={homePage.programs} />
             </main>
             <LearnMoreInquiryModal open={open} onOpenChange={onOpenChange} initialRole={initialRole} />
         </>

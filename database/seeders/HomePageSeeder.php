@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\HomeFeatureItem;
 use App\Models\HomeHighlight;
+use App\Models\HomeProgramCard;
 use App\Models\HomeServiceCard;
 use App\Models\HomeStat;
 use App\Models\HomeTestimonial;
@@ -22,26 +23,28 @@ class HomePageSeeder extends Seeder
         );
         SiteSetting::setValue(
             'home.hero.card_text',
-            'Bridging language excellence with professional growth for international careers.',
+            'With us language becomes your bridge, not a barrier.',
         );
+        SiteSetting::setValue('home.hero.software_suite_heading', 'Software suite');
+        SiteSetting::setValue('home.hero.services_heading', 'Services');
 
         SiteSetting::setValue('home.crafting.badge', 'Candidate development');
         SiteSetting::setValue('home.crafting.heading', 'Crafting people. Linguistically & Professionally.');
         SiteSetting::setValue(
             'home.crafting.body',
-            'At Bilingual Vitae, we blend linguistic and professional skills with deep human values while making candidates ready to be a part of the ever-demanding global workforce market.',
+            'At Bilingual Vitae®, we blend linguistic and professional skills with deep human values while making candidates ready to be a part of the ever-demanding global workforce market.',
         );
         SiteSetting::setValue('home.crafting.image_path', 'images/students-of-bilingual-vitae.jpg');
-        SiteSetting::setValue('home.crafting.image_alt', 'Bilingual Vitae students in training');
+        SiteSetting::setValue('home.crafting.image_alt', 'Bilingual Vitae® students in training');
 
         SiteSetting::setValue('home.recruiters.badge', 'For recruiters & employers');
         SiteSetting::setValue('home.recruiters.heading', 'Recruiters never leave unsatisfied.');
         SiteSetting::setValue(
             'home.recruiters.body',
-            'At Bilingual Vitae, recruiters and employers get linguistically and professionally well-prepared candidates who are ready to perform from day one.',
+            'At Bilingual Vitae®, recruiters and employers get linguistically and professionally well-prepared candidates who are ready to perform from day one.',
         );
         SiteSetting::setValue('home.recruiters.image_path', 'images/recruiters-of-bilingual-vitae.jpg');
-        SiteSetting::setValue('home.recruiters.image_alt', 'Recruiters partnering with Bilingual Vitae');
+        SiteSetting::setValue('home.recruiters.image_alt', 'Recruiters partnering with Bilingual Vitae®');
 
         SiteSetting::setValue(
             'home.services.heading',
@@ -52,7 +55,7 @@ class HomePageSeeder extends Seeder
         SiteSetting::setValue('home.seo.title', 'Language Training & Career Support in Sikkim');
         SiteSetting::setValue(
             'home.seo.description',
-            'Bilingual Vitae helps people in Sikkim become workplace-ready through language training, employability skills, placement support, and migration guidance.',
+            'Bilingual Vitae® helps people in Sikkim become workplace-ready through language training, employability skills, placement support, and migration guidance.',
         );
 
         $stats = [
@@ -70,19 +73,41 @@ class HomePageSeeder extends Seeder
             );
         }
 
+        HomeHighlight::query()->delete();
+
         $highlights = [
-            ['label' => 'Training', 'sort_order' => 0],
-            ['label' => 'Certification', 'sort_order' => 1],
-            ['label' => 'Placement', 'sort_order' => 2],
-            ['label' => 'Visa support', 'sort_order' => 3],
-            ['label' => 'Integration', 'sort_order' => 4],
+            [
+                'label' => 'Digital products for candidates',
+                'group' => HomeHighlight::GROUP_SOFTWARE_SUITE,
+                'sort_order' => 0,
+            ],
+            [
+                'label' => 'Software suite – for Recruiters',
+                'group' => HomeHighlight::GROUP_SOFTWARE_SUITE,
+                'sort_order' => 1,
+            ],
+            [
+                'label' => 'Software suite – for Government Agencies',
+                'group' => HomeHighlight::GROUP_SOFTWARE_SUITE,
+                'sort_order' => 2,
+            ],
+            [
+                'label' => 'Language & Employability Skill Training',
+                'group' => HomeHighlight::GROUP_SERVICES,
+                'sort_order' => 0,
+            ],
+            [
+                'label' => 'Placement I Migration I Integration support',
+                'group' => HomeHighlight::GROUP_SERVICES,
+                'sort_order' => 1,
+            ],
         ];
 
         foreach ($highlights as $highlight) {
-            HomeHighlight::query()->updateOrCreate(
-                ['label' => $highlight['label']],
-                [...$highlight, 'is_visible' => true],
-            );
+            HomeHighlight::query()->create([
+                ...$highlight,
+                'is_visible' => true,
+            ]);
         }
 
         $craftingPillars = [
@@ -156,6 +181,35 @@ class HomePageSeeder extends Seeder
 
         foreach ($serviceCards as $card) {
             HomeServiceCard::query()->updateOrCreate(
+                ['title' => $card['title']],
+                [...$card, 'is_visible' => true],
+            );
+        }
+
+        SiteSetting::setValue('home.programs.badge', 'Our Programs');
+        SiteSetting::setValue('home.programs.heading', 'Boost your career with our expertise');
+        SiteSetting::setValue('home.programs.cta_label', 'View All Programs');
+        SiteSetting::setValue('home.programs.cta_href', '/services');
+
+        $programCards = [
+            [
+                'title' => 'Language & Employability Training Programs',
+                'description' => 'Build workplace-ready language and employability skills through structured training tailored for global opportunities.',
+                'href' => '/services#courses',
+                'image_path' => 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&q=80',
+                'sort_order' => 0,
+            ],
+            [
+                'title' => 'Placement | Migration | Integration Support Services',
+                'description' => 'Get end-to-end support for placement, migration, and integration so you can move confidently into the next chapter.',
+                'href' => '/services#placement-integration',
+                'image_path' => 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&q=80',
+                'sort_order' => 1,
+            ],
+        ];
+
+        foreach ($programCards as $card) {
+            HomeProgramCard::query()->updateOrCreate(
                 ['title' => $card['title']],
                 [...$card, 'is_visible' => true],
             );

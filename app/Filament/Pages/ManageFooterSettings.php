@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Clusters\FrontendEditsCluster;
 use App\Models\SiteSetting;
 use BackedEnum;
 use Filament\Actions\Action;
@@ -31,6 +32,8 @@ class ManageFooterSettings extends Page
 
     protected static string|UnitEnum|null $navigationGroup = 'Footer';
 
+    protected static ?string $cluster = FrontendEditsCluster::class;
+
     protected static ?string $navigationLabel = 'Footer Settings';
 
     protected static ?int $navigationSort = 1;
@@ -44,7 +47,7 @@ class ManageFooterSettings extends Page
         $this->form->fill([
             'contact_email' => SiteSetting::getValue('footer.contact_email', 'hello@bilingualvitae.com'),
             'contact_phone' => SiteSetting::getValue('footer.contact_phone', '+91 8250312500'),
-            'copyright' => SiteSetting::getValue('footer.copyright', 'Bilingual Vitae. All rights reserved.'),
+            'copyright' => SiteSetting::getValue('footer.copyright', 'Bilingual Vitae®. All rights reserved.'),
         ]);
     }
 

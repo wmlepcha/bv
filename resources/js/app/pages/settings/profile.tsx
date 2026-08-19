@@ -1,5 +1,4 @@
-import { Form, usePage } from '@inertiajs/react';
-import { Link } from '@inertiajs/react';
+import { Form, Link, usePage } from '@inertiajs/react';
 import { PrivateSeoHead } from '@shared/components/seo-head';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@app/components/delete-user';
@@ -8,6 +7,7 @@ import InputError from '@shared/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { TrainerPhotoField } from '@app/pages/training-manager/trainers/trainer-photo-field';
 import { edit } from '@/routes/profile';
 import { send } from '@/routes/verification';
 import type { Auth } from '@/types';
@@ -19,9 +19,11 @@ type PageProps = {
 export default function Profile({
     mustVerifyEmail,
     status,
+    photo_url,
 }: {
     mustVerifyEmail: boolean;
     status?: string;
+    photo_url: string | null;
 }) {
     const { auth } = usePage<PageProps>().props;
 
@@ -35,11 +37,12 @@ export default function Profile({
                 <Heading
                     variant="small"
                     title="Profile"
-                    description="Update your name and email address"
+                    description="Update your photo, name, and email address"
                 />
 
                 <Form
                     {...ProfileController.update.form()}
+                    encType="multipart/form-data"
                     options={{
                         preserveScroll: true,
                     }}
@@ -47,6 +50,13 @@ export default function Profile({
                 >
                     {({ processing, errors }) => (
                         <>
+                            <TrainerPhotoField
+                                error={errors.avatar}
+                                existingUrl={photo_url}
+                                allowRemove
+                                description="JPG or PNG, up to 2MB. This photo appears on your trainer profile."
+                            />
+
                             <div className="grid gap-2">
                                 <Label htmlFor="name">Name</Label>
 

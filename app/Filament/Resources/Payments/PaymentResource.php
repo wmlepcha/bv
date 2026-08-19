@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Payments;
 
+use App\Filament\Clusters\PaymentsCluster;
 use App\Filament\Resources\Payments\Pages\ListPayments;
 use App\Filament\Resources\Payments\Schemas\PaymentForm;
 use App\Filament\Resources\Payments\Tables\PaymentsTable;
@@ -11,12 +12,19 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class PaymentResource extends Resource
 {
     protected static ?string $model = Payment::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static ?string $cluster = PaymentsCluster::class;
+
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCreditCard;
+
+    protected static string|UnitEnum|null $navigationGroup = null;
+
+    protected static ?int $navigationSort = 3;
 
     public static function canCreate(): bool
     {

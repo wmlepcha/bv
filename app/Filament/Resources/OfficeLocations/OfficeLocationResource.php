@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\OfficeLocations;
 
+use App\Filament\Clusters\FrontendEditsCluster;
 use App\Filament\Resources\OfficeLocations\Pages\CreateOfficeLocation;
 use App\Filament\Resources\OfficeLocations\Pages\EditOfficeLocation;
 use App\Filament\Resources\OfficeLocations\Pages\ListOfficeLocations;
@@ -22,6 +23,8 @@ class OfficeLocationResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;
 
     protected static string|UnitEnum|null $navigationGroup = 'Footer';
+
+    protected static ?string $cluster = FrontendEditsCluster::class;
 
     protected static ?string $navigationLabel = 'Offices';
 

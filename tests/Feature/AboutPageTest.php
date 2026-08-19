@@ -23,7 +23,7 @@ class AboutPageTest extends TestCase
                     ->where('title', 'About Us')
                 )
                 ->has('aboutPage.overview', fn (Assert $overview) => $overview
-                    ->where('tagline', 'Bilingual Vitae, An EdTech and Future Work Company.')
+                    ->where('tagline', 'Bilingual Vitae®, An EdTech and Future Work Company.')
                     ->has('paragraphs', 3)
                 )
                 ->where('aboutPage.mission', fn (string $mission) => str_contains($mission, 'last mile'))

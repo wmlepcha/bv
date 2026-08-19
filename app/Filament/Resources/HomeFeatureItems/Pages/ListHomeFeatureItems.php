@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\HomeFeatureItems\Pages;
 
 use App\Filament\Resources\HomeFeatureItems\HomeFeatureItemResource;
-use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListHomeFeatureItems extends ListRecords
@@ -12,8 +11,6 @@ class ListHomeFeatureItems extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [
-            CreateAction::make(),
-        ];
+        return [];
     }
 }

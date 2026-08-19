@@ -2,6 +2,8 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Clusters\FrontendEditsCluster;
+use App\Filament\Support\ImageUploadField;
 use App\Models\SiteSetting;
 use App\Services\HomePageService;
 use BackedEnum;
@@ -35,6 +37,8 @@ class ManageHomePageSettings extends Page
 
     protected static string|UnitEnum|null $navigationGroup = 'Homepage';
 
+    protected static ?string $cluster = FrontendEditsCluster::class;
+
     protected static ?string $navigationLabel = 'Homepage Settings';
 
     protected static ?int $navigationSort = 1;
@@ -54,33 +58,48 @@ class ManageHomePageSettings extends Page
             ),
             'hero_card_text' => SiteSetting::getValue(
                 'home.hero.card_text',
-                'Bridging language excellence with professional growth for international careers.',
+                'With us language becomes your bridge, not a barrier.',
+            ),
+            'hero_software_suite_heading' => SiteSetting::getValue(
+                'home.hero.software_suite_heading',
+                'Software suite',
+            ),
+            'hero_services_heading' => SiteSetting::getValue(
+                'home.hero.services_heading',
+                'Services',
             ),
             'crafting_badge' => SiteSetting::getValue('home.crafting.badge', 'Candidate development'),
             'crafting_heading' => SiteSetting::getValue('home.crafting.heading', 'Crafting people. Linguistically & Professionally.'),
             'crafting_body' => SiteSetting::getValue(
                 'home.crafting.body',
-                'At Bilingual Vitae, we blend linguistic and professional skills with deep human values while making candidates ready to be a part of the ever-demanding global workforce market.',
+                'At Bilingual Vitae®, we blend linguistic and professional skills with deep human values while making candidates ready to be a part of the ever-demanding global workforce market.',
             ),
             'crafting_image_path' => $this->normalizeImagePath(SiteSetting::getValue('home.crafting.image_path', 'images/students-of-bilingual-vitae.jpg')),
-            'crafting_image_alt' => SiteSetting::getValue('home.crafting.image_alt', 'Bilingual Vitae students in training'),
+            'crafting_image_alt' => SiteSetting::getValue('home.crafting.image_alt', 'Bilingual Vitae® students in training'),
             'recruiters_badge' => SiteSetting::getValue('home.recruiters.badge', 'For recruiters & employers'),
             'recruiters_heading' => SiteSetting::getValue('home.recruiters.heading', 'Recruiters never leave unsatisfied.'),
             'recruiters_body' => SiteSetting::getValue(
                 'home.recruiters.body',
-                'At Bilingual Vitae, recruiters and employers get linguistically and professionally well-prepared candidates who are ready to perform from day one.',
+                'At Bilingual Vitae®, recruiters and employers get linguistically and professionally well-prepared candidates who are ready to perform from day one.',
             ),
             'recruiters_image_path' => $this->normalizeImagePath(SiteSetting::getValue('home.recruiters.image_path', 'images/recruiters-of-bilingual-vitae.jpg')),
-            'recruiters_image_alt' => SiteSetting::getValue('home.recruiters.image_alt', 'Recruiters partnering with Bilingual Vitae'),
+            'recruiters_image_alt' => SiteSetting::getValue('home.recruiters.image_alt', 'Recruiters partnering with Bilingual Vitae®'),
             'services_heading' => SiteSetting::getValue(
                 'home.services.heading',
                 'Whether you\'re a student, professional or a recruiter, we\'ve got you covered.',
             ),
             'services_subtitle' => SiteSetting::getValue('home.services.subtitle', 'You didn\'t come this far to stop'),
+            'programs_badge' => SiteSetting::getValue('home.programs.badge', 'Our Programs'),
+            'programs_heading' => SiteSetting::getValue(
+                'home.programs.heading',
+                'Boost your career with our expertise',
+            ),
+            'programs_cta_label' => SiteSetting::getValue('home.programs.cta_label', 'View All Programs'),
+            'programs_cta_href' => SiteSetting::getValue('home.programs.cta_href', '/services'),
             'seo_title' => SiteSetting::getValue('home.seo.title', 'Language Training & Career Support in Sikkim'),
             'seo_description' => SiteSetting::getValue(
                 'home.seo.description',
-                'Bilingual Vitae helps people in Sikkim become workplace-ready through language training, employability skills, placement support, and migration guidance.',
+                'Bilingual Vitae® helps people in Sikkim become workplace-ready through language training, employability skills, placement support, and migration guidance.',
             ),
         ]);
     }
@@ -93,6 +112,8 @@ class ManageHomePageSettings extends Page
         SiteSetting::setValue('home.hero.headline', $data['hero_headline']);
         SiteSetting::setValue('home.hero.subtitle', $data['hero_subtitle']);
         SiteSetting::setValue('home.hero.card_text', $data['hero_card_text']);
+        SiteSetting::setValue('home.hero.software_suite_heading', $data['hero_software_suite_heading']);
+        SiteSetting::setValue('home.hero.services_heading', $data['hero_services_heading']);
 
         SiteSetting::setValue('home.crafting.badge', $data['crafting_badge']);
         SiteSetting::setValue('home.crafting.heading', $data['crafting_heading']);
@@ -108,6 +129,11 @@ class ManageHomePageSettings extends Page
 
         SiteSetting::setValue('home.services.heading', $data['services_heading']);
         SiteSetting::setValue('home.services.subtitle', $data['services_subtitle']);
+
+        SiteSetting::setValue('home.programs.badge', $data['programs_badge']);
+        SiteSetting::setValue('home.programs.heading', $data['programs_heading']);
+        SiteSetting::setValue('home.programs.cta_label', $data['programs_cta_label'] ?? '');
+        SiteSetting::setValue('home.programs.cta_href', $data['programs_cta_href'] ?? '');
 
         SiteSetting::setValue('home.seo.title', $data['seo_title']);
         SiteSetting::setValue('home.seo.description', $data['seo_description']);
@@ -148,6 +174,12 @@ class ManageHomePageSettings extends Page
                                     ->label('Side card text')
                                     ->required()
                                     ->rows(3),
+                                TextInput::make('hero_software_suite_heading')
+                                    ->label('Software suite column heading')
+                                    ->required(),
+                                TextInput::make('hero_services_heading')
+                                    ->label('Services column heading')
+                                    ->required(),
                             ]),
                         Tab::make('Crafting')
                             ->schema([
@@ -161,12 +193,14 @@ class ManageHomePageSettings extends Page
                                     ->label('Body')
                                     ->required()
                                     ->rows(4),
-                                FileUpload::make('crafting_image_path')
-                                    ->label('Image')
-                                    ->image()
-                                    ->disk('public')
-                                    ->directory('images')
-                                    ->maxFiles(1),
+                                ImageUploadField::configure(
+                                    FileUpload::make('crafting_image_path')
+                                        ->label('Image')
+                                        ->image()
+                                        ->disk('public')
+                                        ->directory('images')
+                                        ->maxFiles(1),
+                                ),
                                 TextInput::make('crafting_image_alt')
                                     ->label('Image alt text')
                                     ->required(),
@@ -183,12 +217,14 @@ class ManageHomePageSettings extends Page
                                     ->label('Body')
                                     ->required()
                                     ->rows(4),
-                                FileUpload::make('recruiters_image_path')
-                                    ->label('Image')
-                                    ->image()
-                                    ->disk('public')
-                                    ->directory('images')
-                                    ->maxFiles(1),
+                                ImageUploadField::configure(
+                                    FileUpload::make('recruiters_image_path')
+                                        ->label('Image')
+                                        ->image()
+                                        ->disk('public')
+                                        ->directory('images')
+                                        ->maxFiles(1),
+                                ),
                                 TextInput::make('recruiters_image_alt')
                                     ->label('Image alt text')
                                     ->required(),
@@ -202,6 +238,21 @@ class ManageHomePageSettings extends Page
                                 TextInput::make('services_subtitle')
                                     ->label('Subtitle')
                                     ->required(),
+                            ]),
+                        Tab::make('Programs')
+                            ->schema([
+                                TextInput::make('programs_badge')
+                                    ->label('Badge')
+                                    ->required(),
+                                TextInput::make('programs_heading')
+                                    ->label('Heading')
+                                    ->required(),
+                                TextInput::make('programs_cta_label')
+                                    ->label('CTA label')
+                                    ->helperText('Leave empty to hide the header button.'),
+                                TextInput::make('programs_cta_href')
+                                    ->label('CTA URL')
+                                    ->placeholder('/services'),
                             ]),
                         Tab::make('SEO')
                             ->schema([

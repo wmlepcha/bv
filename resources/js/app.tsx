@@ -11,10 +11,12 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
 import AppLayout from '@app/layouts/app-layout';
 import AuthLayout from '@auth/layouts/auth-layout';
+import AuthTrainingManagerLayout from '@auth/layouts/auth-training-manager-layout';
 import CinematicLayout from '@marketing/layouts/cinematic-layout';
 import SettingsLayout from '@app/layouts/settings/layout';
+import { BRAND_NAME_TM } from '@shared/lib/brand';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Bilingual Vitae';
+const appName = BRAND_NAME_TM;
 
 const pages = import.meta.glob<{ default: ResolvedComponent }>([
     './marketing/pages/**/*.tsx',
@@ -56,6 +58,10 @@ createInertiaApp({
             return CinematicLayout;
         }
 
+        if (name === 'auth/training-manager-login') {
+            return AuthTrainingManagerLayout;
+        }
+
         if (name.startsWith('auth/')) {
             return AuthLayout;
         }
@@ -80,7 +86,7 @@ createInertiaApp({
         );
     },
     progress: {
-        color: '#E85D2C',
+        color: '#FC5C2E',
     },
 });
 

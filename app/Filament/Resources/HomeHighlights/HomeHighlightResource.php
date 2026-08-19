@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\HomeHighlights;
 
+use App\Filament\Clusters\FrontendEditsCluster;
 use App\Filament\Resources\HomeHighlights\Pages\CreateHomeHighlight;
 use App\Filament\Resources\HomeHighlights\Pages\EditHomeHighlight;
 use App\Filament\Resources\HomeHighlights\Pages\ListHomeHighlights;
@@ -23,9 +24,16 @@ class HomeHighlightResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'Homepage';
 
+    protected static ?string $cluster = FrontendEditsCluster::class;
+
     protected static ?string $navigationLabel = 'Highlights';
 
     protected static ?int $navigationSort = 3;
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
 
     public static function form(Schema $schema): Schema
     {

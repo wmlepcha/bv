@@ -13,8 +13,14 @@ class Payment extends Model
      */
     protected $fillable = [
         'user_id',
-        'razorpay_order_id',
-        'razorpay_payment_id',
+        'plan_id',
+        'plan_name',
+        'duration_months',
+        'gateway_order_id',
+        'gateway_payment_id',
+        'invoice_number',
+        'payment_mode',
+        'payment_mode_detail',
         'amount',
         'currency',
         'status',
@@ -35,5 +41,10 @@ class Payment extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(Plan::class);
     }
 }

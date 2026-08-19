@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\HomeStats;
 
+use App\Filament\Clusters\FrontendEditsCluster;
 use App\Filament\Resources\HomeStats\Pages\CreateHomeStat;
 use App\Filament\Resources\HomeStats\Pages\EditHomeStat;
 use App\Filament\Resources\HomeStats\Pages\ListHomeStats;
@@ -23,9 +24,16 @@ class HomeStatResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'Homepage';
 
+    protected static ?string $cluster = FrontendEditsCluster::class;
+
     protected static ?string $navigationLabel = 'Stats';
 
     protected static ?int $navigationSort = 2;
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
 
     public static function form(Schema $schema): Schema
     {

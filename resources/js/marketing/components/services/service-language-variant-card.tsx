@@ -61,8 +61,8 @@ export function ServiceLanguageVariantCard({ item, compact = false }: ServiceLan
         <article
             className={cn(
                 'group relative h-full w-full min-w-0 max-w-full overflow-hidden rounded-2xl border border-primary/25',
-                'bg-gradient-to-b from-primary/10 to-white/[0.03]',
-                'transition-all hover:border-primary/40 hover:bg-white/[0.05]',
+                'bg-gradient-to-b from-primary/10 to-foreground/[0.03]',
+                'transition-all hover:border-primary/40 hover:bg-foreground/[0.05]',
                 compact ? 'p-3' : 'p-4 md:p-6',
             )}
         >

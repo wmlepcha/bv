@@ -34,11 +34,16 @@ class SiteLayoutService
     {
         return [
             'header' => [
-                'logoUrl' => Brand::marketingLogoUrl(),
+                'logoUrlLight' => Brand::marketingLogoLightUrl(),
+                'logoUrlDark' => Brand::marketingLogoDarkUrl(),
                 'partnerLabel' => SiteSetting::getValue(
                     'header.partner_label',
                     'Official partner of Government of Sikkim and NSDC International',
                 ),
+                'showAppearanceToggle' => SiteSetting::getValue(
+                    'header.show_appearance_toggle',
+                    '1',
+                ) === '1',
                 'navigation' => NavigationItem::query()
                     ->where('is_visible', true)
                     ->orderBy('sort_order')
@@ -65,7 +70,7 @@ class SiteLayoutService
             'footer' => [
                 'contactEmail' => SiteSetting::getValue('footer.contact_email', 'hello@bilingualvitae.com'),
                 'contactPhone' => SiteSetting::getValue('footer.contact_phone', '+91 8250312500'),
-                'copyright' => SiteSetting::getValue('footer.copyright', 'Bilingual Vitae. All rights reserved.'),
+                'copyright' => SiteSetting::getValue('footer.copyright', 'Bilingual Vitae®. All rights reserved.'),
                 'offices' => OfficeLocation::query()
                     ->where('is_visible', true)
                     ->orderBy('sort_order')

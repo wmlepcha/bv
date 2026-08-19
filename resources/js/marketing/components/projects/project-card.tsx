@@ -9,10 +9,10 @@ type ProjectCardProps = {
 };
 
 const overlayGradients = [
-    'from-[oklch(0.52_0.17_38/0.85)] via-[oklch(0.68_0.21_35/0.55)] to-[oklch(0.55_0.16_250/0.45)]',
-    'from-[oklch(0.28_0.08_260/0.85)] via-[oklch(0.55_0.16_250/0.6)] to-[oklch(0.68_0.21_35/0.4)]',
-    'from-[oklch(0.68_0.21_35/0.8)] via-[oklch(0.78_0.17_55/0.5)] to-[oklch(0.78_0.14_210/0.45)]',
-    'from-[oklch(0.55_0.16_250/0.85)] via-[oklch(0.28_0.08_260/0.55)] to-[oklch(0.68_0.21_35/0.4)]',
+    'from-brand-warm-dark/85 via-brand-warm/55 to-brand-cool/45',
+    'from-brand-cool-dark/85 via-brand-cool/60 to-brand-warm/40',
+    'from-brand-warm/80 via-brand-warm-light/50 to-brand-cool-light/45',
+    'from-brand-cool/85 via-brand-cool-dark/55 to-brand-warm/40',
 ];
 
 export function ProjectCard({ post, index }: ProjectCardProps) {
@@ -21,9 +21,9 @@ export function ProjectCard({ post, index }: ProjectCardProps) {
     return (
         <ScaleIn delay={index * 0.08}>
             <Link
-                href={`/projects/${post.slug}`}
+                href={`/success-stories/${post.slug}`}
                 className={cn(
-                    'group relative flex min-h-[280px] overflow-hidden rounded-2xl border border-white/10 shadow-lg transition-transform duration-300 hover:scale-[1.01] hover:shadow-xl md:min-h-[320px]',
+                    'group relative flex min-h-[280px] overflow-hidden rounded-2xl border marketing-hairline shadow-lg transition-transform duration-300 hover:scale-[1.01] hover:shadow-xl md:min-h-[320px]',
                     post.cardLayout === 'wide' ? 'md:min-h-[300px]' : 'md:min-h-[420px]',
                 )}
             >

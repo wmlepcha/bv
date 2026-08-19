@@ -30,7 +30,7 @@ export function ServiceImagePlaceholder({
     return (
         <div
             className={cn(
-                'flex aspect-video w-full items-center justify-center rounded-xl border border-dashed border-white/15 bg-white/[0.04] text-sm text-muted-foreground',
+                'flex aspect-video w-full items-center justify-center rounded-xl border border-dashed border-foreground/15 bg-foreground/[0.04] text-sm text-muted-foreground',
                 className,
             )}
         >
@@ -61,9 +61,9 @@ export function ServiceItemCard({ item, compact = false }: ServiceItemCardProps)
     return (
         <article
             className={cn(
-                'group relative overflow-hidden rounded-2xl border border-white/10',
-                'bg-gradient-to-b from-primary/10 to-white/[0.03]',
-                'transition-all hover:border-primary/30 hover:bg-white/[0.05]',
+                'group relative overflow-hidden rounded-2xl border marketing-hairline',
+                'bg-gradient-to-b from-primary/10 to-foreground/[0.03]',
+                'transition-all hover:border-primary/30 hover:bg-foreground/[0.05]',
                 compact ? 'p-4 md:p-5' : 'p-6 md:p-8',
             )}
         >

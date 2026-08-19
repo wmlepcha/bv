@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\NavigationItems;
 
+use App\Filament\Clusters\FrontendEditsCluster;
 use App\Filament\Resources\NavigationItems\Pages\CreateNavigationItem;
 use App\Filament\Resources\NavigationItems\Pages\EditNavigationItem;
 use App\Filament\Resources\NavigationItems\Pages\ListNavigationItems;
@@ -22,6 +23,8 @@ class NavigationItemResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBars3;
 
     protected static string|UnitEnum|null $navigationGroup = 'Header';
+
+    protected static ?string $cluster = FrontendEditsCluster::class;
 
     protected static ?string $navigationLabel = 'Navigation';
 

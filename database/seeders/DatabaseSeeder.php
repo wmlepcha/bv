@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use App\Services\AboutPageService;
 use App\Services\HomePageService;
+use App\Services\InquiryOptionsService;
 use App\Services\ProjectsPageService;
 use App\Services\ServicesPageService;
 use App\Services\SiteLayoutService;
@@ -30,11 +31,14 @@ class DatabaseSeeder extends Seeder
         $this->call(AboutPageSeeder::class);
         $this->call(ServicesPageSeeder::class);
         $this->call(ProjectsPageSeeder::class);
+        $this->call(EducationLevelSeeder::class);
+        $this->call(CenterSeeder::class);
 
         HomePageService::forgetCache();
         SiteLayoutService::forgetCache();
         AboutPageService::forgetCache();
         ServicesPageService::forgetCache();
         ProjectsPageService::forgetCache();
+        InquiryOptionsService::forgetCache();
     }
 }

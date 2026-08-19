@@ -6,7 +6,7 @@ interface LeapfrogValueCardProps {
 
 export function LeapfrogValueCard({ value }: LeapfrogValueCardProps) {
     return (
-        <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-primary/10 to-white/[0.03] p-6 transition-all hover:border-primary/30 hover:bg-white/[0.05] md:p-8">
+        <div className="group relative overflow-hidden rounded-2xl border marketing-hairline bg-gradient-to-b from-primary/10 to-foreground/[0.03] p-6 transition-all hover:border-primary/30 hover:bg-foreground/[0.05] md:p-8">
             <div className="relative mb-4">
                 <span
                     aria-hidden

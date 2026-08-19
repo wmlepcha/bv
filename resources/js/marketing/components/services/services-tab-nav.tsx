@@ -118,7 +118,7 @@ export function ServicesTabNav({ categories, activeId, onChange, onPinChange }: 
                 className={cn(
                     'z-40 px-4 sm:px-6',
                     isPinned
-                        ? 'fixed right-0 left-0 border-b border-white/10 bg-background/90 py-3 shadow-lg shadow-black/10 backdrop-blur-md'
+                        ? 'fixed right-0 left-0 border-b border-border bg-background/90 py-3 shadow-lg shadow-black/10 backdrop-blur-md'
                         : 'relative py-4',
                 )}
             >
@@ -126,7 +126,7 @@ export function ServicesTabNav({ categories, activeId, onChange, onPinChange }: 
                     <FadeUp disabled={isMobile}>
                         <div
                             className={cn(
-                                'inline-flex flex-wrap gap-2 rounded-full border border-white/10',
+                                'inline-flex flex-wrap gap-2 rounded-full border marketing-hairline',
                                 'bg-background/80 p-1.5 shadow-lg shadow-black/20 backdrop-blur-md',
                                 isPinned && 'shadow-none',
                             )}
@@ -148,7 +148,7 @@ export function ServicesTabNav({ categories, activeId, onChange, onPinChange }: 
                                             'rounded-full px-4 py-2 text-sm font-medium transition-all duration-300',
                                             isActive
                                                 ? 'bg-primary/15 text-primary shadow-sm'
-                                                : 'text-muted-foreground hover:bg-white/[0.05] hover:text-foreground',
+                                                : 'text-muted-foreground hover:bg-foreground/[0.05] hover:text-foreground',
                                         )}
                                     >
                                         {category.title}

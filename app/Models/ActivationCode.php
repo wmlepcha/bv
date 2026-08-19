@@ -13,6 +13,7 @@ class ActivationCode extends Model
     protected $fillable = [
         'code',
         'email',
+        'assigned_user_id',
         'student_number',
         'used_at',
         'used_by_user_id',
@@ -27,6 +28,11 @@ class ActivationCode extends Model
         return [
             'used_at' => 'datetime',
         ];
+    }
+
+    public function assignedUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assigned_user_id');
     }
 
     public function usedBy(): BelongsTo

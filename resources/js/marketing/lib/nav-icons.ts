@@ -2,6 +2,7 @@ import {
     Briefcase,
     FolderKanban,
     Home,
+    LogIn,
     Users,
     type LucideIcon,
 } from 'lucide-react';
@@ -11,6 +12,7 @@ const iconMap: Record<string, LucideIcon> = {
     users: Users,
     briefcase: Briefcase,
     'folder-kanban': FolderKanban,
+    'log-in': LogIn,
 };
 
 export function resolveNavIcon(key: string): LucideIcon {

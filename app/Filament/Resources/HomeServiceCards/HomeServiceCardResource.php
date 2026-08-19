@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\HomeServiceCards;
 
+use App\Filament\Clusters\FrontendEditsCluster;
 use App\Filament\Resources\HomeServiceCards\Pages\CreateHomeServiceCard;
 use App\Filament\Resources\HomeServiceCards\Pages\EditHomeServiceCard;
 use App\Filament\Resources\HomeServiceCards\Pages\ListHomeServiceCards;
@@ -22,6 +23,8 @@ class HomeServiceCardResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSquares2x2;
 
     protected static string|UnitEnum|null $navigationGroup = 'Homepage';
+
+    protected static ?string $cluster = FrontendEditsCluster::class;
 
     protected static ?string $navigationLabel = 'Service Cards';
 

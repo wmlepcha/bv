@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\HomeFeatureItem;
 use App\Models\HomeHighlight;
+use App\Models\HomeProgramCard;
 use App\Models\HomeServiceCard;
 use App\Models\HomeStat;
 use App\Models\HomeTestimonial;
@@ -42,17 +43,9 @@ class HomePageService
                 ),
                 'cardText' => SiteSetting::getValue(
                     'home.hero.card_text',
-                    'Bridging language excellence with professional growth for international careers.',
+                    'With us language becomes your bridge, not a barrier.',
                 ),
-                'highlights' => HomeHighlight::query()
-                    ->where('is_visible', true)
-                    ->orderBy('sort_order')
-                    ->get(['label'])
-                    ->map(fn (HomeHighlight $item): array => [
-                        'label' => $item->label,
-                    ])
-                    ->values()
-                    ->all(),
+                'highlightColumns' => $this->buildHighlightColumns(),
                 'stats' => HomeStat::query()
                     ->where('is_visible', true)
                     ->orderBy('sort_order')
@@ -73,11 +66,11 @@ class HomePageService
                 headingKey: 'home.crafting.heading',
                 headingDefault: 'Crafting people. Linguistically & Professionally.',
                 bodyKey: 'home.crafting.body',
-                bodyDefault: 'At Bilingual Vitae, we blend linguistic and professional skills with deep human values while making candidates ready to be a part of the ever-demanding global workforce market.',
+                bodyDefault: 'At Bilingual Vitae®, we blend linguistic and professional skills with deep human values while making candidates ready to be a part of the ever-demanding global workforce market.',
                 imagePathKey: 'home.crafting.image_path',
                 imagePathDefault: 'images/students-of-bilingual-vitae.jpg',
                 imageAltKey: 'home.crafting.image_alt',
-                imageAltDefault: 'Bilingual Vitae students in training',
+                imageAltDefault: 'Bilingual Vitae® students in training',
                 featuresKey: 'pillars',
             ),
             'recruiters' => $this->buildContentSection(
@@ -88,11 +81,11 @@ class HomePageService
                 headingKey: 'home.recruiters.heading',
                 headingDefault: 'Recruiters never leave unsatisfied.',
                 bodyKey: 'home.recruiters.body',
-                bodyDefault: 'At Bilingual Vitae, recruiters and employers get linguistically and professionally well-prepared candidates who are ready to perform from day one.',
+                bodyDefault: 'At Bilingual Vitae®, recruiters and employers get linguistically and professionally well-prepared candidates who are ready to perform from day one.',
                 imagePathKey: 'home.recruiters.image_path',
                 imagePathDefault: 'images/recruiters-of-bilingual-vitae.jpg',
                 imageAltKey: 'home.recruiters.image_alt',
-                imageAltDefault: 'Recruiters partnering with Bilingual Vitae',
+                imageAltDefault: 'Recruiters partnering with Bilingual Vitae®',
                 featuresKey: 'benefits',
             ),
             'services' => [
@@ -113,11 +106,32 @@ class HomePageService
                     ->values()
                     ->all(),
             ],
+            'programs' => [
+                'badge' => SiteSetting::getValue('home.programs.badge', 'Our Programs'),
+                'heading' => SiteSetting::getValue(
+                    'home.programs.heading',
+                    'Boost your career with our expertise',
+                ),
+                'ctaLabel' => SiteSetting::getValue('home.programs.cta_label', 'View All Programs'),
+                'ctaHref' => SiteSetting::getValue('home.programs.cta_href', '/services'),
+                'cards' => HomeProgramCard::query()
+                    ->where('is_visible', true)
+                    ->orderBy('sort_order')
+                    ->get(['title', 'description', 'href', 'image_path'])
+                    ->map(fn (HomeProgramCard $card): array => [
+                        'title' => $card->title,
+                        'description' => $card->description,
+                        'href' => $card->href,
+                        'imageUrl' => $this->publicAssetUrl($card->image_path),
+                    ])
+                    ->values()
+                    ->all(),
+            ],
             'seo' => [
                 'title' => SiteSetting::getValue('home.seo.title', 'Language Training & Career Support in Sikkim'),
                 'description' => SiteSetting::getValue(
                     'home.seo.description',
-                    'Bilingual Vitae helps people in Sikkim become workplace-ready through language training, employability skills, placement support, and migration guidance.',
+                    'Bilingual Vitae® helps people in Sikkim become workplace-ready through language training, employability skills, placement support, and migration guidance.',
                 ),
             ],
         ];
@@ -171,6 +185,49 @@ class HomePageService
                 'role' => $testimonial->role,
             ] : null,
         ];
+    }
+
+    /**
+     * @return list<array{heading: string, items: list<array{label: string}>}>
+     */
+    protected function buildHighlightColumns(): array
+    {
+        $columns = [
+            [
+                'group' => HomeHighlight::GROUP_SOFTWARE_SUITE,
+                'heading' => SiteSetting::getValue('home.hero.software_suite_heading', 'Software suite'),
+            ],
+            [
+                'group' => HomeHighlight::GROUP_SERVICES,
+                'heading' => SiteSetting::getValue('home.hero.services_heading', 'Services'),
+            ],
+        ];
+
+        $result = [];
+
+        foreach ($columns as $column) {
+            $items = HomeHighlight::query()
+                ->where('is_visible', true)
+                ->where('group', $column['group'])
+                ->orderBy('sort_order')
+                ->get(['label'])
+                ->map(fn (HomeHighlight $item): array => [
+                    'label' => $item->label,
+                ])
+                ->values()
+                ->all();
+
+            if ($items === []) {
+                continue;
+            }
+
+            $result[] = [
+                'heading' => $column['heading'],
+                'items' => $items,
+            ];
+        }
+
+        return $result;
     }
 
     protected function publicAssetUrl(string $path): string

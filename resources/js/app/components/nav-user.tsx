@@ -14,6 +14,7 @@ import {
 import { UserInfo } from '@app/components/user-info';
 import { UserMenuContent } from '@app/components/user-menu-content';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 export function NavUser() {
     const { auth } = usePage().props;
@@ -31,11 +32,16 @@ export function NavUser() {
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuButton
                             size="lg"
-                            className="group text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent"
+                            className={cn(
+                                'nav-rail-footer-pill group',
+                                'text-nav-rail-foreground hover:text-nav-rail-foreground',
+                                'data-[state=open]:text-nav-rail-foreground',
+                                '[&_span]:text-nav-rail-foreground',
+                            )}
                             data-test="sidebar-menu-button"
                         >
                             <UserInfo user={auth.user} />
-                            <ChevronsUpDown className="ml-auto size-4" />
+                            <ChevronsUpDown className="ml-auto size-4 opacity-80" />
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent

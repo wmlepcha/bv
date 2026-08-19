@@ -8,6 +8,8 @@ enum UserRole: string
     case Recruiter = 'recruiter';
     case Employee = 'employee';
     case Admin = 'admin';
+    case Teacher = 'teacher';
+    case TrainingManager = 'training_manager';
 
     /**
      * @return list<string>

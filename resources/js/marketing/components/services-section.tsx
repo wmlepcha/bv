@@ -20,7 +20,7 @@ export function ServicesSection({ services }: ServicesSectionProps) {
                     {services.subtitle}
                 </FadeUp>
 
-                <StaggerChildren className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                <StaggerChildren className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     {services.cards.map((service, index) => (
                         <ServiceCard
                             key={service.href}

@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Services\InquiryOptionsService;
+use App\Support\PhoneNumber;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -22,7 +24,7 @@ class StoreInquiryRequest extends FormRequest
         $shared = [
             'type' => ['required', Rule::in(['candidate', 'recruiter'])],
             'email' => ['required', 'email', 'max:255'],
-            'phone' => ['required', 'string', 'max:30'],
+            'phone' => ['required', 'string', 'max:30', PhoneNumber::rule()],
         ];
 
         if ($type === 'candidate') {
@@ -33,7 +35,7 @@ class StoreInquiryRequest extends FormRequest
                 'address' => ['nullable', 'string', 'max:255'],
                 'city' => ['required', 'string', 'max:100'],
                 'country' => ['required', 'string', 'max:100'],
-                'education_level' => ['required', 'string', 'max:100'],
+                'education_level' => ['required', 'string', Rule::in(app(InquiryOptionsService::class)->visibleEducationLevelSlugs())],
                 'field_of_study' => ['nullable', 'string', 'max:150'],
                 'years_of_experience' => ['required', 'string', 'max:50'],
                 'languages' => ['required', 'string', 'max:255'],
@@ -63,5 +65,16 @@ class StoreInquiryRequest extends FormRequest
         }
 
         return $shared;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('phone')) {
+            $this->merge([
+                'phone' => PhoneNumber::normalize(
+                    is_string($this->input('phone')) ? $this->input('phone') : null,
+                ),
+            ]);
+        }
     }
 }

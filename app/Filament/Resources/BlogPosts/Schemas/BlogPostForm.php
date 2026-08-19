@@ -2,8 +2,10 @@
 
 namespace App\Filament\Resources\BlogPosts\Schemas;
 
+use App\Filament\Support\ImageUploadField;
 use App\Models\BlogPost;
 use App\Models\BlogPostSection;
+use Filament\Forms\Components\Component;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
@@ -41,7 +43,7 @@ class BlogPostForm
     }
 
     /**
-     * @return list<\Filament\Forms\Components\Component>
+     * @return list<Component>
      */
     protected static function generalTab(): array
     {
@@ -93,17 +95,19 @@ class BlogPostForm
     }
 
     /**
-     * @return list<\Filament\Forms\Components\Component>
+     * @return list<Component>
      */
     protected static function cardTab(): array
     {
         return [
-            FileUpload::make('featured_image_path')
-                ->label('Featured image')
-                ->image()
-                ->disk('public')
-                ->directory('images/blog')
-                ->maxFiles(1),
+            ImageUploadField::configure(
+                FileUpload::make('featured_image_path')
+                    ->label('Featured image')
+                    ->image()
+                    ->disk('public')
+                    ->directory('images/blog')
+                    ->maxFiles(1),
+            ),
             TextInput::make('featured_image_alt')
                 ->label('Featured image alt text')
                 ->maxLength(255),
@@ -118,18 +122,20 @@ class BlogPostForm
     }
 
     /**
-     * @return list<\Filament\Forms\Components\Component>
+     * @return list<Component>
      */
     protected static function heroTab(): array
     {
         return [
-            FileUpload::make('hero_image_path')
-                ->label('Hero image')
-                ->image()
-                ->disk('public')
-                ->directory('images/blog')
-                ->maxFiles(1)
-                ->helperText('Optional. Falls back to featured image if empty.'),
+            ImageUploadField::configure(
+                FileUpload::make('hero_image_path')
+                    ->label('Hero image')
+                    ->image()
+                    ->disk('public')
+                    ->directory('images/blog')
+                    ->maxFiles(1),
+                'Optional. Falls back to featured image if empty. JPG, PNG, WebP, or GIF. Maximum size: 5 MB.',
+            ),
             TextInput::make('hero_image_alt')
                 ->label('Hero image alt text')
                 ->maxLength(255),
@@ -137,7 +143,7 @@ class BlogPostForm
     }
 
     /**
-     * @return list<\Filament\Forms\Components\Component>
+     * @return list<Component>
      */
     protected static function seoTab(): array
     {
@@ -152,12 +158,14 @@ class BlogPostForm
                 ->label('Meta keywords')
                 ->maxLength(255)
                 ->helperText('Comma-separated keywords.'),
-            FileUpload::make('og_image_path')
-                ->label('Open Graph image')
-                ->image()
-                ->disk('public')
-                ->directory('images/blog')
-                ->maxFiles(1),
+            ImageUploadField::configure(
+                FileUpload::make('og_image_path')
+                    ->label('Open Graph image')
+                    ->image()
+                    ->disk('public')
+                    ->directory('images/blog')
+                    ->maxFiles(1),
+            ),
             Toggle::make('seo_noindex')
                 ->label('Noindex')
                 ->default(false),
@@ -165,7 +173,7 @@ class BlogPostForm
     }
 
     /**
-     * @return list<\Filament\Forms\Components\Component>
+     * @return list<Component>
      */
     protected static function sectionsTab(): array
     {
@@ -185,7 +193,7 @@ class BlogPostForm
     }
 
     /**
-     * @return list<\Filament\Forms\Components\Component>
+     * @return list<Component>
      */
     protected static function sectionSchema(): array
     {
@@ -255,13 +263,15 @@ class BlogPostForm
             TextInput::make('content.attribution')
                 ->label('Quote attribution')
                 ->visible(fn (callable $get): bool => $get('type') === BlogPostSection::TYPE_QUOTE),
-            FileUpload::make('content.path')
-                ->label('Image')
-                ->image()
-                ->disk('public')
-                ->directory('images/blog')
-                ->maxFiles(1)
-                ->visible(fn (callable $get): bool => $get('type') === BlogPostSection::TYPE_IMAGE),
+            ImageUploadField::configure(
+                FileUpload::make('content.path')
+                    ->label('Image')
+                    ->image()
+                    ->disk('public')
+                    ->directory('images/blog')
+                    ->maxFiles(1)
+                    ->visible(fn (callable $get): bool => $get('type') === BlogPostSection::TYPE_IMAGE),
+            ),
             TextInput::make('content.alt')
                 ->label('Image alt text')
                 ->visible(fn (callable $get): bool => $get('type') === BlogPostSection::TYPE_IMAGE),

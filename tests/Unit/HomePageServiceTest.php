@@ -20,8 +20,12 @@ class HomePageServiceTest extends TestCase
 
         HomeStat::query()->where('label', 'candidates certified')->update(['is_visible' => false]);
 
-        HomeHighlight::query()->where('label', 'Integration')->update(['sort_order' => 0]);
-        HomeHighlight::query()->where('label', 'Training')->update(['sort_order' => 99]);
+        HomeHighlight::query()
+            ->where('label', 'Software suite – for Government Agencies')
+            ->update(['sort_order' => 0]);
+        HomeHighlight::query()
+            ->where('label', 'Digital products for candidates')
+            ->update(['sort_order' => 99]);
 
         $payload = app(HomePageService::class)->toInertiaProps();
 
@@ -30,8 +34,19 @@ class HomePageServiceTest extends TestCase
             collect($payload['hero']['stats'])->contains('label', 'candidates certified'),
         );
 
-        $this->assertSame('Integration', $payload['hero']['highlights'][0]['label']);
-        $this->assertSame('Training', $payload['hero']['highlights'][4]['label']);
+        $this->assertCount(2, $payload['hero']['highlightColumns']);
+        $this->assertSame('Software suite', $payload['hero']['highlightColumns'][0]['heading']);
+        $this->assertSame('Services', $payload['hero']['highlightColumns'][1]['heading']);
+        $this->assertSame(
+            'Software suite – for Government Agencies',
+            $payload['hero']['highlightColumns'][0]['items'][0]['label'],
+        );
+        $this->assertSame(
+            'Digital products for candidates',
+            $payload['hero']['highlightColumns'][0]['items'][2]['label'],
+        );
+        $this->assertCount(3, $payload['hero']['highlightColumns'][0]['items']);
+        $this->assertCount(2, $payload['hero']['highlightColumns'][1]['items']);
     }
 
     public function test_cache_is_cleared_when_stat_is_updated(): void

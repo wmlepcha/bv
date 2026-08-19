@@ -16,12 +16,12 @@ class ProjectsPageSeeder extends Seeder
         SiteSetting::setValue('projects.hero.title', 'Projects');
         SiteSetting::setValue(
             'projects.hero.subtitle',
-            'Insights on language learning, multilingualism, and global employability from the Bilingual Vitae editorial team.',
+            'Insights on language learning, multilingualism, and global employability from the Bilingual Vitae® editorial team.',
         );
         SiteSetting::setValue('projects.seo.title', 'Projects');
         SiteSetting::setValue(
             'projects.seo.description',
-            'Explore articles on language learning, bilingual brain science, pronunciation, and multilingual journeys from Bilingual Vitae.',
+            'Explore articles on language learning, bilingual brain science, pronunciation, and multilingual journeys from Bilingual Vitae®.',
         );
 
         $categories = collect([
@@ -39,8 +39,8 @@ class ProjectsPageSeeder extends Seeder
         ]);
 
         $author = [
-            'author_name' => 'Bilingual Vitae Editorial',
-            'author_bio' => 'The Bilingual Vitae editorial team shares practical guidance on language learning, employability, and multilingual life.',
+            'author_name' => 'Bilingual Vitae® Editorial',
+            'author_bio' => 'The Bilingual Vitae® editorial team shares practical guidance on language learning, employability, and multilingual life.',
         ];
 
         $posts = [
@@ -54,7 +54,7 @@ class ProjectsPageSeeder extends Seeder
                 'sort_order' => 0,
                 'featured_image_path' => 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=1200&q=80',
                 'featured_image_alt' => 'Open notebook for language study',
-                'seo_title' => 'How to Think in a Foreign Language | Bilingual Vitae',
+                'seo_title' => 'How to Think in a Foreign Language | Bilingual Vitae®',
                 'seo_description' => 'Learn practical techniques to think directly in a foreign language without mental translation.',
                 'seo_keywords' => 'think in foreign language, language learning, bilingual cognition',
                 'sections' => [
@@ -155,7 +155,7 @@ class ProjectsPageSeeder extends Seeder
                     ['type' => BlogPostSection::TYPE_PARAGRAPH, 'content' => ['text' => 'The turning point was treating each language as a living system rather than a subject to pass. Conversations, not grades, became the measure of progress.']],
                     ['type' => BlogPostSection::TYPE_QUOTE, 'content' => [
                         'text' => 'Every new language rewired not just what I could say, but how I listened to the world.',
-                        'attribution' => 'Bilingual Vitae Editorial',
+                        'attribution' => 'Bilingual Vitae® Editorial',
                     ]],
                     ['type' => BlogPostSection::TYPE_IMAGE, 'content' => [
                         'path' => 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=1200&q=80',

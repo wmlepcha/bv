@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\EducationLevel;
 use App\Models\Inquiry;
 use Illuminate\Support\Facades\Storage;
 
@@ -46,14 +47,6 @@ class InquiryPresenter
      * @var array<string, array<string, string>>
      */
     private const OPTIONS = [
-        'education_level' => [
-            'high-school' => 'High school',
-            'diploma' => 'Diploma',
-            'bachelors' => "Bachelor's degree",
-            'masters' => "Master's degree",
-            'doctorate' => 'Doctorate',
-            'other' => 'Other',
-        ],
         'years_of_experience' => [
             '0-1' => '0–1 years',
             '1-3' => '1–3 years',
@@ -88,13 +81,19 @@ class InquiryPresenter
 
     public static function hasOptions(string $key): bool
     {
-        return array_key_exists($key, self::OPTIONS);
+        return $key === 'education_level' || array_key_exists($key, self::OPTIONS);
     }
 
     public static function formatOption(string $key, mixed $value): ?string
     {
         if (blank($value)) {
             return null;
+        }
+
+        if ($key === 'education_level') {
+            return EducationLevel::query()
+                ->where('slug', (string) $value)
+                ->value('name') ?? (string) $value;
         }
 
         return self::OPTIONS[$key][(string) $value] ?? (string) $value;

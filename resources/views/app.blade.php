@@ -23,20 +23,20 @@
         {{-- Inline style to set the HTML background color based on our theme in app.css --}}
         <style>
             html {
-                background-color: oklch(0.985 0.005 85);
+                background-color: oklch(0.98 0.024 88.2); /* #FFF8E7 */
             }
 
             html.dark {
-                background-color: oklch(0 0 0);
+                background-color: oklch(0.212 0.064 256.3); /* #031835 */
             }
         </style>
 
         <link rel="manifest" href="/build/manifest.webmanifest" />
-        <meta name="theme-color" content="#faf9f7" media="(prefers-color-scheme: light)" />
-        <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+        <meta name="theme-color" content="#FFF8E7" media="(prefers-color-scheme: light)" />
+        <meta name="theme-color" content="#031835" media="(prefers-color-scheme: dark)" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Bilingual Vitae" />
+        <meta name="apple-mobile-web-app-title" content="{{ \App\Support\Brand::trademarkedName() }}" />
         <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png" />
         <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png" />
         <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png" />
@@ -51,7 +51,7 @@
         <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16" />
         <link rel="icon" type="image/png" href="/favicon-128.png" sizes="128x128" />
         <link rel="shortcut icon" href="/favicon.ico" />
-        <meta name="application-name" content="Bilingual Vitae" />
+        <meta name="application-name" content="{{ \App\Support\Brand::trademarkedName() }}" />
         <meta name="msapplication-TileColor" content="#FFFFFF" />
         <meta name="msapplication-TileImage" content="/mstile-144x144.png" />
         <meta name="msapplication-square70x70logo" content="/mstile-70x70.png" />
@@ -74,7 +74,7 @@
         @endphp
         @vite(['resources/css/app.css', 'resources/js/app.tsx', $pageScript])
         <x-inertia::head>
-            <title>{{ config('app.name', 'Bilingual Vitae') }}</title>
+            <title>{{ \App\Support\Brand::trademarkedName() }}</title>
         </x-inertia::head>
     </head>
     <body class="font-sans antialiased">

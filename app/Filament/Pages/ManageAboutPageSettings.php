@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Clusters\FrontendEditsCluster;
 use App\Models\SiteSetting;
 use App\Services\AboutPageService;
 use BackedEnum;
@@ -34,6 +35,8 @@ class ManageAboutPageSettings extends Page
 
     protected static string|UnitEnum|null $navigationGroup = 'About Page';
 
+    protected static ?string $cluster = FrontendEditsCluster::class;
+
     protected static ?string $navigationLabel = 'About Page Settings';
 
     protected static ?int $navigationSort = 1;
@@ -48,7 +51,7 @@ class ManageAboutPageSettings extends Page
             'hero_title' => SiteSetting::getValue('about.hero.title', 'About Us'),
             'overview_tagline' => SiteSetting::getValue(
                 'about.overview.tagline',
-                'Bilingual Vitae, An EdTech and Future Work Company.',
+                'Bilingual Vitae®, An EdTech and Future Work Company.',
             ),
             'mission' => SiteSetting::getValue(
                 'about.mission',
@@ -65,7 +68,7 @@ class ManageAboutPageSettings extends Page
             ),
             'impact_paragraph' => SiteSetting::getValue(
                 'about.impact.paragraph',
-                'Bilingual Vitae strives to create measurable impact by improving employability, enhancing communication, strengthening digital competence, and preparing learners for lifelong success in an evolving global workforce market.',
+                'Bilingual Vitae® strives to create measurable impact by improving employability, enhancing communication, strengthening digital competence, and preparing learners for lifelong success in an evolving global workforce market.',
             ),
             'impact_closing' => SiteSetting::getValue(
                 'about.impact.closing',
@@ -74,7 +77,7 @@ class ManageAboutPageSettings extends Page
             'seo_title' => SiteSetting::getValue('about.seo.title', 'About Us'),
             'seo_description' => SiteSetting::getValue(
                 'about.seo.description',
-                'Bilingual Vitae is an EdTech and future work company specializing in bilingual proficiency profiling, language training, and global employability — empowering local talent with technology-driven career pathways.',
+                'Bilingual Vitae® is an EdTech and future work company specializing in bilingual proficiency profiling, language training, and global employability — empowering local talent with technology-driven career pathways.',
             ),
         ]);
     }

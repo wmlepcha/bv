@@ -45,7 +45,7 @@ export function ServiceCard({ title, href, image, index = 0 }: ServiceCardProps)
                 ref={cardRef}
                 href={href}
                 className={cn(
-                    'group relative block overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-xl backdrop-blur-sm transition-[transform,box-shadow] duration-500 hover:shadow-2xl hover:shadow-primary/10',
+                    'group relative block overflow-hidden rounded-3xl border marketing-chip shadow-xl backdrop-blur-sm transition-[transform,box-shadow] duration-500 hover:shadow-2xl hover:shadow-primary/10',
                 )}
                 onMouseMove={isMobile ? undefined : handleMove}
                 onMouseLeave={isMobile ? undefined : handleLeave}

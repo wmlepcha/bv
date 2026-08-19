@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\PartnerLogos\Pages;
 
 use App\Filament\Resources\PartnerLogos\PartnerLogoResource;
-use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListPartnerLogos extends ListRecords
@@ -12,8 +11,6 @@ class ListPartnerLogos extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [
-            CreateAction::make(),
-        ];
+        return [];
     }
 }

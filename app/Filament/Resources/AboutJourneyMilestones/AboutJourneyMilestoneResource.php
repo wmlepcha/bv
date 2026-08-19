@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\AboutJourneyMilestones;
 
+use App\Filament\Clusters\FrontendEditsCluster;
 use App\Filament\Resources\AboutJourneyMilestones\Pages\CreateAboutJourneyMilestone;
 use App\Filament\Resources\AboutJourneyMilestones\Pages\EditAboutJourneyMilestone;
 use App\Filament\Resources\AboutJourneyMilestones\Pages\ListAboutJourneyMilestones;
@@ -22,6 +23,8 @@ class AboutJourneyMilestoneResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMap;
 
     protected static string|UnitEnum|null $navigationGroup = 'About Page';
+
+    protected static ?string $cluster = FrontendEditsCluster::class;
 
     protected static ?string $navigationLabel = 'Journey Milestones';
 

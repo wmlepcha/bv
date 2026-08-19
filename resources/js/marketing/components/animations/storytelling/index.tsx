@@ -117,7 +117,7 @@ export const ScrollytellingSection = forwardRef<
         return (
             <div ref={mergeRefs(ref, containerRef)} className={cn('relative', className)}>
                 {showProgress && scrollEffects && (
-                    <div className="fixed top-0 left-0 z-50 h-0.5 w-full bg-white/10">
+                    <div className="fixed top-0 left-0 z-50 h-0.5 w-full bg-foreground/10">
                         <div
                             ref={progressRef}
                             className="h-full w-full origin-left scale-x-0 bg-gradient-to-r from-brand-warm to-brand-cool-light"

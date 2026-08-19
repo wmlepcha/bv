@@ -12,7 +12,7 @@ export default function Projects() {
             <SeoHead
                 title={projectsPage.seo.title}
                 description={projectsPage.seo.description}
-                canonical="/projects"
+                canonical="/success-stories"
             />
             <main>
                 <ProjectsHeroSection

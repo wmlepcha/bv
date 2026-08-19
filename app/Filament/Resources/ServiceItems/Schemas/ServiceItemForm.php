@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ServiceItems\Schemas;
 
+use App\Filament\Support\ImageUploadField;
 use App\Models\ServiceItem;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\FileUpload;
@@ -90,12 +91,14 @@ class ServiceItemForm
                 Textarea::make('notes')
                     ->rows(3)
                     ->columnSpanFull(),
-                FileUpload::make('image_path')
-                    ->label('Image')
-                    ->image()
-                    ->disk('public')
-                    ->directory('images')
-                    ->maxFiles(1),
+                ImageUploadField::configure(
+                    FileUpload::make('image_path')
+                        ->label('Image')
+                        ->image()
+                        ->disk('public')
+                        ->directory('images')
+                        ->maxFiles(1),
+                ),
                 TextInput::make('image_alt')
                     ->label('Image alt text')
                     ->maxLength(255),

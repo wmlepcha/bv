@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ActivationCodes;
 
+use App\Filament\Clusters\CandidatesCluster;
 use App\Filament\Resources\ActivationCodes\Pages\CreateActivationCode;
 use App\Filament\Resources\ActivationCodes\Pages\EditActivationCode;
 use App\Filament\Resources\ActivationCodes\Pages\ListActivationCodes;
@@ -13,12 +14,21 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class ActivationCodeResource extends Resource
 {
     protected static ?string $model = ActivationCode::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static ?string $cluster = CandidatesCluster::class;
+
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedKey;
+
+    protected static string|UnitEnum|null $navigationGroup = null;
+
+    protected static ?string $navigationLabel = 'Activation Codes';
+
+    protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema
     {

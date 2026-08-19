@@ -27,7 +27,7 @@ class SitemapController extends Controller
             ->orderBy('sort_order')
             ->get(['slug', 'updated_at'])
             ->map(fn (BlogPost $post): string => $this->buildUrlEntry(
-                $baseUrl.'/projects/'.$post->slug,
+                $baseUrl.'/success-stories/'.$post->slug,
                 'monthly',
                 '0.6',
                 $post->updated_at?->toAtomString(),
@@ -63,6 +63,6 @@ XML;
             $lastmodLine.
             "    <changefreq>{$changefreq}</changefreq>\n".
             "    <priority>{$priority}</priority>\n".
-            "  </url>";
+            '  </url>';
     }
 }

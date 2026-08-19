@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\HomeHighlights\Pages;
 
 use App\Filament\Resources\HomeHighlights\HomeHighlightResource;
-use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListHomeHighlights extends ListRecords
@@ -12,8 +11,6 @@ class ListHomeHighlights extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [
-            CreateAction::make(),
-        ];
+        return [];
     }
 }

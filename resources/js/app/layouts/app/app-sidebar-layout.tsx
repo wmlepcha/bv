@@ -11,13 +11,20 @@ export default function AppSidebarLayout({
     breadcrumbs = [],
 }: AppLayoutProps) {
     return (
-        <div className="relative min-h-svh">
+        <div className="relative min-h-svh bg-nav-rail">
             <BrandPageBackground />
             <AppShell variant="sidebar">
                 <AppSidebar />
                 <AppContent variant="sidebar" className="min-w-0 overflow-x-hidden">
                     <AppSidebarHeader breadcrumbs={breadcrumbs} />
-                    <DashboardAccessGate>{children}</DashboardAccessGate>
+                    <DashboardAccessGate>
+                        {/*
+                          Keep inset background flush with the rail for the cut-out join.
+                          Pad page bodies so cards/UI clear the fixed rail + indicator bleed
+                          (see .nav-rail-indicator right: -1.5rem). z-index cannot fix this.
+                        */}
+                        <div className="min-w-0 pl-4 sm:pl-6">{children}</div>
+                    </DashboardAccessGate>
                 </AppContent>
             </AppShell>
         </div>

@@ -48,12 +48,12 @@ class ManageProjectsPageSettings extends Page
             'hero_title' => SiteSetting::getValue('projects.hero.title', 'Projects'),
             'hero_subtitle' => SiteSetting::getValue(
                 'projects.hero.subtitle',
-                'Insights on language learning, multilingualism, and global employability from the Bilingual Vitae editorial team.',
+                'Insights on language learning, multilingualism, and global employability from the Bilingual Vitae® editorial team.',
             ),
             'seo_title' => SiteSetting::getValue('projects.seo.title', 'Projects'),
             'seo_description' => SiteSetting::getValue(
                 'projects.seo.description',
-                'Discover Bilingual Vitae projects and initiatives advancing language education, employability, and workforce development across Sikkim and beyond.',
+                'Discover Bilingual Vitae® projects and initiatives advancing language education, employability, and workforce development across Sikkim and beyond.',
             ),
         ]);
     }

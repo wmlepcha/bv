@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\SocialLinks;
 
+use App\Filament\Clusters\FrontendEditsCluster;
 use App\Filament\Resources\SocialLinks\Pages\CreateSocialLink;
 use App\Filament\Resources\SocialLinks\Pages\EditSocialLink;
 use App\Filament\Resources\SocialLinks\Pages\ListSocialLinks;
@@ -22,6 +23,8 @@ class SocialLinkResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShare;
 
     protected static string|UnitEnum|null $navigationGroup = 'Footer';
+
+    protected static ?string $cluster = FrontendEditsCluster::class;
 
     protected static ?string $navigationLabel = 'Social Links';
 

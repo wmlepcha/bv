@@ -9,6 +9,15 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+    server: {
+        host: '127.0.0.1',
+        port: 5173,
+        strictPort: true,
+        hmr: {
+            host: '127.0.0.1',
+            port: 5173,
+        },
+    },
     resolve: {
         alias: {
             '@/components/ui': fileURLToPath(
@@ -27,6 +36,9 @@ export default defineConfig({
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
+            // Avoid binding Vite to bilingualvitae.test when Herd DNS is unavailable
+            // (e.g. while using `php artisan serve` on 127.0.0.1:8000).
+            detectTls: false,
             refresh: true,
             fonts: [
                 bunny('Instrument Sans', {
@@ -60,12 +72,12 @@ export default defineConfig({
                 'pwa-512x512.png',
             ],
             manifest: {
-                name: 'Bilingual Vitae',
+                name: `${process.env.VITE_APP_NAME || 'Bilingual Vitae'}®`,
                 short_name: 'BV',
                 description:
                     'Helping people become workplace-ready with strong communication and professional skills.',
-                theme_color: '#faf9f7',
-                background_color: '#faf9f7',
+                theme_color: '#FFF8E7',
+                background_color: '#FFF8E7',
                 display: 'standalone',
                 start_url: '/',
                 scope: '/',
@@ -115,7 +127,7 @@ export default defineConfig({
                     {
                         urlPattern: ({ request, url }) =>
                             request.method === 'GET' &&
-                            url.pathname.match(/^\/(about|services|projects)?$/),
+                            url.pathname.match(/^\/(about|services|projects|success-stories)?$/),
                         handler: 'NetworkFirst',
                         options: {
                             cacheName: 'marketing-pages',

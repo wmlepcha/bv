@@ -1,4 +1,5 @@
 import type { Auth } from '@/types/auth';
+import type { RegistrationPlan } from '@shared/types/registration-plan';
 
 export type SiteLayoutNavigationItem = {
     label: string;
@@ -24,8 +25,10 @@ export type SiteLayoutSocialLink = {
 
 export type SiteLayout = {
     header: {
-        logoUrl: string;
+        logoUrlLight: string;
+        logoUrlDark: string;
         partnerLabel: string;
+        showAppearanceToggle: boolean;
         navigation: SiteLayoutNavigationItem[];
         partners: SiteLayoutPartner[];
     };
@@ -36,6 +39,15 @@ export type SiteLayout = {
         offices: SiteLayoutOffice[];
         socialLinks: SiteLayoutSocialLink[];
     };
+};
+
+export type InquirySelectOption = {
+    value: string;
+    label: string;
+};
+
+export type InquiryOptions = {
+    educationLevels: InquirySelectOption[];
 };
 
 declare module 'react' {
@@ -58,9 +70,12 @@ declare module '@inertiajs/core' {
             };
             auth: Auth;
             sidebarOpen: boolean;
-            razorpayKey: string | null;
-            registrationFeeAmount: number;
+            cashfreeAppId: string | null;
+            registrationPlans: RegistrationPlan[];
+            registrationTermsHtml: string;
+            studentPhone: string | null;
             siteLayout: SiteLayout;
+            inquiryOptions: InquiryOptions;
             [key: string]: unknown;
         };
     }

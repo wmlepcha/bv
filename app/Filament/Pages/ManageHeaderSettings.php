@@ -2,11 +2,14 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Clusters\FrontendEditsCluster;
+use App\Filament\Support\ImageUploadField;
 use App\Models\SiteSetting;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
@@ -31,6 +34,8 @@ class ManageHeaderSettings extends Page
 
     protected static string|UnitEnum|null $navigationGroup = 'Header';
 
+    protected static ?string $cluster = FrontendEditsCluster::class;
+
     protected static ?string $navigationLabel = 'Header Settings';
 
     protected static ?int $navigationSort = 1;
@@ -41,17 +46,23 @@ class ManageHeaderSettings extends Page
 
     public function mount(): void
     {
-        $logoPath = SiteSetting::getValue('header.logo_path', '/storage/images/bv-logo.png');
-        $logoPath = str_starts_with($logoPath, '/storage/')
-            ? str_replace('/storage/', '', $logoPath)
-            : $logoPath;
-
         $this->form->fill([
-            'logo_path' => $logoPath,
+            'logo_light_path' => $this->storagePathForUpload(
+                SiteSetting::getValue('header.logo_light_path')
+                    ?? SiteSetting::getValue('header.logo_path', '/storage/images/bv-logo-light.png'),
+            ),
+            'logo_dark_path' => $this->storagePathForUpload(
+                SiteSetting::getValue('header.logo_dark_path')
+                    ?? SiteSetting::getValue('header.logo_path', '/storage/images/bv-logo.png'),
+            ),
             'partner_label' => SiteSetting::getValue(
                 'header.partner_label',
                 'Official partner of Government of Sikkim and NSDC International',
             ),
+            'show_appearance_toggle' => SiteSetting::getValue(
+                'header.show_appearance_toggle',
+                '1',
+            ) === '1',
         ]);
     }
 
@@ -59,18 +70,14 @@ class ManageHeaderSettings extends Page
     {
         $data = $this->form->getState();
 
-        $logoPath = is_array($data['logo_path'] ?? null)
-            ? ($data['logo_path'][0] ?? null)
-            : ($data['logo_path'] ?? null);
-
-        if (filled($logoPath)) {
-            SiteSetting::setValue(
-                'header.logo_path',
-                str_starts_with($logoPath, '/storage/') ? $logoPath : '/storage/'.$logoPath,
-            );
-        }
+        $this->saveLogoPath('header.logo_light_path', $data['logo_light_path'] ?? null);
+        $this->saveLogoPath('header.logo_dark_path', $data['logo_dark_path'] ?? null);
 
         SiteSetting::setValue('header.partner_label', $data['partner_label']);
+        SiteSetting::setValue(
+            'header.show_appearance_toggle',
+            ($data['show_appearance_toggle'] ?? false) ? '1' : '0',
+        );
 
         Notification::make()
             ->success()
@@ -88,16 +95,32 @@ class ManageHeaderSettings extends Page
     {
         return $schema
             ->components([
-                FileUpload::make('logo_path')
-                    ->label('Site logo')
-                    ->image()
-                    ->disk('public')
-                    ->directory('images')
-                    ->maxFiles(1),
+                ImageUploadField::configure(
+                    FileUpload::make('logo_light_path')
+                        ->label('Light theme logo')
+                        ->image()
+                        ->disk('public')
+                        ->directory('images')
+                        ->maxFiles(1),
+                    'Shown when the site is in light mode. If empty, the dark theme logo is used. JPG, PNG, WebP, or GIF. Maximum size: 5 MB.',
+                ),
+                ImageUploadField::configure(
+                    FileUpload::make('logo_dark_path')
+                        ->label('Dark theme logo')
+                        ->image()
+                        ->disk('public')
+                        ->directory('images')
+                        ->maxFiles(1),
+                    'Shown when the site is in dark mode. If empty, the light theme logo is used. JPG, PNG, WebP, or GIF. Maximum size: 5 MB.',
+                ),
                 Textarea::make('partner_label')
                     ->label('Partner label')
                     ->required()
                     ->rows(3),
+                Toggle::make('show_appearance_toggle')
+                    ->label('Show theme selector')
+                    ->helperText('When enabled, visitors can switch light, dark, or system theme from the site header.')
+                    ->default(true),
             ]);
     }
 
@@ -122,5 +145,32 @@ class ManageHeaderSettings extends Page
                         ->keyBindings(['mod+s']),
                 ]),
             ]);
+    }
+
+    protected function storagePathForUpload(?string $path): ?string
+    {
+        if (! filled($path)) {
+            return null;
+        }
+
+        return str_starts_with($path, '/storage/')
+            ? str_replace('/storage/', '', $path)
+            : $path;
+    }
+
+    protected function saveLogoPath(string $key, mixed $value): void
+    {
+        $logoPath = is_array($value)
+            ? ($value[0] ?? null)
+            : $value;
+
+        if (! filled($logoPath)) {
+            return;
+        }
+
+        SiteSetting::setValue(
+            $key,
+            str_starts_with($logoPath, '/storage/') ? $logoPath : '/storage/'.$logoPath,
+        );
     }
 }

@@ -31,15 +31,16 @@ class SecurityHeaders
 
         $csp = implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com{$viteSources['http']}",
+            "script-src 'self' 'unsafe-inline' https://sdk.cashfree.com{$viteSources['http']}",
             "style-src 'self' 'unsafe-inline'{$viteSources['http']}",
             "img-src 'self' data: blob: https:",
             "font-src 'self' data:{$viteSources['http']}",
-            "connect-src 'self' https://checkout.razorpay.com https://api.razorpay.com{$viteSources['connect']}",
-            "frame-src 'self' https://checkout.razorpay.com",
+            "connect-src 'self' https://api.cashfree.com https://sandbox.cashfree.com https://sdk.cashfree.com https://payments.cashfree.com{$viteSources['connect']}",
+            "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://sdk.cashfree.com https://api.cashfree.com https://sandbox.cashfree.com https://payments.cashfree.com",
+            "child-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://sdk.cashfree.com https://api.cashfree.com https://sandbox.cashfree.com https://payments.cashfree.com",
             "object-src 'none'",
             "base-uri 'self'",
-            "form-action 'self'",
+            "form-action 'self' https://api.cashfree.com https://sandbox.cashfree.com https://payments.cashfree.com",
         ]);
 
         $response->headers->set('Content-Security-Policy', $csp);
@@ -55,12 +56,20 @@ class SecurityHeaders
         $httpSources = [
             'http://127.0.0.1:5173',
             'http://localhost:5173',
+            'http://[::1]:5173',
+            'http://127.0.0.1:5174',
+            'http://localhost:5174',
+            'http://[::1]:5174',
         ];
 
         $connectSources = [
             ...$httpSources,
             'ws://127.0.0.1:5173',
             'ws://localhost:5173',
+            'ws://[::1]:5173',
+            'ws://127.0.0.1:5174',
+            'ws://localhost:5174',
+            'ws://[::1]:5174',
         ];
 
         if (is_file(Vite::hotFile())) {
@@ -69,12 +78,21 @@ class SecurityHeaders
 
             if (is_array($parsed) && isset($parsed['host'])) {
                 $scheme = $parsed['scheme'] ?? 'http';
+                $host = $parsed['host'];
                 $port = isset($parsed['port']) ? ':'.$parsed['port'] : '';
-                $origin = "{$scheme}://{$parsed['host']}{$port}";
+                $origin = "{$scheme}://{$host}{$port}";
 
                 $httpSources[] = $origin;
                 $connectSources[] = $origin;
-                $connectSources[] = ($scheme === 'https' ? 'wss' : 'ws')."://{$parsed['host']}{$port}";
+                $connectSources[] = ($scheme === 'https' ? 'wss' : 'ws')."://{$host}{$port}";
+
+                // Also allow the IPv4 loopback equivalent when Vite binds to IPv6 ::1
+                if ($host === '[::1]' || $host === '::1') {
+                    $ipv4Origin = "{$scheme}://127.0.0.1{$port}";
+                    $httpSources[] = $ipv4Origin;
+                    $connectSources[] = $ipv4Origin;
+                    $connectSources[] = ($scheme === 'https' ? 'wss' : 'ws')."://127.0.0.1{$port}";
+                }
             }
         }
 

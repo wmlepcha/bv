@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\HomeServiceCards\Schemas;
 
+use App\Filament\Support\ImageUploadField;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
@@ -20,11 +22,16 @@ class HomeServiceCardForm
                     ->required()
                     ->maxLength(255)
                     ->placeholder('/services/language-training'),
-                TextInput::make('image_path')
-                    ->label('Image path or URL')
-                    ->required()
-                    ->maxLength(500)
-                    ->placeholder('images/example.jpg or https://...'),
+                ImageUploadField::configure(
+                    FileUpload::make('image_path')
+                        ->label('Image')
+                        ->image()
+                        ->disk('public')
+                        ->directory('images')
+                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+                        ->required()
+                        ->maxFiles(1),
+                ),
                 TextInput::make('sort_order')
                     ->numeric()
                     ->default(0)

@@ -15,7 +15,7 @@ class AboutPageSeeder extends Seeder
         SiteSetting::setValue('about.hero.title', 'About Us');
         SiteSetting::setValue(
             'about.overview.tagline',
-            'Bilingual Vitae, An EdTech and Future Work Company.',
+            'Bilingual Vitae®, An EdTech and Future Work Company.',
         );
         SiteSetting::setValue(
             'about.mission',
@@ -32,7 +32,7 @@ class AboutPageSeeder extends Seeder
         );
         SiteSetting::setValue(
             'about.impact.paragraph',
-            'Bilingual Vitae strives to create measurable impact by improving employability, enhancing communication, strengthening digital competence, and preparing learners for lifelong success in an evolving global workforce market.',
+            'Bilingual Vitae® strives to create measurable impact by improving employability, enhancing communication, strengthening digital competence, and preparing learners for lifelong success in an evolving global workforce market.',
         );
         SiteSetting::setValue(
             'about.impact.closing',
@@ -41,11 +41,11 @@ class AboutPageSeeder extends Seeder
         SiteSetting::setValue('about.seo.title', 'About Us');
         SiteSetting::setValue(
             'about.seo.description',
-            'Bilingual Vitae is an EdTech and future work company specializing in bilingual proficiency profiling, language training, and global employability — empowering local talent with technology-driven career pathways.',
+            'Bilingual Vitae® is an EdTech and future work company specializing in bilingual proficiency profiling, language training, and global employability — empowering local talent with technology-driven career pathways.',
         );
 
         $overviewParagraphs = [
-            'Bilingual Vitae is a professional bilingual proficiency profiling and publishing company, a modern, technology-driven, people-first company.',
+            'Bilingual Vitae® is a professional bilingual proficiency profiling and publishing company, a modern, technology-driven, people-first company.',
             'We specialize in language proficiency training through our digital platform and offline learning centres, helping individuals develop the language and employability skills needed to access international career opportunities. Beyond training, our proprietary proficiency profiling and publishing methodology enhances candidates\' professional visibility, credibility, and global employability.',
             'By combining language education, technology, and digital identity, we empower local talent to gain worldwide recognition and connect with global opportunities.',
         ];
@@ -58,7 +58,7 @@ class AboutPageSeeder extends Seeder
         }
 
         $leapfrogParagraphs = [
-            'At Bilingual Vitae, innovation is the foundation of how we learn, lead, and create impact.',
+            'At Bilingual Vitae®, innovation is the foundation of how we learn, lead, and create impact.',
             'Our LEAPFROG Philosophy reflects our belief that learners, institutions, and leaders can accelerate their growth by embracing innovation, collaboration, and technology. By connecting people across cultures, removing barriers, and promoting inclusion, we create opportunities that enable individuals and organizations to thrive in a global environment.',
             'At the heart of our brand is the LEAPFROG philosophy — This philosophy shapes every programme, technology, partnership, and solution we build.',
         ];
@@ -71,8 +71,8 @@ class AboutPageSeeder extends Seeder
         }
 
         $coreValuesIntro = [
-            'At Bilingual Vitae, we believe in the transformative power of language and technology. We are dedicated to inspiring language learning aspirants, preparing them for a future of endless opportunities, and empowering both individuals and institutions to embark on successful linguistic journeys.',
-            'We extend our commitment to the Recruiting Companies and Institutions (Private/Government), recognizing that language proficiency transcends boundaries to further solving friction with Bilingual Vitae\'s technology and facilitating global partnerships, and fostering collaboration.',
+            'At Bilingual Vitae®, we believe in the transformative power of language and technology. We are dedicated to inspiring language learning aspirants, preparing them for a future of endless opportunities, and empowering both individuals and institutions to embark on successful linguistic journeys.',
+            'We extend our commitment to the Recruiting Companies and Institutions (Private/Government), recognizing that language proficiency transcends boundaries to further solving friction with Bilingual Vitae®\'s technology and facilitating global partnerships, and fostering collaboration.',
         ];
 
         foreach ($coreValuesIntro as $index => $body) {
@@ -133,7 +133,7 @@ class AboutPageSeeder extends Seeder
                 'image_path' => 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&q=80',
                 'image_alt' => 'Healthcare training and nurse placement programme',
                 'bullets' => [
-                    'Phase 1 — Project contract secured from the Government of Sikkim under Sikkim Inspires, a Government of Sikkim and World Bank Partnership Program — German language training and recruitment programme. Designed and Executed by Bilingual Vitae and its consortium partners in Germany.',
+                    'Phase 1 — Project contract secured from the Government of Sikkim under Sikkim Inspires, a Government of Sikkim and World Bank Partnership Program — German language training and recruitment programme. Designed and Executed by Bilingual Vitae® and its consortium partners in Germany.',
                     '20 Indian Registered Nurses successfully trained. Successfully Placed and Successfully integrated in the German Healthcare Institutions as a Registered Nursing Professional.',
                     '300+ Indian Nurses and other sector candidates onboarded and Undergoing German Language and employability skill training for the Nurses Recruitment and Ausbildung program for Germany and Austria.',
                 ],

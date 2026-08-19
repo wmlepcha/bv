@@ -19,8 +19,8 @@ export default function PlaceholderPage({ title, description }: Props) {
                         {description}
                     </p>
                 </div>
-                <div className="relative min-h-[320px] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                    <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
+                <div className="relative min-h-[320px] flex-1 overflow-hidden rounded-xl border border-border/50 bg-card/40">
+                    <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/15" />
                     <div className="absolute inset-0 flex items-center justify-center">
                         <p className="rounded-full border border-border bg-background/80 px-4 py-2 text-sm text-muted-foreground">
                             Coming soon

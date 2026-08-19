@@ -14,6 +14,7 @@ class NavigationIcons
             'users' => 'About / Users',
             'briefcase' => 'Services',
             'folder-kanban' => 'Projects',
+            'log-in' => 'Login',
         ];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\HomeFeatureItems;
 
+use App\Filament\Clusters\FrontendEditsCluster;
 use App\Filament\Resources\HomeFeatureItems\Pages\CreateHomeFeatureItem;
 use App\Filament\Resources\HomeFeatureItems\Pages\EditHomeFeatureItem;
 use App\Filament\Resources\HomeFeatureItems\Pages\ListHomeFeatureItems;
@@ -23,9 +24,16 @@ class HomeFeatureItemResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'Homepage';
 
+    protected static ?string $cluster = FrontendEditsCluster::class;
+
     protected static ?string $navigationLabel = 'Features';
 
     protected static ?int $navigationSort = 4;
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
 
     public static function form(Schema $schema): Schema
     {

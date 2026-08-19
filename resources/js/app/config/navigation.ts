@@ -2,10 +2,14 @@ import {
     Bell,
     BookOpen,
     FileText,
+    FileUser,
+    FolderOpen,
     LayoutGrid,
+    Presentation,
     Users,
 } from 'lucide-react';
 import { dashboard } from '@/routes';
+import { edit as cvEdit } from '@/routes/student/cv';
 import { index as classesIndex } from '@/routes/student/classes';
 import { index as notificationsIndex } from '@/routes/student/notifications';
 import { index as pdfsIndex } from '@/routes/student/pdfs';
@@ -22,6 +26,11 @@ export function getMainNavItems(role: UserRole): NavItem[] {
                 icon: LayoutGrid,
             },
             {
+                title: 'Your CV',
+                href: cvEdit(),
+                icon: FileUser,
+            },
+            {
                 title: 'Classes',
                 href: classesIndex(),
                 icon: BookOpen,
@@ -35,6 +44,51 @@ export function getMainNavItems(role: UserRole): NavItem[] {
                 title: 'Notifications',
                 href: notificationsIndex(),
                 icon: Bell,
+            },
+        ];
+    }
+
+    if (role === 'training_manager') {
+        return [
+            {
+                title: 'Dashboard',
+                href: '/training-manager/dashboard',
+                icon: LayoutGrid,
+            },
+            {
+                title: 'Trainers',
+                href: '/training-manager/trainers',
+                icon: Presentation,
+            },
+            {
+                title: 'Batches',
+                href: '/training-manager/batches',
+                icon: BookOpen,
+            },
+            {
+                title: 'Library',
+                href: '/training-manager/library',
+                icon: FolderOpen,
+            },
+        ];
+    }
+
+    if (role === 'teacher') {
+        return [
+            {
+                title: 'Dashboard',
+                href: dashboard(),
+                icon: LayoutGrid,
+            },
+            {
+                title: 'Students',
+                href: studentsIndex(),
+                icon: Users,
+            },
+            {
+                title: 'My Materials',
+                href: '/teacher/materials',
+                icon: FolderOpen,
             },
         ];
     }

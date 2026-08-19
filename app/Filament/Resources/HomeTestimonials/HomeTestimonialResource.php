@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\HomeTestimonials;
 
+use App\Filament\Clusters\FrontendEditsCluster;
 use App\Filament\Resources\HomeTestimonials\Pages\CreateHomeTestimonial;
 use App\Filament\Resources\HomeTestimonials\Pages\EditHomeTestimonial;
 use App\Filament\Resources\HomeTestimonials\Pages\ListHomeTestimonials;
@@ -23,9 +24,16 @@ class HomeTestimonialResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'Homepage';
 
+    protected static ?string $cluster = FrontendEditsCluster::class;
+
     protected static ?string $navigationLabel = 'Testimonials';
 
     protected static ?int $navigationSort = 5;
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
 
     public static function form(Schema $schema): Schema
     {

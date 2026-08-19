@@ -11,14 +11,17 @@ class ActivationCodeTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_unpaid_student_can_redeem_valid_code(): void
+    public function test_unpaid_student_can_redeem_mapped_code(): void
     {
-        $user = User::factory()->student()->unpaid()->create();
+        $user = User::factory()->student()->unpaid()->create([
+            'student_number' => '003-2026-1001',
+        ]);
 
         $code = ActivationCode::create([
-            'code' => '003-2026-0001',
+            'code' => 'BV-26-ABCD',
             'email' => $user->email,
-            'student_number' => '003-2026-0001',
+            'assigned_user_id' => $user->id,
+            'student_number' => $user->student_number,
         ]);
 
         $response = $this->actingAs($user)->post(route('activation-codes.redeem'), [
@@ -31,8 +34,11 @@ class ActivationCodeTest extends TestCase
         $code->refresh();
 
         $this->assertNotNull($user->registration_paid_at);
-        $this->assertSame('003-2026-0001', $user->student_number);
+        $this->assertNotNull($user->registration_expires_at);
+        $this->assertTrue($user->registration_expires_at->isFuture());
+        $this->assertSame('003-2026-1001', $user->student_number);
         $this->assertNotNull($code->used_at);
+        $this->assertSame($user->id, $code->used_by_user_id);
     }
 
     public function test_used_code_cannot_be_redeemed_again(): void
@@ -40,8 +46,9 @@ class ActivationCodeTest extends TestCase
         $user = User::factory()->student()->unpaid()->create();
 
         $code = ActivationCode::create([
-            'code' => '003-2026-0002',
-            'student_number' => '003-2026-0002',
+            'code' => 'BV-26-EFGH',
+            'assigned_user_id' => $user->id,
+            'student_number' => $user->student_number,
             'used_at' => now(),
         ]);
 
@@ -52,22 +59,63 @@ class ActivationCodeTest extends TestCase
         $response->assertSessionHasErrors('code');
     }
 
-    public function test_code_with_wrong_email_is_rejected(): void
+    public function test_code_assigned_to_different_student_is_rejected(): void
+    {
+        $user = User::factory()->student()->unpaid()->create();
+        $other = User::factory()->student()->unpaid()->create();
+
+        ActivationCode::create([
+            'code' => 'BV-26-IJKL',
+            'email' => $other->email,
+            'assigned_user_id' => $other->id,
+            'student_number' => $other->student_number,
+        ]);
+
+        $response = $this->actingAs($user)->post(route('activation-codes.redeem'), [
+            'code' => 'BV-26-IJKL',
+        ]);
+
+        $response->assertSessionHasErrors('code');
+        $this->assertNull($user->fresh()->registration_paid_at);
+    }
+
+    public function test_unmapped_code_is_rejected(): void
+    {
+        $user = User::factory()->student()->unpaid()->create();
+
+        ActivationCode::create([
+            'code' => 'BV-26-MNOP',
+            'email' => $user->email,
+            'assigned_user_id' => null,
+            'student_number' => $user->student_number,
+        ]);
+
+        $response = $this->actingAs($user)->post(route('activation-codes.redeem'), [
+            'code' => 'BV-26-MNOP',
+        ]);
+
+        $response->assertSessionHasErrors('code');
+        $this->assertNull($user->fresh()->registration_paid_at);
+    }
+
+    public function test_mapped_code_with_mismatched_email_is_rejected(): void
     {
         $user = User::factory()->student()->unpaid()->create([
             'email' => 'student@example.com',
         ]);
 
         ActivationCode::create([
-            'code' => '003-2026-0003',
+            'code' => 'BV-26-QRST',
             'email' => 'other@example.com',
-            'student_number' => '003-2026-0003',
+            'assigned_user_id' => $user->id,
+            'student_number' => $user->student_number,
         ]);
 
         $response = $this->actingAs($user)->post(route('activation-codes.redeem'), [
-            'code' => '003-2026-0003',
+            'code' => 'BV-26-QRST',
         ]);
 
         $response->assertSessionHasErrors('code');
+        $this->assertNull($user->fresh()->registration_paid_at);
     }
 }

@@ -58,4 +58,60 @@ class PortalLoginTest extends TestCase
         $this->assertAuthenticated();
         $response->assertRedirect(route('dashboard', absolute: false));
     }
+
+    public function test_teacher_cannot_login_through_student_portal(): void
+    {
+        $user = User::factory()->teacher()->create();
+
+        $response = $this->post(route('login.store'), [
+            'email' => $user->email,
+            'password' => 'password',
+            'portal' => 'student',
+        ]);
+
+        $this->assertGuest();
+        $response->assertSessionHasErrors('email');
+    }
+
+    public function test_teacher_cannot_login_through_staff_portal(): void
+    {
+        $user = User::factory()->teacher()->create();
+
+        $response = $this->post(route('login.store'), [
+            'email' => $user->email,
+            'password' => 'password',
+            'portal' => 'staff',
+        ]);
+
+        $this->assertGuest();
+        $response->assertSessionHasErrors('email');
+    }
+
+    public function test_recruiter_cannot_login_through_teacher_portal(): void
+    {
+        $user = User::factory()->recruiter()->create();
+
+        $response = $this->post(route('login.store'), [
+            'email' => $user->email,
+            'password' => 'password',
+            'portal' => 'teacher',
+        ]);
+
+        $this->assertGuest();
+        $response->assertSessionHasErrors('email');
+    }
+
+    public function test_teacher_can_login_through_teacher_portal(): void
+    {
+        $user = User::factory()->teacher()->create();
+
+        $response = $this->post(route('login.store'), [
+            'email' => $user->email,
+            'password' => 'password',
+            'portal' => 'teacher',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect(route('dashboard', absolute: false));
+    }
 }

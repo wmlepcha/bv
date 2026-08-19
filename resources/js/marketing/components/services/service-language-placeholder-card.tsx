@@ -13,8 +13,8 @@ export function ServiceLanguagePlaceholderCard({ item }: ServiceLanguagePlacehol
 
             <article
                 className={cn(
-                    'w-full overflow-hidden rounded-2xl border border-white/10',
-                    'bg-gradient-to-b from-primary/10 to-white/[0.03]',
+                    'w-full overflow-hidden rounded-2xl border marketing-hairline',
+                    'bg-gradient-to-b from-primary/10 to-foreground/[0.03]',
                     'p-4 md:p-6',
                 )}
             >

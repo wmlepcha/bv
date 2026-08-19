@@ -44,7 +44,7 @@ export function MagneticButton({
         <button
             ref={buttonRef}
             className={cn(
-                'inline-flex items-center justify-center rounded-full bg-brand-cool px-8 py-3 text-sm font-medium text-white shadow-lg shadow-brand-cool/25 transition-[transform,box-shadow,background-color] duration-300 hover:bg-brand-cool-dark hover:shadow-xl hover:shadow-brand-cool/30',
+                'inline-flex items-center justify-center rounded-full bg-primary px-8 py-3 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/25 transition-[transform,box-shadow,background-color] duration-300 hover:bg-brand-warm-dark hover:shadow-xl hover:shadow-primary/30',
                 className,
             )}
             onMouseMove={isMobile ? undefined : handleMove}

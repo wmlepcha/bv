@@ -17,9 +17,11 @@ class PaymentForm
                 Select::make('user_id')
                     ->relationship('user', 'name')
                     ->required(),
-                TextInput::make('razorpay_order_id')
+                TextInput::make('gateway_order_id')
+                    ->label('Gateway order ID')
                     ->required(),
-                TextInput::make('razorpay_payment_id'),
+                TextInput::make('gateway_payment_id')
+                    ->label('Gateway payment ID'),
                 TextInput::make('amount')
                     ->required()
                     ->numeric(),

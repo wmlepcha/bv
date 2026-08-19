@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\AboutCoreValues;
 
+use App\Filament\Clusters\FrontendEditsCluster;
 use App\Filament\Resources\AboutCoreValues\Pages\CreateAboutCoreValue;
 use App\Filament\Resources\AboutCoreValues\Pages\EditAboutCoreValue;
 use App\Filament\Resources\AboutCoreValues\Pages\ListAboutCoreValues;
@@ -23,9 +24,16 @@ class AboutCoreValueResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'About Page';
 
+    protected static ?string $cluster = FrontendEditsCluster::class;
+
     protected static ?string $navigationLabel = 'Core Values';
 
     protected static ?int $navigationSort = 3;
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
 
     public static function form(Schema $schema): Schema
     {

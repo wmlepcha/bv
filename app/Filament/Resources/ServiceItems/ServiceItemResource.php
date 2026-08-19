@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ServiceItems;
 
+use App\Filament\Clusters\FrontendEditsCluster;
 use App\Filament\Resources\ServiceItems\Pages\CreateServiceItem;
 use App\Filament\Resources\ServiceItems\Pages\EditServiceItem;
 use App\Filament\Resources\ServiceItems\Pages\ListServiceItems;
@@ -22,6 +23,8 @@ class ServiceItemResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAcademicCap;
 
     protected static string|UnitEnum|null $navigationGroup = 'Services Page';
+
+    protected static ?string $cluster = FrontendEditsCluster::class;
 
     protected static ?string $navigationLabel = 'Service Items';
 

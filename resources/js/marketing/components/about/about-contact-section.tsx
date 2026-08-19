@@ -18,7 +18,7 @@ export function AboutContactSection() {
                     {offices.map((office) => (
                         <div
                             key={office.name}
-                            className="rounded-2xl border border-white/10 bg-white/[0.03] p-8"
+                            className="rounded-2xl border marketing-panel p-8"
                         >
                             <h3 className="text-lg font-semibold">{office.name}</h3>
                             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">

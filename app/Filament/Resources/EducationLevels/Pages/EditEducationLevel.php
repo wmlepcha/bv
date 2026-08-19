@@ -1,0 +1,11 @@
+<?php
+
+namespace App\Filament\Resources\EducationLevels\Pages;
+
+use App\Filament\Resources\EducationLevels\EducationLevelResource;
+use Filament\Resources\Pages\EditRecord;
+
+class EditEducationLevel extends EditRecord
+{
+    protected static string $resource = EducationLevelResource::class;
+}

@@ -1,4 +1,4 @@
-import { router, useForm } from '@inertiajs/react';
+import { router, useForm, usePage } from '@inertiajs/react';
 import { Briefcase, CheckCircle2, GraduationCap, UserRound } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import InputError from '@shared/components/input-error';
@@ -23,6 +23,8 @@ import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
 import { BirthDatePicker } from '@marketing/components/birth-date-picker';
 import { resetPageTransition } from '@marketing/animations/gsap/timelines/transitions';
+import { BRAND_NAME_TM } from '@shared/lib/brand';
+import { normalizePhone, validatePhone } from '@shared/lib/phone';
 
 export type InquiryRole = 'candidate' | 'recruiter';
 
@@ -207,7 +209,7 @@ function FileField({
         <Field label={label} required={required} error={error}>
             <label
                 htmlFor={id}
-                className="flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-white/15 bg-white/[0.03] px-4 py-6 text-center transition-colors hover:border-primary/40 hover:bg-white/[0.05]"
+                className="flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-foreground/15 bg-foreground/[0.03] px-4 py-6 text-center transition-colors hover:border-primary/40 hover:bg-foreground/[0.05]"
             >
                 <span className="text-sm font-medium text-foreground/90">
                     {fileName ?? 'Click to upload a file'}
@@ -240,7 +242,7 @@ function StepProgress({
                         key={step.title}
                         className={cn(
                             'h-1.5 flex-1 rounded-full transition-colors',
-                            index <= currentStep ? 'bg-primary' : 'bg-white/10',
+                            index <= currentStep ? 'bg-primary' : 'bg-foreground/10',
                         )}
                     />
                 ))}
@@ -253,6 +255,7 @@ function StepProgress({
 }
 
 export function LearnMoreInquiryModal({ open, onOpenChange, initialRole }: LearnMoreInquiryModalProps) {
+    const { inquiryOptions } = usePage().props;
     const [phase, setPhase] = useState<ModalPhase>('role');
     const [role, setRole] = useState<InquiryRole | null>(null);
     const [step, setStep] = useState(0);
@@ -333,7 +336,15 @@ export function LearnMoreInquiryModal({ open, onOpenChange, initialRole }: Learn
 
             if (step === 1) {
                 if (!data.email.trim()) errors.email = 'Email is required.';
-                if (!data.phone.trim()) errors.phone = 'Phone number is required.';
+                else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email.trim())) {
+                    errors.email = 'Enter a valid email address.';
+                }
+                const phoneError = validatePhone(data.phone);
+                if (!data.phone.trim()) {
+                    errors.phone = 'Phone number is required.';
+                } else if (phoneError) {
+                    errors.phone = phoneError;
+                }
                 if (!data.city.trim()) errors.city = 'City is required.';
                 if (!data.country.trim()) errors.country = 'Country is required.';
             }
@@ -364,7 +375,15 @@ export function LearnMoreInquiryModal({ open, onOpenChange, initialRole }: Learn
                 if (!data.contact_name.trim()) errors.contact_name = 'Contact name is required.';
                 if (!data.designation.trim()) errors.designation = 'Designation is required.';
                 if (!data.email.trim()) errors.email = 'Email is required.';
-                if (!data.phone.trim()) errors.phone = 'Phone number is required.';
+                else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email.trim())) {
+                    errors.email = 'Enter a valid email address.';
+                }
+                const phoneError = validatePhone(data.phone);
+                if (!data.phone.trim()) {
+                    errors.phone = 'Phone number is required.';
+                } else if (phoneError) {
+                    errors.phone = phoneError;
+                }
             }
 
             if (step === 2) {
@@ -391,17 +410,22 @@ export function LearnMoreInquiryModal({ open, onOpenChange, initialRole }: Learn
 
         const activeForm = role === 'recruiter' ? recruiterForm : candidateForm;
 
-        activeForm.post('/inquiries', {
-            forceFormData: true,
-            preserveScroll: true,
-            preserveState: true,
-            onFlash: (flash) => {
-                if (flash.inquirySubmitted) {
-                    setPhase('success');
-                }
-            },
-            onSuccess: () => setPhase('success'),
-        });
+        activeForm
+            .transform((data) => ({
+                ...data,
+                phone: normalizePhone(data.phone),
+            }))
+            .post('/inquiries', {
+                forceFormData: true,
+                preserveScroll: true,
+                preserveState: true,
+                onFlash: (flash) => {
+                    if (flash.inquirySubmitted) {
+                        setPhase('success');
+                    }
+                },
+                onSuccess: () => setPhase('success'),
+            });
     };
 
     const handleBack = () => {
@@ -467,6 +491,8 @@ export function LearnMoreInquiryModal({ open, onOpenChange, initialRole }: Learn
                             </Field>
                             <Field label="Phone" required error={stepErrors.phone ?? candidateForm.errors.phone}>
                                 <Input
+                                    inputMode="tel"
+                                    placeholder="e.g. +919832581198"
                                     value={data.phone}
                                     onChange={(e) => candidateForm.setData('phone', e.target.value)}
                                 />
@@ -504,14 +530,7 @@ export function LearnMoreInquiryModal({ open, onOpenChange, initialRole }: Learn
                             value={data.education_level}
                             onChange={(value) => candidateForm.setData('education_level', value)}
                             error={stepErrors.education_level ?? candidateForm.errors.education_level}
-                            options={[
-                                { value: 'high-school', label: 'High school' },
-                                { value: 'diploma', label: 'Diploma' },
-                                { value: 'bachelors', label: "Bachelor's degree" },
-                                { value: 'masters', label: "Master's degree" },
-                                { value: 'doctorate', label: 'Doctorate' },
-                                { value: 'other', label: 'Other' },
-                            ]}
+                            options={inquiryOptions.educationLevels}
                         />
                         <Field label="Field of study" error={candidateForm.errors.field_of_study}>
                             <Input
@@ -656,6 +675,8 @@ export function LearnMoreInquiryModal({ open, onOpenChange, initialRole }: Learn
                             </Field>
                             <Field label="Phone" required error={stepErrors.phone ?? recruiterForm.errors.phone}>
                                 <Input
+                                    inputMode="tel"
+                                    placeholder="e.g. +919832581198"
                                     value={data.phone}
                                     onChange={(e) => recruiterForm.setData('phone', e.target.value)}
                                 />
@@ -762,7 +783,7 @@ export function LearnMoreInquiryModal({ open, onOpenChange, initialRole }: Learn
                 {phase === 'role' && (
                     <>
                         <DialogHeader className="shrink-0 max-sm:gap-2 max-sm:text-center">
-                            <DialogTitle className="max-sm:text-xl xs-short:text-lg">Get started with Bilingual Vitae</DialogTitle>
+                            <DialogTitle className="max-sm:text-xl xs-short:text-lg">Get started with {BRAND_NAME_TM}</DialogTitle>
                             <DialogDescription className="max-sm:text-sm xs-short:text-xs">
                                 Tell us who you are so we can show you the right form.
                             </DialogDescription>
@@ -772,7 +793,7 @@ export function LearnMoreInquiryModal({ open, onOpenChange, initialRole }: Learn
                             <button
                                 type="button"
                                 onClick={() => selectRole('candidate')}
-                                className="group rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-left transition-colors hover:border-primary/40 hover:bg-white/[0.06] max-sm:flex max-sm:flex-1 max-sm:flex-col max-sm:items-center max-sm:justify-center max-sm:p-6 max-sm:text-center xs-short:p-4"
+                                className="group rounded-2xl border marketing-panel marketing-panel-hover p-6 text-left transition-colors hover:border-primary/40 max-sm:flex max-sm:flex-1 max-sm:flex-col max-sm:items-center max-sm:justify-center max-sm:p-6 max-sm:text-center xs-short:p-4"
                             >
                                 <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-primary/15 text-primary max-sm:mb-4 max-sm:h-16 max-sm:w-16 xs-short:mb-3 xs-short:h-14 xs-short:w-14">
                                     <GraduationCap className="size-5 max-sm:size-8 xs-short:size-7" />
@@ -786,7 +807,7 @@ export function LearnMoreInquiryModal({ open, onOpenChange, initialRole }: Learn
                             <button
                                 type="button"
                                 onClick={() => selectRole('recruiter')}
-                                className="group rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-left transition-colors hover:border-brand-cool-light/40 hover:bg-white/[0.06] max-sm:flex max-sm:flex-1 max-sm:flex-col max-sm:items-center max-sm:justify-center max-sm:p-6 max-sm:text-center xs-short:p-4"
+                                className="group rounded-2xl border marketing-panel marketing-panel-hover p-6 text-left transition-colors hover:border-brand-cool-light/40 max-sm:flex max-sm:flex-1 max-sm:flex-col max-sm:items-center max-sm:justify-center max-sm:p-6 max-sm:text-center xs-short:p-4"
                             >
                                 <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full bg-brand-cool-light/15 text-brand-cool-light max-sm:mb-4 max-sm:h-16 max-sm:w-16 xs-short:mb-3 xs-short:h-14 xs-short:w-14">
                                     <Briefcase className="size-5 max-sm:size-8 xs-short:size-7" />

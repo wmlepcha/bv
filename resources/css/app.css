@@ -63,83 +63,101 @@
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
 
-    --color-brand-warm: oklch(0.68 0.21 35);
-    --color-brand-warm-light: oklch(0.78 0.17 55);
-    --color-brand-warm-dark: oklch(0.52 0.17 38);
-    --color-brand-cool: oklch(0.55 0.16 250);
-    --color-brand-cool-light: oklch(0.78 0.14 210);
-    --color-brand-cool-dark: oklch(0.28 0.08 260);
+    --color-nav-rail: var(--nav-rail);
+    --color-nav-rail-foreground: var(--nav-rail-foreground);
+    --color-nav-rail-muted: var(--nav-rail-muted);
+    --color-nav-active-fg: var(--nav-active-fg);
+
+    /* Brand scale — HEX from logo color version 1 */
+    --color-brand-warm: oklch(0.681 0.204 36.2); /* #FC5C2E */
+    --color-brand-warm-light: oklch(0.783 0.166 69.7); /* #FBA214 */
+    --color-brand-warm-dark: oklch(0.626 0.216 30.8); /* #EE3D27 */
+    --color-brand-cool: oklch(0.587 0.141 249.5); /* #2A80CC */
+    --color-brand-cool-light: oklch(0.79 0.147 223.2); /* #04CEFF */
+    --color-brand-cool-dark: oklch(0.477 0.162 256.8); /* #0959B5 */
 }
 
 :root {
-    --background: oklch(0.985 0.005 85);
-    --foreground: oklch(0.13 0 0);
-    --card: oklch(0.995 0.003 85);
-    --card-foreground: oklch(0.13 0 0);
-    --popover: oklch(0.995 0.003 85);
-    --popover-foreground: oklch(0.13 0 0);
-    --primary: oklch(0.68 0.21 35);
-    --primary-foreground: oklch(0.99 0 0);
-    --secondary: oklch(0.48 0.16 250);
-    --secondary-foreground: oklch(0.99 0 0);
-    --muted: oklch(0.96 0.005 85);
-    --muted-foreground: oklch(0.50 0 0);
-    --accent: oklch(0.96 0.02 35);
-    --accent-foreground: oklch(0.13 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --destructive-foreground: oklch(0.99 0 0);
-    --border: oklch(0.90 0.005 85);
-    --input: oklch(0.90 0.005 85);
-    --ring: oklch(0.68 0.21 35);
-    --chart-1: oklch(0.68 0.21 35);
-    --chart-2: oklch(0.78 0.14 210);
-    --chart-3: oklch(0.55 0.16 250);
-    --chart-4: oklch(0.78 0.17 55);
-    --chart-5: oklch(0.52 0.17 38);
+    /* Surfaces — light theme: brand cream (#FFF8E7) */
+    --background: #fff8e7;
+    --foreground: oklch(0.212 0.064 256.3); /* #031835 wordmark */
+    --card: oklch(1 0 0); /* #FFFFFF */
+    --card-foreground: oklch(0.212 0.064 256.3); /* #031835 */
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.212 0.064 256.3);
+    --primary: oklch(0.681 0.204 36.2); /* #FC5C2E */
+    --primary-foreground: oklch(1 0 0);
+    --secondary: oklch(0.587 0.141 249.5); /* #2A80CC */
+    --secondary-foreground: oklch(1 0 0);
+    --muted: oklch(0.961 0 89.9); /* #F2F2F2 */
+    --muted-foreground: oklch(0.45 0.04 256);
+    --accent: oklch(0.985 0.014 207.9); /* #F0FDFF ice */
+    --accent-foreground: oklch(0.212 0.064 256.3);
+    --destructive: oklch(0.52 0.22 27); /* stronger red on cream */
+    --destructive-foreground: oklch(1 0 0);
+    --border: oklch(0.9 0.01 88);
+    --input: oklch(0.9 0.01 88);
+    --ring: oklch(0.681 0.204 36.2); /* #FC5C2E */
+    --chart-1: oklch(0.681 0.204 36.2); /* #FC5C2E */
+    --chart-2: oklch(0.79 0.147 223.2); /* #04CEFF */
+    --chart-3: oklch(0.587 0.141 249.5); /* #2A80CC */
+    --chart-4: oklch(0.783 0.166 69.7); /* #FBA214 */
+    --chart-5: oklch(0.626 0.216 30.8); /* #EE3D27 */
     --radius: 0.625rem;
-    --sidebar: oklch(0.98 0.005 85);
-    --sidebar-foreground: oklch(0.13 0 0);
-    --sidebar-primary: oklch(0.68 0.21 35);
-    --sidebar-primary-foreground: oklch(0.99 0 0);
-    --sidebar-accent: oklch(0.96 0.02 35);
-    --sidebar-accent-foreground: oklch(0.13 0 0);
-    --sidebar-border: oklch(0.90 0.005 85);
-    --sidebar-ring: oklch(0.68 0.21 35);
+    /* Left nav rail — plain white */
+    --nav-rail: #ffffff;
+    --nav-rail-foreground: oklch(0.212 0.064 256.3); /* #031835 */
+    --nav-rail-muted: oklch(0.212 0.064 256.3 / 0.55);
+    --nav-active-fg: oklch(0.681 0.204 36.2); /* #FC5C2E accent on active */
+    --sidebar: var(--nav-rail);
+    --sidebar-foreground: var(--nav-rail-foreground);
+    --sidebar-primary: oklch(0.681 0.204 36.2);
+    --sidebar-primary-foreground: oklch(1 0 0);
+    --sidebar-accent: transparent;
+    --sidebar-accent-foreground: var(--nav-rail-foreground);
+    --sidebar-border: oklch(0.212 0.064 256.3 / 0.1);
+    --sidebar-ring: oklch(0.681 0.204 36.2);
 }
 
 .dark {
-    --background: oklch(0 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.10 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.10 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.68 0.21 35);
-    --primary-foreground: oklch(0.99 0 0);
-    --secondary: oklch(0.55 0.16 250);
-    --secondary-foreground: oklch(0.99 0 0);
-    --muted: oklch(0.18 0 0);
-    --muted-foreground: oklch(0.65 0 0);
-    --accent: oklch(0.18 0.02 35);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.396 0.141 25.723);
-    --destructive-foreground: oklch(0.637 0.237 25.331);
-    --border: oklch(0.22 0 0);
-    --input: oklch(0.22 0 0);
-    --ring: oklch(0.68 0.21 35);
-    --chart-1: oklch(0.68 0.21 35);
-    --chart-2: oklch(0.78 0.14 210);
-    --chart-3: oklch(0.55 0.16 250);
-    --chart-4: oklch(0.78 0.17 55);
-    --chart-5: oklch(0.52 0.17 38);
-    --sidebar: oklch(0.10 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.68 0.21 35);
-    --sidebar-primary-foreground: oklch(0.99 0 0);
-    --sidebar-accent: oklch(0.18 0.02 35);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(0.22 0 0);
-    --sidebar-ring: oklch(0.68 0.21 35);
+    /* Right content panel — navy dark theme (rail stays white) */
+    --background: oklch(0.212 0.064 256.3); /* #031835 */
+    --foreground: oklch(1 0 0); /* #FFFFFF */
+    --card: oklch(0.26 0.06 256);
+    --card-foreground: oklch(1 0 0);
+    --popover: oklch(0.26 0.06 256);
+    --popover-foreground: oklch(1 0 0);
+    --primary: oklch(0.681 0.204 36.2); /* #FC5C2E */
+    --primary-foreground: oklch(1 0 0);
+    --secondary: oklch(0.587 0.141 249.5); /* #2A80CC */
+    --secondary-foreground: oklch(1 0 0);
+    --muted: oklch(0.3 0.05 256);
+    --muted-foreground: oklch(0.75 0.02 250);
+    --accent: oklch(0.3 0.05 256);
+    --accent-foreground: oklch(1 0 0);
+    --destructive: oklch(0.68 0.2 27); /* brighter red on navy */
+    --destructive-foreground: oklch(0.68 0.2 27);
+    --border: oklch(0.34 0.05 256);
+    --input: oklch(0.34 0.05 256);
+    --ring: oklch(0.681 0.204 36.2); /* #FC5C2E */
+    --chart-1: oklch(0.681 0.204 36.2); /* #FC5C2E */
+    --chart-2: oklch(0.79 0.147 223.2); /* #04CEFF */
+    --chart-3: oklch(0.587 0.141 249.5); /* #2A80CC */
+    --chart-4: oklch(0.783 0.166 69.7); /* #FBA214 */
+    --chart-5: oklch(0.626 0.216 30.8); /* #EE3D27 */
+    /* Left nav rail — plain white in dark mode too */
+    --nav-rail: #ffffff;
+    --nav-rail-foreground: oklch(0.212 0.064 256.3); /* #031835 */
+    --nav-rail-muted: oklch(0.212 0.064 256.3 / 0.55);
+    --nav-active-fg: oklch(0.681 0.204 36.2); /* #FC5C2E */
+    --sidebar: var(--nav-rail);
+    --sidebar-foreground: var(--nav-rail-foreground);
+    --sidebar-primary: oklch(0.681 0.204 36.2);
+    --sidebar-primary-foreground: oklch(1 0 0);
+    --sidebar-accent: transparent;
+    --sidebar-accent-foreground: var(--nav-rail-foreground);
+    --sidebar-border: oklch(0.212 0.064 256.3 / 0.1);
+    --sidebar-ring: oklch(0.681 0.204 36.2);
 }
 
 @layer base {
@@ -165,18 +183,184 @@
     .bg-brand-page-gradient {
         background-color: var(--background);
         background-image:
-            radial-gradient(ellipse 90% 60% at 15% -5%, oklch(0.68 0.21 35 / 0.16) 0%, transparent 55%),
-            radial-gradient(ellipse 70% 50% at 95% 95%, oklch(0.78 0.14 210 / 0.14) 0%, transparent 55%),
-            radial-gradient(ellipse 50% 40% at 60% 40%, oklch(0.55 0.16 250 / 0.05) 0%, transparent 60%),
-            linear-gradient(165deg, oklch(0.68 0.21 35 / 0.04) 0%, transparent 45%, oklch(0.78 0.14 210 / 0.05) 100%);
+            radial-gradient(ellipse 90% 60% at 15% -5%, oklch(0.681 0.204 36.2 / 0.16) 0%, transparent 55%),
+            radial-gradient(ellipse 70% 50% at 95% 95%, oklch(0.79 0.147 223.2 / 0.14) 0%, transparent 55%),
+            radial-gradient(ellipse 50% 40% at 60% 40%, oklch(0.587 0.141 249.5 / 0.05) 0%, transparent 60%),
+            linear-gradient(165deg, oklch(0.681 0.204 36.2 / 0.04) 0%, transparent 45%, oklch(0.79 0.147 223.2 / 0.05) 100%);
     }
 
     .dark .bg-brand-page-gradient {
+        background-color: var(--background);
         background-image:
-            radial-gradient(ellipse 90% 60% at 15% -5%, oklch(0.68 0.21 35 / 0.12) 0%, transparent 55%),
-            radial-gradient(ellipse 70% 50% at 95% 95%, oklch(0.78 0.14 210 / 0.1) 0%, transparent 55%),
-            radial-gradient(ellipse 50% 40% at 60% 40%, oklch(0.55 0.16 250 / 0.06) 0%, transparent 60%),
-            linear-gradient(165deg, oklch(0.68 0.21 35 / 0.03) 0%, transparent 45%, oklch(0.78 0.14 210 / 0.04) 100%);
+            radial-gradient(ellipse 90% 60% at 15% -5%, oklch(0.681 0.204 36.2 / 0.12) 0%, transparent 55%),
+            radial-gradient(ellipse 70% 50% at 95% 95%, oklch(0.79 0.147 223.2 / 0.1) 0%, transparent 55%),
+            radial-gradient(ellipse 50% 40% at 60% 40%, oklch(0.587 0.141 249.5 / 0.06) 0%, transparent 60%),
+            linear-gradient(165deg, oklch(0.681 0.204 36.2 / 0.03) 0%, transparent 45%, oklch(0.79 0.147 223.2 / 0.04) 100%);
+    }
+
+    /* Theme-aware marketing glass (works on cream light + navy dark) */
+    .marketing-chip {
+        border-color: color-mix(in oklch, var(--foreground) 10%, transparent);
+        background-color: color-mix(in oklch, var(--foreground) 4%, transparent);
+    }
+
+    .marketing-panel {
+        border-color: color-mix(in oklch, var(--foreground) 10%, transparent);
+        background-color: color-mix(in oklch, var(--foreground) 3%, transparent);
+    }
+
+    .marketing-panel-hover:hover {
+        background-color: color-mix(in oklch, var(--foreground) 6%, transparent);
+    }
+
+    .marketing-hairline {
+        border-color: color-mix(in oklch, var(--foreground) 10%, transparent);
+    }
+
+    .marketing-hairline-soft {
+        border-color: color-mix(in oklch, var(--foreground) 5%, transparent);
+    }
+}
+
+/* Modern cut-out dashboard nav rail */
+@layer components {
+    [data-slot='sidebar-wrapper']:has([data-variant='inset']) {
+        background-color: var(--nav-rail);
+        overflow-x: clip;
+    }
+
+    [data-sidebar='sidebar'] {
+        background-color: var(--nav-rail);
+        color: var(--nav-rail-foreground);
+        border: 0 !important;
+        box-shadow: none !important;
+    }
+
+    /* Soft left rounding; right edge flush with content — allow cut-out bleed */
+    .group[data-variant='inset'] [data-sidebar='sidebar'] {
+        border-radius: 1.75rem 0 0 1.75rem;
+        border: 0 !important;
+        box-shadow: none !important;
+        overflow: visible;
+    }
+
+    /* Fixed inset shell: no right padding / border that creates a seam */
+    .group[data-variant='inset'].peer > div:last-child {
+        border: 0 !important;
+        box-shadow: none !important;
+    }
+
+    /* Kill the hard seam/border between rail and content panel */
+    [data-slot='sidebar-inset'] {
+        border: 0 !important;
+        box-shadow: none !important;
+        outline: none !important;
+        background-color: var(--background);
+        /* Overlap the rail by 1px so white/cream never peeks at the join */
+        margin-left: -1px !important;
+        position: relative;
+        /* Stay below the fixed rail (z-10) so the cut-out indicator can bleed over the join */
+        z-index: 1;
+    }
+
+    .nav-rail-track {
+        isolation: isolate;
+        overflow: visible;
+    }
+
+    .nav-rail-menu {
+        gap: 0.35rem;
+    }
+
+    /*
+     * Sliding cut-out — same fill as the right content panel.
+     * Extends past the rail edge so it erases the vertical seam
+     * (under the content panel z-index).
+     */
+    .nav-rail-indicator {
+        position: absolute;
+        top: 0;
+        left: 0.5rem;
+        right: -1.5rem;
+        z-index: 0;
+        pointer-events: none;
+        background-color: var(--background);
+        border-radius: 1.35rem 0 0 1.35rem;
+        opacity: 0;
+        will-change: transform, height;
+        transition:
+            transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
+            height 420ms cubic-bezier(0.22, 1, 0.36, 1),
+            opacity 180ms ease;
+    }
+
+    .nav-rail-indicator-visible {
+        opacity: 1;
+    }
+
+    /* Concave corners carved from the rail into the content surface */
+    .nav-rail-indicator::before,
+    .nav-rail-indicator::after {
+        content: '';
+        position: absolute;
+        right: 1.5rem; /* sit on the rail/content join, not past the bleed */
+        width: 1rem;
+        height: 1rem;
+        background: transparent;
+        pointer-events: none;
+    }
+
+    .nav-rail-indicator::before {
+        top: -1rem;
+        border-bottom-right-radius: 1rem;
+        box-shadow: 0.3rem 0.3rem 0 0 var(--background);
+    }
+
+    .nav-rail-indicator::after {
+        bottom: -1rem;
+        border-top-right-radius: 1rem;
+        box-shadow: 0.3rem -0.3rem 0 0 var(--background);
+    }
+
+    .nav-rail-item {
+        position: relative;
+        z-index: 1;
+        min-height: 2.85rem;
+        border-radius: 1.15rem;
+        padding-inline: 0.95rem;
+        padding-block: 0.7rem;
+        font-weight: 500;
+        color: var(--nav-rail-foreground);
+        transition: color 220ms ease;
+    }
+
+    .nav-rail-item-active svg,
+    .nav-rail-item[data-active='true'] svg {
+        color: var(--nav-active-fg);
+    }
+
+    /* Mobile sheet: closed pill */
+    [data-mobile='true'] .nav-rail-indicator {
+        left: 0.5rem;
+        right: 0.5rem;
+        border-radius: 1.15rem;
+    }
+
+    [data-mobile='true'] .nav-rail-indicator::before,
+    [data-mobile='true'] .nav-rail-indicator::after {
+        display: none;
+    }
+
+    .nav-rail-footer-pill {
+        border-radius: 9999px;
+        background: color-mix(in oklch, var(--nav-rail-foreground) 8%, transparent);
+        color: var(--nav-rail-foreground);
+    }
+
+    .nav-rail-footer-pill:hover,
+    .nav-rail-footer-pill[data-state='open'] {
+        background: color-mix(in oklch, var(--nav-rail-foreground) 14%, transparent);
+        color: var(--nav-rail-foreground);
     }
 }
 
@@ -200,61 +384,57 @@ html.lenis body {
     overflow: hidden;
 }
 
-.lenis.lenis-scrolling iframe {
+.lenis.lenis-scrolling iframe:not([src*='cashfree']):not([src*='cashfreepayments']) {
     pointer-events: none;
 }
 
-/* Magic navigation menu (mobile marketing) */
+/* Magic navigation menu (mobile marketing) — floating island + hovering active */
 .magic-nav {
-    --magic-nav-accent: var(--primary);
-    --magic-nav-bar: var(--background);
+    --magic-nav-bar: var(--primary);
+    --magic-nav-circle: #fff8e7;
+    pointer-events: none;
 }
 
-.magic-nav__inner {
+.magic-nav__bar {
     position: relative;
+    pointer-events: auto;
+    filter: drop-shadow(0 8px 20px rgba(3, 24, 53, 0.28));
 }
 
-.magic-nav .indicator {
+.magic-nav__shape {
     position: absolute;
-    top: -50%;
-    left: 0;
-    z-index: 0;
-    width: 70px;
-    height: 70px;
-    border: 4px solid var(--magic-nav-accent);
-    border-radius: 50%;
-    background: var(--magic-nav-bar);
+    inset: 0;
+    overflow: visible;
+    pointer-events: none;
+}
+
+.magic-nav__shape-path {
+    fill: var(--magic-nav-bar);
+}
+
+.magic-nav__hole {
     transition: transform 0.45s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 
-.magic-nav .indicator::before {
-    content: '';
+/*
+ * Disc center sits on the bar’s top edge (same center as the mask hole)
+ * so the punched hole hugs it with an even gap — no orange horns.
+ */
+.magic-nav .indicator {
     position: absolute;
-    top: 50%;
-    left: -22px;
-    width: 20px;
-    height: 20px;
-    border-top-right-radius: 20px;
-    background: transparent;
-    box-shadow: 1px -10px 0 0 var(--magic-nav-bar);
-}
-
-.magic-nav .indicator::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    right: -22px;
-    width: 20px;
-    height: 20px;
-    border-top-left-radius: 20px;
-    background: transparent;
-    box-shadow: -1px -10px 0 0 var(--magic-nav-bar);
+    top: calc(0px - (60px / 2));
+    z-index: 0;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--magic-nav-circle);
+    box-shadow: 0 8px 18px rgba(3, 24, 53, 0.28);
+    transition: transform 0.45s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 
 .magic-nav .list {
     position: relative;
-    width: 70px;
-    height: 70px;
+    height: 100%;
     list-style: none;
 }
 
@@ -268,5 +448,423 @@ html.lenis body {
 }
 
 .magic-nav .list.active .icon {
-    transform: translateY(-36px);
+    transform: translateY(-30px);
+}
+
+/*
+ * Dark host pages force an opaque white canvas on cross-origin iframes when
+ * color-schemes mismatch. Cashfree Checkout needs a transparent backdrop so
+ * the merchant page stays visible behind the modal.
+ */
+iframe[src*='cashfree'],
+iframe[src*='cashfreepayments'] {
+    color-scheme: light !important;
+    pointer-events: auto !important;
+    z-index: 2147483646 !important;
+}
+
+@page {
+    size: A4;
+    /* Zero margin hides Chrome/Safari headers & footers (title, URL, date, page #) */
+    margin: 0;
+}
+
+@media print {
+    html,
+    body {
+        background: #fff !important;
+        color: #171717 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+    }
+
+    .cv-print-hide,
+    .bg-brand-page-gradient,
+    [data-slot='sidebar'],
+    [data-sidebar='sidebar'],
+    [data-slot='sidebar-gap'],
+    [data-slot='sidebar-rail'],
+    [data-slot='sidebar-trigger'],
+    [data-slot='sidebar-inset'] > header {
+        display: none !important;
+    }
+
+    [data-slot='sidebar-wrapper'],
+    [data-slot='sidebar-inset'],
+    [data-slot='sidebar-inset'] > * {
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        min-height: 0 !important;
+        height: auto !important;
+        overflow: visible !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* Print only the selected CV variant */
+    [data-cv-print='basic'] .cv-print-full,
+    [data-cv-print='full'] .cv-print-basic {
+        display: none !important;
+    }
+
+    .cv-print-only {
+        position: static !important;
+        left: auto !important;
+        width: auto !important;
+        height: auto !important;
+        overflow: visible !important;
+        clip: auto !important;
+    }
+
+    .cv-print-sheet {
+        background: #fff !important;
+        color: #171717 !important;
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        width: 210mm !important;
+        max-width: 210mm !important;
+        min-height: 297mm !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        display: flex !important;
+        flex-direction: column !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .cv-print-basic.cv-print-sheet > .grid {
+        display: grid !important;
+        grid-template-columns: 0.9fr 1.45fr !important;
+        gap: 0 !important;
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        align-items: stretch !important;
+    }
+
+    .cv-print-sheet .cv-sidebar,
+    .cv-print-sheet .cv-main {
+        padding: 5mm 5.5mm !important;
+        height: 100% !important;
+        min-height: 100% !important;
+    }
+
+    .cv-print-sheet .cv-sidebar {
+        background: #f2f2f2 !important;
+        color: #171717 !important;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .cv-print-sheet .cv-sidebar,
+    .cv-print-sheet .cv-main {
+        gap: 0.65rem !important;
+    }
+
+    .cv-print-sheet .cv-timeline {
+        gap: 0.65rem !important;
+    }
+
+    .cv-print-sheet .cv-timeline::before {
+        background: #003399 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .cv-print-sheet .cv-timeline-entry > span:first-child {
+        background: #003399 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .cv-print-sheet h1,
+    .cv-print-sheet h2,
+    .cv-print-sheet p,
+    .cv-print-sheet li,
+    .cv-print-sheet span,
+    .cv-print-sheet dt,
+    .cv-print-sheet dd {
+        color: inherit !important;
+    }
+
+    .cv-print-basic.cv-print-sheet h2 {
+        color: #737373 !important;
+    }
+
+    .cv-full-sheet .cv-full-section-heading {
+        color: #737373 !important;
+        border-bottom-color: #003399 !important;
+    }
+
+    .cv-print-sheet footer {
+        color: #525252 !important;
+        border-color: #e5e5e5 !important;
+        margin-top: auto !important;
+        padding-top: 2.5mm !important;
+        padding-bottom: 2.5mm !important;
+        flex: 0 0 auto !important;
+    }
+
+    .cv-print-sheet img {
+        max-width: 100% !important;
+    }
+
+    /* Full CV multi-page sheets */
+    .cv-full-document {
+        display: block !important;
+        width: 210mm !important;
+        max-width: 210mm !important;
+        margin: 0 !important;
+        gap: 0 !important;
+        position: relative !important;
+    }
+
+    /*
+     * Fixed footer repeats on every printed page.
+     * In-sheet footers are hidden so a trailing empty "footer-only" page
+     * is not created when content overflows A4.
+     */
+    .cv-full-fixed-footer {
+        display: flex !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 210mm !important;
+        max-width: 210mm !important;
+        margin: 0 !important;
+        background: #fff !important;
+        z-index: 1000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .cv-full-fixed-footer footer {
+        width: 100% !important;
+        margin-top: 0 !important;
+        background: #fff !important;
+        color: #525252 !important;
+        border-color: #e5e5e5 !important;
+        padding-top: 2mm !important;
+        padding-bottom: 2.5mm !important;
+    }
+
+    .cv-full-sheet-footer {
+        display: none !important;
+    }
+
+    .cv-full-sheet {
+        page-break-after: always;
+        break-after: page;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+        min-height: 297mm !important;
+        height: auto !important;
+        border-top: 3px solid #003399 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .cv-full-sheet:last-child {
+        page-break-after: auto;
+        break-after: auto;
+    }
+
+    /*
+     * Generous padding on every Full CV sheet (top / right / bottom / left).
+     * Padding is more reliable than @page margins in Chromium print.
+     * Bottom padding clears the fixed "Created at" footer.
+     * box-decoration-break clones padding onto continued page fragments.
+     */
+    .cv-full-sheet-body {
+        padding: 22mm 20mm 24mm !important;
+        box-sizing: border-box !important;
+        -webkit-box-decoration-break: clone;
+        box-decoration-break: clone;
+    }
+
+    .cv-print-sheet.cv-full-sheet-content {
+        page-break-inside: auto;
+        break-inside: auto;
+        min-height: 0 !important;
+        height: auto !important;
+    }
+
+    .cv-full-content-stack {
+        gap: 10mm !important;
+    }
+
+    .cv-full-section {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .cv-full-entry {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .cv-full-section-heading {
+        margin: 0 0 4mm !important;
+        padding-bottom: 2.5mm !important;
+        border-bottom: 1.5pt solid #003399 !important;
+        letter-spacing: 0.08em !important;
+        color: #737373 !important;
+        font-weight: 700 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .cv-full-personal-list {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 3.5mm !important;
+    }
+
+    .cv-full-personal-layout {
+        display: grid !important;
+        grid-template-columns: 1fr auto !important;
+        align-items: start !important;
+        gap: 8mm !important;
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+    }
+
+    .cv-full-personal-main {
+        min-width: 0 !important;
+    }
+
+    .cv-full-personal-name {
+        color: #262626 !important;
+        border-bottom: 2pt solid #003399 !important;
+        margin-bottom: 5mm !important;
+        padding-bottom: 3mm !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .cv-full-detail-row {
+        gap: 0 8mm !important;
+    }
+
+    .cv-full-detail-label {
+        color: #737373 !important;
+        font-size: 9pt !important;
+        letter-spacing: 0.06em !important;
+        text-transform: uppercase !important;
+        font-weight: 500 !important;
+    }
+
+    .cv-full-detail-value {
+        color: #262626 !important;
+        font-size: 11pt !important;
+        font-weight: 500 !important;
+        line-height: 1.5 !important;
+    }
+
+    .cv-full-passport-wrap {
+        display: block !important;
+        width: auto !important;
+        justify-content: unset !important;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        clear: none !important;
+        float: none !important;
+    }
+
+    .cv-full-passport-photo {
+        display: block !important;
+        float: none !important;
+        width: 36mm !important;
+        height: 36mm !important;
+        max-width: 36mm !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        background: #e5e5e5 !important;
+        border-radius: 2px !important;
+        overflow: hidden !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .cv-full-sheet-photo .cv-full-body-image {
+        max-height: 220mm !important;
+        max-width: 155mm !important;
+        object-fit: contain !important;
+    }
+}
+
+/* Screen: fixed print footer is print-only */
+.cv-full-fixed-footer {
+    display: none;
+}
+
+/* Shared Full CV page body — generous padding on screen (print overrides above) */
+.cv-full-sheet-body {
+    padding: 2.75rem 2.5rem 2.5rem;
+}
+
+@media (min-width: 640px) {
+    .cv-full-sheet-body {
+        padding: 3.25rem 3rem 2.75rem;
+    }
+}
+
+.cv-full-content-stack {
+    gap: 2.5rem;
+}
+
+.cv-full-personal-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.95rem;
+}
+
+.cv-full-section-heading {
+    border-bottom: 1.5px solid #003399;
+    padding-bottom: 0.55rem;
+}
+
+.cv-full-passport-wrap {
+    padding-top: 0;
+    width: auto;
+}
+
+.cv-full-personal-layout {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    gap: 1.75rem;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.cv-full-personal-main {
+    min-width: 0;
+}
+
+.cv-full-personal-name {
+    border-bottom: 2px solid #003399;
+}
+
+/* Off-screen mount for Full CV print without a preview tab */
+.cv-print-only {
+    position: absolute;
+    left: -10000px;
+    top: 0;
+    width: 210mm;
+    overflow: hidden;
+    pointer-events: none;
 }

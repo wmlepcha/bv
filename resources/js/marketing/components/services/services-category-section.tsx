@@ -31,7 +31,7 @@ export function ServicesCategorySection({ category, stickyTopOffset }: ServicesC
                         </div>
                     </div>
 
-                    <div className="min-w-0 space-y-12 lg:space-y-16 lg:border-l lg:border-white/10 lg:pl-12">
+                    <div className="min-w-0 space-y-12 lg:space-y-16 lg:border-l lg:border-foreground/10 lg:pl-12">
                         {category.groups.map((group) => (
                             <ServicesGroupBlock key={group.id} group={group} />
                         ))}

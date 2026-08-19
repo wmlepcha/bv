@@ -8,7 +8,9 @@ use App\Http\Requests\Settings\ProfileUpdateRequest;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -19,9 +21,12 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        $user = $request->user();
+
         return Inertia::render('app/settings/profile', [
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
+            'photo_url' => $this->photoUrl($user->avatar_path),
         ]);
     }
 
@@ -30,13 +35,29 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $user->fill($request->safe()->only(['name', 'email']));
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        $avatarPath = $user->avatar_path;
+
+        if ($request->hasFile('avatar')) {
+            $avatarPath = $this->storeAvatar(
+                $request->file('avatar'),
+                $user->id,
+                $avatarPath,
+            );
+        } elseif ($request->boolean('remove_avatar') && filled($avatarPath)) {
+            Storage::disk('public')->delete($avatarPath);
+            $avatarPath = null;
+        }
+
+        $user->avatar_path = $avatarPath;
+        $user->save();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Profile updated.')]);
 
@@ -50,6 +71,10 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
+        if (filled($user->avatar_path)) {
+            Storage::disk('public')->delete($user->avatar_path);
+        }
+
         Auth::logout();
 
         $user->delete();
@@ -58,5 +83,23 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    private function storeAvatar(UploadedFile $file, int $userId, ?string $previous): string
+    {
+        if (filled($previous)) {
+            Storage::disk('public')->delete($previous);
+        }
+
+        return $file->store("avatars/{$userId}", 'public');
+    }
+
+    private function photoUrl(?string $path): ?string
+    {
+        if (blank($path)) {
+            return null;
+        }
+
+        return '/storage/'.ltrim(str_replace('\\', '/', $path), '/');
     }
 }

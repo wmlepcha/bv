@@ -9,8 +9,10 @@ use App\Models\AboutParagraph;
 use App\Models\BlogCategory;
 use App\Models\BlogPost;
 use App\Models\BlogPostSection;
+use App\Models\EducationLevel;
 use App\Models\HomeFeatureItem;
 use App\Models\HomeHighlight;
+use App\Models\HomeProgramCard;
 use App\Models\HomeServiceCard;
 use App\Models\HomeStat;
 use App\Models\HomeTestimonial;
@@ -23,6 +25,7 @@ use App\Models\SiteSetting;
 use App\Models\SocialLink;
 use App\Observers\AboutPageCacheObserver;
 use App\Observers\HomePageCacheObserver;
+use App\Observers\InquiryOptionsCacheObserver;
 use App\Observers\ProjectsCacheObserver;
 use App\Observers\ServicesPageCacheObserver;
 use App\Observers\SiteLayoutCacheObserver;
@@ -90,6 +93,7 @@ class AppServiceProvider extends ServiceProvider
         HomeFeatureItem::observe($homePageObserver);
         HomeTestimonial::observe($homePageObserver);
         HomeServiceCard::observe($homePageObserver);
+        HomeProgramCard::observe($homePageObserver);
         SiteSetting::observe($homePageObserver);
 
         AboutParagraph::observe($aboutPageObserver);
@@ -105,6 +109,8 @@ class AppServiceProvider extends ServiceProvider
         BlogPostSection::observe($projectsPageObserver);
         BlogCategory::observe($projectsPageObserver);
         SiteSetting::observe($projectsPageObserver);
+
+        EducationLevel::observe(InquiryOptionsCacheObserver::class);
     }
 
     /**

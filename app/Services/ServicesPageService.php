@@ -73,7 +73,7 @@ class ServicesPageService
                 'title' => SiteSetting::getValue('services.seo.title', 'Products & Services'),
                 'description' => SiteSetting::getValue(
                     'services.seo.description',
-                    'Explore Bilingual Vitae courses in German, Japanese, French, and Spanish, employability training, expatriate programmes, and placement support in Germany and Austria.',
+                    'Explore Bilingual Vitae® courses in German, Japanese, French, and Spanish, employability training, expatriate programmes, and placement support in Germany and Austria.',
                 ),
             ],
         ];

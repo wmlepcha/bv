@@ -27,7 +27,10 @@ export type HomePageProps = {
         headline: string;
         subtitle: string;
         cardText: string;
-        highlights: { label: string }[];
+        highlightColumns: {
+            heading: string;
+            items: { label: string }[];
+        }[];
         stats: { value: number; suffix: string; label: string }[];
     };
     crafting: HomePageCraftingSection;
@@ -36,6 +39,13 @@ export type HomePageProps = {
         heading: string;
         subtitle: string;
         cards: { title: string; href: string; imageUrl: string }[];
+    };
+    programs: {
+        badge: string;
+        heading: string;
+        ctaLabel: string;
+        ctaHref: string;
+        cards: { title: string; description: string; href: string; imageUrl: string }[];
     };
     seo: {
         title: string;

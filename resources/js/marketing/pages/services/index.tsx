@@ -90,9 +90,18 @@ export default function Services() {
     };
 
     useEffect(() => {
+        const hasHashTarget =
+            typeof window !== 'undefined' &&
+            window.location.hash.replace('#', '') === activeCategoryId &&
+            servicesPage.categories.some((category) => category.id === activeCategoryId);
+
         if (skipScrollOnMountRef.current) {
             skipScrollOnMountRef.current = false;
-            return;
+
+            // Deep links from homepage cards (/services#courses) should still scroll once.
+            if (!hasHashTarget) {
+                return;
+            }
         }
 
         const frame = requestAnimationFrame(() => {
@@ -104,7 +113,7 @@ export default function Services() {
         });
 
         return () => cancelAnimationFrame(frame);
-    }, [activeCategoryId]);
+    }, [activeCategoryId, servicesPage.categories]);
 
     return (
         <>

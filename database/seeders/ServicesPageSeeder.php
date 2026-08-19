@@ -20,7 +20,7 @@ class ServicesPageSeeder extends Seeder
         SiteSetting::setValue('services.seo.title', 'Products & Services');
         SiteSetting::setValue(
             'services.seo.description',
-            'Explore Bilingual Vitae courses in German, Japanese, French, and Spanish, employability training, expatriate programmes, and placement support in Germany and Austria.',
+            'Explore Bilingual Vitae® courses in German, Japanese, French, and Spanish, employability training, expatriate programmes, and placement support in Germany and Austria.',
         );
 
         $courses = ServiceCategory::query()->updateOrCreate(

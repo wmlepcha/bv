@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\AboutParagraphs;
 
+use App\Filament\Clusters\FrontendEditsCluster;
 use App\Filament\Resources\AboutParagraphs\Pages\CreateAboutParagraph;
 use App\Filament\Resources\AboutParagraphs\Pages\EditAboutParagraph;
 use App\Filament\Resources\AboutParagraphs\Pages\ListAboutParagraphs;
@@ -23,9 +24,16 @@ class AboutParagraphResource extends Resource
 
     protected static string|UnitEnum|null $navigationGroup = 'About Page';
 
+    protected static ?string $cluster = FrontendEditsCluster::class;
+
     protected static ?string $navigationLabel = 'Paragraphs';
 
     protected static ?int $navigationSort = 2;
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
 
     public static function form(Schema $schema): Schema
     {

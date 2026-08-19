@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreInquiryRequest;
 use App\Models\Inquiry;
+use App\Notifications\InquirySubmitted;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Inertia;
 
 class InquiryController extends Controller
@@ -31,10 +33,13 @@ class InquiryController extends Controller
             ->merge($storedFiles)
             ->toArray();
 
-        Inquiry::create([
+        $inquiry = Inquiry::create([
             'type' => $type,
             'data' => $data,
         ]);
+
+        Notification::route('mail', config('mail.ops_address'))
+            ->notify(new InquirySubmitted($inquiry));
 
         Inertia::flash('inquirySubmitted', true);
 

@@ -14,19 +14,23 @@ class SiteLayoutSeeder extends Seeder
     public function run(): void
     {
         SiteSetting::setValue('header.logo_path', '/storage/images/bv-logo.png');
+        SiteSetting::setValue('header.logo_light_path', '/storage/images/bv-logo-light.png');
+        SiteSetting::setValue('header.logo_dark_path', '/storage/images/bv-logo.png');
         SiteSetting::setValue(
             'header.partner_label',
             'Official partner of Government of Sikkim and NSDC International',
         );
+        SiteSetting::setValue('header.show_appearance_toggle', '1');
         SiteSetting::setValue('footer.contact_email', 'hello@bilingualvitae.com');
         SiteSetting::setValue('footer.contact_phone', '+91 8250312500');
-        SiteSetting::setValue('footer.copyright', 'Bilingual Vitae. All rights reserved.');
+        SiteSetting::setValue('footer.copyright', 'Bilingual Vitae®. All rights reserved.');
 
         $navigationItems = [
             ['label' => 'Home', 'href' => '/', 'icon' => 'home', 'sort_order' => 0],
             ['label' => 'About Us', 'href' => '/about', 'icon' => 'users', 'sort_order' => 1],
             ['label' => 'Services', 'href' => '/services', 'icon' => 'briefcase', 'sort_order' => 2],
-            ['label' => 'Projects', 'href' => '/projects', 'icon' => 'folder-kanban', 'sort_order' => 3],
+            ['label' => 'Success Stories', 'href' => '/success-stories', 'icon' => 'folder-kanban', 'sort_order' => 3],
+            ['label' => 'Login', 'href' => '/login', 'icon' => 'log-in', 'sort_order' => 4],
         ];
 
         foreach ($navigationItems as $item) {

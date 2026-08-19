@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ServiceGroups;
 
+use App\Filament\Clusters\FrontendEditsCluster;
 use App\Filament\Resources\ServiceGroups\Pages\CreateServiceGroup;
 use App\Filament\Resources\ServiceGroups\Pages\EditServiceGroup;
 use App\Filament\Resources\ServiceGroups\Pages\ListServiceGroups;
@@ -22,6 +23,8 @@ class ServiceGroupResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static string|UnitEnum|null $navigationGroup = 'Services Page';
+
+    protected static ?string $cluster = FrontendEditsCluster::class;
 
     protected static ?string $navigationLabel = 'Service Groups';
 

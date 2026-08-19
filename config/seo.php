@@ -10,7 +10,7 @@ return [
 
     'twitter_handle' => null,
 
-  /*
+    /*
     |--------------------------------------------------------------------------
     | Indexable marketing pages (included in sitemap.xml)
     |--------------------------------------------------------------------------
@@ -33,7 +33,7 @@ return [
             'priority' => '0.9',
         ],
         'projects' => [
-            'path' => '/projects',
+            'path' => '/success-stories',
             'changefreq' => 'monthly',
             'priority' => '0.7',
         ],

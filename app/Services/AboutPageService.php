@@ -37,7 +37,7 @@ class AboutPageService
             'overview' => [
                 'tagline' => SiteSetting::getValue(
                     'about.overview.tagline',
-                    'Bilingual Vitae, An EdTech and Future Work Company.',
+                    'Bilingual Vitae®, An EdTech and Future Work Company.',
                 ),
                 'paragraphs' => $this->paragraphBodies(AboutParagraph::SECTION_OVERVIEW),
             ],
@@ -74,7 +74,7 @@ class AboutPageService
             'impact' => [
                 'paragraph' => SiteSetting::getValue(
                     'about.impact.paragraph',
-                    'Bilingual Vitae strives to create measurable impact by improving employability, enhancing communication, strengthening digital competence, and preparing learners for lifelong success in an evolving global workforce market.',
+                    'Bilingual Vitae® strives to create measurable impact by improving employability, enhancing communication, strengthening digital competence, and preparing learners for lifelong success in an evolving global workforce market.',
                 ),
                 'closing' => SiteSetting::getValue(
                     'about.impact.closing',
@@ -104,7 +104,7 @@ class AboutPageService
                 'title' => SiteSetting::getValue('about.seo.title', 'About Us'),
                 'description' => SiteSetting::getValue(
                     'about.seo.description',
-                    'Bilingual Vitae is an EdTech and future work company specializing in bilingual proficiency profiling, language training, and global employability — empowering local talent with technology-driven career pathways.',
+                    'Bilingual Vitae® is an EdTech and future work company specializing in bilingual proficiency profiling, language training, and global employability — empowering local talent with technology-driven career pathways.',
                 ),
             ],
         ];

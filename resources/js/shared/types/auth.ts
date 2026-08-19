@@ -1,4 +1,10 @@
-export type UserRole = 'student' | 'recruiter' | 'employee' | 'admin';
+export type UserRole =
+    | 'student'
+    | 'recruiter'
+    | 'employee'
+    | 'admin'
+    | 'teacher'
+    | 'training_manager';
 
 export type User = {
     id: number;
@@ -9,6 +15,8 @@ export type User = {
     role: UserRole;
     student_number: string | null;
     registration_paid_at: string | null;
+    registration_expires_at: string | null;
+    registration_plan_id: number | null;
     can_access_dashboard: boolean;
     two_factor_enabled?: boolean;
     created_at: string;

@@ -1,17 +1,14 @@
 import { Form } from '@inertiajs/react';
-import { PrivateSeoHead } from '@shared/components/seo-head';
 import { useRef } from 'react';
 import SecurityController from '@/actions/App/Http/Controllers/Settings/SecurityController';
-import Heading from '@shared/components/heading';
-import InputError from '@shared/components/input-error';
+import { Button } from '@/components/ui/button';
+import { edit } from '@/routes/security';
 import type { Props as ManagePasskeysProps } from '@app/components/manage-passkeys';
 import ManagePasskeys from '@app/components/manage-passkeys';
 import type { Props as ManageTwoFactorProps } from '@app/components/manage-two-factor';
 import ManageTwoFactor from '@app/components/manage-two-factor';
-import PasswordInput from '@shared/components/password-input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { edit } from '@/routes/security';
+import { ActionBar, FormGroup, PasswordRow } from '@app/components/native/form';
+import { PrivateSeoHead } from '@shared/components/seo-head';
 
 type Props = {
     passwordRules: string;
@@ -29,12 +26,6 @@ export default function Security(props: Props) {
             <h1 className="sr-only">Security settings</h1>
 
             <div className="space-y-6">
-                <Heading
-                    variant="small"
-                    title="Update password"
-                    description="Ensure your account is using a long, random password to stay secure"
-                />
-
                 <Form
                     {...SecurityController.update.form()}
                     options={{
@@ -55,70 +46,50 @@ export default function Security(props: Props) {
                             currentPasswordInput.current?.focus();
                         }
                     }}
-                    className="space-y-6"
+                    className="space-y-4"
                 >
                     {({ errors, processing }) => (
                         <>
-                            <div className="grid gap-2">
-                                <Label htmlFor="current_password">
-                                    Current password
-                                </Label>
-
-                                <PasswordInput
-                                    id="current_password"
+                            <FormGroup
+                                title="Update password"
+                                footer="Use a long, random password to keep your account secure."
+                            >
+                                <PasswordRow
+                                    label="Current"
                                     ref={currentPasswordInput}
                                     name="current_password"
-                                    className="mt-1 block w-full"
                                     autoComplete="current-password"
-                                    placeholder="Current password"
+                                    placeholder="Required"
+                                    error={errors.current_password}
                                 />
-
-                                <InputError message={errors.current_password} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="password">New password</Label>
-
-                                <PasswordInput
-                                    id="password"
+                                <PasswordRow
+                                    label="New"
                                     ref={passwordInput}
                                     name="password"
-                                    className="mt-1 block w-full"
                                     autoComplete="new-password"
-                                    placeholder="New password"
+                                    placeholder="Required"
                                     passwordrules={props.passwordRules}
+                                    error={errors.password}
                                 />
-
-                                <InputError message={errors.password} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="password_confirmation">
-                                    Confirm password
-                                </Label>
-
-                                <PasswordInput
-                                    id="password_confirmation"
+                                <PasswordRow
+                                    label="Confirm"
                                     name="password_confirmation"
-                                    className="mt-1 block w-full"
                                     autoComplete="new-password"
-                                    placeholder="Confirm password"
+                                    placeholder="Required"
                                     passwordrules={props.passwordRules}
+                                    error={errors.password_confirmation}
                                 />
+                            </FormGroup>
 
-                                <InputError
-                                    message={errors.password_confirmation}
-                                />
-                            </div>
-
-                            <div className="flex items-center gap-4">
+                            <ActionBar>
                                 <Button
                                     disabled={processing}
+                                    className="h-12 w-full rounded-full text-base"
                                     data-test="update-password-button"
                                 >
-                                    Save
+                                    Save password
                                 </Button>
-                            </div>
+                            </ActionBar>
                         </>
                     )}
                 </Form>

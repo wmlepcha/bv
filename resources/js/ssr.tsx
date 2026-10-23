@@ -2,10 +2,10 @@ import { createInertiaApp } from '@inertiajs/react';
 import type { ResolvedComponent } from '@inertiajs/react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import AppLayout from '@app/layouts/app-layout';
+import SettingsLayout from '@app/layouts/settings/layout';
 import AuthLayout from '@auth/layouts/auth-layout';
 import AuthTrainingManagerLayout from '@auth/layouts/auth-training-manager-layout';
 import CinematicLayout from '@marketing/layouts/cinematic-layout';
-import SettingsLayout from '@app/layouts/settings/layout';
 import { BRAND_NAME_TM } from '@shared/lib/brand';
 
 const appName = BRAND_NAME_TM;
@@ -50,7 +50,10 @@ export default createInertiaApp({
             return CinematicLayout;
         }
 
-        if (name === 'auth/training-manager-login') {
+        if (
+            name === 'auth/training-manager-login' ||
+            name === 'auth/recruitment-manager-login'
+        ) {
             return AuthTrainingManagerLayout;
         }
 

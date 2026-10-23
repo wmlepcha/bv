@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Settings;
 
+use App\Enums\AvatarAnimal;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileDeleteRequest;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
@@ -27,6 +28,13 @@ class ProfileController extends Controller
             'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
             'photo_url' => $this->photoUrl($user->avatar_path),
+            'avatar_animal' => $user->avatarAnimal()->value,
+            'avatar_animals' => AvatarAnimal::values(),
+            'placement' => $user->isStudent() && $user->studentProfile !== null ? [
+                'purpose_label' => $user->studentProfile->registration_purpose->label(),
+                'wants_placement' => $user->studentProfile->wantsPlacement(),
+                'requested' => $user->studentProfile->placement_requested_at !== null,
+            ] : null,
         ]);
     }
 
@@ -57,6 +65,11 @@ class ProfileController extends Controller
         }
 
         $user->avatar_path = $avatarPath;
+
+        if ($request->has('avatar_animal')) {
+            $user->avatar_animal = $request->input('avatar_animal');
+        }
+
         $user->save();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Profile updated.')]);

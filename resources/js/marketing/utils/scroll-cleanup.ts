@@ -12,6 +12,7 @@ export function resetScrollPosition(immediate = true): void {
 
     if (lenis) {
         lenis.scrollTo(0, { immediate });
+
         return;
     }
 

@@ -18,5 +18,9 @@ export type AuthLayoutProps = {
     name?: string;
     title?: string;
     description?: string;
+    tagline?: string;
+    blurb?: string;
     containerClassName?: string;
+    backHref?: string;
+    panel?: 'recruitment_manager' | 'training_manager';
 };

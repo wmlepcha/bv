@@ -12,6 +12,7 @@ use App\Http\Requests\TrainingManager\RenameMaterialFileRequest;
 use App\Http\Requests\TrainingManager\StoreMaterialFileRequest;
 use App\Http\Requests\TrainingManager\StoreMaterialFolderRequest;
 use App\Http\Requests\TrainingManager\StoreMaterialLinkRequest;
+use App\Http\Requests\TrainingManager\StoreMaterialYoutubePlaylistRequest;
 use App\Http\Requests\TrainingManager\StoreMaterialYoutubeRequest;
 use App\Models\MaterialAssignment;
 use App\Models\MaterialFile;
@@ -19,6 +20,8 @@ use App\Models\MaterialFolder;
 use App\Models\User;
 use App\Services\MaterialAssignmentService;
 use App\Services\MaterialLibraryService;
+use App\Services\YoutubePlaylistService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -98,6 +101,9 @@ class LibraryController extends Controller
                     'kind' => $file->kind ?? MaterialFile::KIND_FILE,
                     'url' => $file->url,
                     'embed_url' => $file->embedUrl(),
+                    'playlist_items' => $file->isYoutubePlaylist()
+                        ? ($file->playlist_items ?? [])
+                        : null,
                     'size' => $file->size,
                     'created_at' => $file->created_at?->toIso8601String(),
                     'assigned_trainers' => $assignedTrainers,
@@ -171,6 +177,20 @@ class LibraryController extends Controller
         return redirect()
             ->route('training-manager.library.index', ['folder' => $folder->id])
             ->with('success', 'YouTube video added.');
+    }
+
+    public function storeYoutubePlaylist(StoreMaterialYoutubePlaylistRequest $request, MaterialFolder $folder): RedirectResponse
+    {
+        $this->library->addYoutubePlaylist(
+            $request->user(),
+            $folder,
+            $request->validated('url'),
+            $request->validated('title'),
+        );
+
+        return redirect()
+            ->route('training-manager.library.index', ['folder' => $folder->id])
+            ->with('success', 'YouTube playlist added.');
     }
 
     public function storeLink(StoreMaterialLinkRequest $request, MaterialFolder $folder): RedirectResponse
@@ -339,6 +359,18 @@ class LibraryController extends Controller
         $downloadName = $file->display_name.'.'.$file->extension;
 
         return Storage::disk($file->disk)->download($file->path, $downloadName);
+    }
+
+    public function playlistItems(MaterialFile $file, YoutubePlaylistService $youtubePlaylists): JsonResponse
+    {
+        abort_unless($file->isYoutubePlaylist(), 404);
+
+        $items = $youtubePlaylists->resolveItemsFor($file);
+
+        return response()->json([
+            'items' => $items,
+            'api_configured' => $youtubePlaylists->hasApiKey(),
+        ]);
     }
 
     /**

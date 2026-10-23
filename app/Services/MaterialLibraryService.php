@@ -7,6 +7,7 @@ use App\Models\MaterialFolder;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -17,6 +18,8 @@ class MaterialLibraryService
      * @var list<string>
      */
     public const ALLOWED_EXTENSIONS = ['pdf', 'doc', 'docx', 'xls', 'xlsx'];
+
+    public function __construct(private YoutubePlaylistService $youtubePlaylists) {}
 
     public function createFolder(User $actor, string $name, ?int $parentId = null): MaterialFolder
     {
@@ -132,6 +135,53 @@ class MaterialLibraryService
             'url' => $canonical,
             'mime_type' => null,
             'extension' => 'youtube',
+            'size' => 0,
+            'created_by' => $actor->id,
+        ]);
+    }
+
+    public function addYoutubePlaylist(User $actor, MaterialFolder $folder, string $url, ?string $title = null): MaterialFile
+    {
+        $playlistId = MaterialFile::extractYoutubePlaylistId($url);
+
+        if ($playlistId === null || ! MaterialFile::isShareableYoutubePlaylistId($playlistId)) {
+            throw ValidationException::withMessages([
+                'url' => 'Enter a public YouTube playlist URL (not Watch Later, Liked, or Mix).',
+            ]);
+        }
+
+        $canonical = 'https://www.youtube.com/playlist?list='.$playlistId;
+        $displayName = trim((string) $title);
+
+        if ($displayName === '') {
+            $displayName = 'YouTube playlist';
+        }
+
+        $playlistItems = [];
+
+        if ($this->youtubePlaylists->hasApiKey()) {
+            try {
+                $playlistItems = $this->youtubePlaylists->fetchItems($playlistId);
+            } catch (\RuntimeException $exception) {
+                Log::warning('YouTube playlist fetch failed', [
+                    'playlist_id' => $playlistId,
+                    'message' => $exception->getMessage(),
+                ]);
+                $playlistItems = [];
+            }
+        }
+
+        return MaterialFile::query()->create([
+            'folder_id' => $folder->id,
+            'kind' => MaterialFile::KIND_YOUTUBE_PLAYLIST,
+            'original_name' => $canonical,
+            'display_name' => $displayName,
+            'disk' => null,
+            'path' => null,
+            'url' => $canonical,
+            'playlist_items' => $playlistItems === [] ? null : $playlistItems,
+            'mime_type' => null,
+            'extension' => 'youtube_playlist',
             'size' => 0,
             'created_by' => $actor->id,
         ]);
@@ -439,6 +489,7 @@ class MaterialLibraryService
             'disk' => $file->isFile() ? $disk : null,
             'path' => $path,
             'url' => $file->url,
+            'playlist_items' => $file->playlist_items,
             'mime_type' => $file->mime_type,
             'extension' => $file->extension,
             'size' => $file->size,

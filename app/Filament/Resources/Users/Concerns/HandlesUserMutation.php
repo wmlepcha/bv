@@ -18,12 +18,13 @@ trait HandlesUserMutation
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => $data['password'],
+            'whatsapp_number' => $data['whatsapp_number'] ?? null,
         ]);
 
         $user->forceFill([
             'role' => $role,
             'registration_paid_at' => $role !== UserRole::Student ? now() : null,
-            'email_verified_at' => $role !== UserRole::Student ? now() : null,
+            'email_verified_at' => now(),
         ])->save();
 
         $user->notify(new WelcomeWithCredentials(
@@ -43,6 +44,10 @@ trait HandlesUserMutation
             'name' => $data['name'],
             'email' => $data['email'],
         ]);
+
+        if (array_key_exists('whatsapp_number', $data)) {
+            $record->whatsapp_number = $data['whatsapp_number'];
+        }
 
         if (! empty($data['password'])) {
             $record->password = $data['password'];

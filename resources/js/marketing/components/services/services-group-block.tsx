@@ -1,9 +1,9 @@
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 import { FadeUp, StaggerChildren } from '@marketing/components/animations/primitives';
 import { ServiceItemCard } from '@marketing/components/services/service-item-card';
 import { ServiceLanguageFamily } from '@marketing/components/services/service-language-family';
 import type { ServiceGroup as ServiceGroupType, ServiceItem } from '@marketing/types/services-page';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { cn } from '@/lib/utils';
 
 interface ServicesGroupBlockProps {
     group: ServiceGroupType;

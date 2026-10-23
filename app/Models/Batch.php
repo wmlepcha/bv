@@ -25,6 +25,8 @@ class Batch extends Model
         'level',
         'teacher_id',
         'is_active',
+        'starts_on',
+        'ends_on',
     ];
 
     /**
@@ -36,6 +38,8 @@ class Batch extends Model
             'language' => CourseLanguage::class,
             'level' => CourseLevel::class,
             'is_active' => 'boolean',
+            'starts_on' => 'date',
+            'ends_on' => 'date',
         ];
     }
 
@@ -52,5 +56,10 @@ class Batch extends Model
     public function enrollments(): HasMany
     {
         return $this->hasMany(BatchEnrollment::class);
+    }
+
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(Assignment::class);
     }
 }

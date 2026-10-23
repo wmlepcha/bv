@@ -1,6 +1,6 @@
 import { Link } from '@inertiajs/react';
-import { FadeUp } from '@marketing/components/animations/primitives';
 import { cn } from '@/lib/utils';
+import { FadeUp } from '@marketing/components/animations/primitives';
 
 interface AboutHeroSectionProps {
     title: string;

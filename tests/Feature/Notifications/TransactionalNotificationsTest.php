@@ -2,17 +2,23 @@
 
 namespace Tests\Feature\Notifications;
 
+use App\Enums\AssignmentSubmissionStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\RegistrationFeePaidVia;
 use App\Enums\UserRole;
 use App\Models\ActivationCode;
+use App\Models\Assignment;
+use App\Models\AssignmentSubmission;
 use App\Models\Batch;
 use App\Models\BatchEnrollment;
 use App\Models\EducationLevel;
 use App\Models\MaterialFolder;
 use App\Models\Payment;
+use App\Models\StudentProfile;
 use App\Models\User;
 use App\Notifications\ActivationCodeIssued;
+use App\Notifications\AssignmentGraded;
+use App\Notifications\Channels\WhatsAppChannel;
 use App\Notifications\EnrolledInBatch;
 use App\Notifications\InquirySubmitted;
 use App\Notifications\MaterialAssignedToTrainer;
@@ -26,8 +32,14 @@ use App\Services\CandidateImportService;
 use App\Services\MaterialAssignmentService;
 use App\Services\MaterialLibraryService;
 use App\Services\PaymentVerificationService;
+use App\Services\WhatsAppNotificationService;
+use App\Support\WhatsAppContentMessage;
+use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
@@ -77,11 +89,17 @@ class TransactionalNotificationsTest extends TestCase
             'password_confirmation' => 'password',
             'state' => 'Sikkim',
             'special_id' => 'COI',
-        ])->assertRedirect(route('dashboard'));
+            'registration_purpose' => 'training',
+            'form_token' => Crypt::encryptString((string) (now()->timestamp - 10)),
+        ])->assertRedirect(route('verification.notice'));
 
         $user = User::query()->where('email', 'register-notify@example.com')->firstOrFail();
 
-        Notification::assertSentTo($user, StudentRegistered::class);
+        Notification::assertNotSentTo($user, StudentRegistered::class);
+
+        event(new Verified($user));
+
+        Notification::assertSentToTimes($user, StudentRegistered::class, 1);
     }
 
     public function test_candidate_import_sends_welcome_with_temp_password(): void
@@ -282,7 +300,8 @@ class TransactionalNotificationsTest extends TestCase
             $student,
             MaterialSharedWithBatch::class,
             fn (MaterialSharedWithBatch $notification): bool => $notification->materialTitle === 'Grammar Pack'
-                && $notification->batchName === 'Share Batch',
+                && $notification->batchName === 'Share Batch'
+                && str_contains($notification->toArray($student)['url'], '/student/study-bank'),
         );
 
         Notification::fake();
@@ -353,12 +372,12 @@ class TransactionalNotificationsTest extends TestCase
         $student->notifyNow(new StudentRegistered);
 
         $this->actingAs($student)
-            ->get(route('student.notifications.index'))
+            ->get(route('dashboard'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
-                ->component('app/student/notifications')
+                ->component('app/student/dashboard')
                 ->has('notifications', 1)
-                ->where('unread_count', 1)
+                ->where('stats.unread_notifications', 1)
             );
 
         $notificationId = $student->notifications()->firstOrFail()->id;
@@ -368,6 +387,163 @@ class TransactionalNotificationsTest extends TestCase
             ->assertRedirect();
 
         $this->assertNotNull($student->notifications()->firstOrFail()->read_at);
+    }
+
+    public function test_shared_props_include_unread_notification_count(): void
+    {
+        $student = User::factory()->paid()->create(['role' => UserRole::Student]);
+
+        $student->notifyNow(new StudentRegistered);
+
+        $this->actingAs($student)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->where('unread_notifications_count', 1));
+    }
+
+    public function test_assignment_graded_includes_whatsapp_when_enabled_and_phone_present(): void
+    {
+        config(['services.whatsapp.enabled' => true]);
+
+        $student = User::factory()->paid()->create(['role' => UserRole::Student]);
+        StudentProfile::query()->create([
+            'user_id' => $student->id,
+            'mobile_whatsapp' => '+919832581198',
+        ]);
+        $student->load('studentProfile');
+
+        $submission = AssignmentSubmission::factory()->create([
+            'assignment_id' => Assignment::factory()->published()->create()->id,
+            'status' => AssignmentSubmissionStatus::Graded,
+            'final_score' => 8,
+        ]);
+
+        $notification = new AssignmentGraded($submission->fresh(['assignment']));
+        $channels = $notification->via($student);
+
+        $this->assertContains(WhatsAppChannel::class, $channels);
+    }
+
+    public function test_whatsapp_service_sends_via_twilio_when_configured(): void
+    {
+        config([
+            'services.whatsapp.enabled' => true,
+            'services.whatsapp.provider' => 'twilio',
+            'services.whatsapp.twilio.sid' => 'ACtest',
+            'services.whatsapp.twilio.token' => 'token',
+            'services.whatsapp.twilio.from' => 'whatsapp:+14155238886',
+            'services.whatsapp.twilio.templates.update' => 'HXupdate',
+        ]);
+
+        $student = User::factory()->paid()->create(['role' => UserRole::Student]);
+        StudentProfile::query()->create([
+            'user_id' => $student->id,
+            'mobile_whatsapp' => '9832581198',
+        ]);
+        $student->load('studentProfile');
+
+        Http::fake([
+            'api.twilio.com/*' => Http::response(['sid' => 'SM123'], 201),
+        ]);
+
+        app(WhatsAppNotificationService::class)->send(
+            $student,
+            new WhatsAppContentMessage('HXupdate', [
+                '1' => 'Rahul Sharma',
+                '2' => 'Assignment graded',
+                '3' => 'https://example.com/dashboard',
+            ]),
+        );
+
+        Http::assertSent(function ($request): bool {
+            return str_contains($request->url(), 'api.twilio.com')
+                && $request['To'] === 'whatsapp:+919832581198'
+                && ($request['ContentSid'] ?? null) === 'HXupdate'
+                && ! isset($request['Body'])
+                && str_contains((string) ($request['ContentVariables'] ?? ''), 'Assignment graded');
+        });
+    }
+
+    public function test_whatsapp_service_logs_what_twilio_accepted_and_what_it_rejected(): void
+    {
+        config([
+            'services.whatsapp.enabled' => true,
+            'services.whatsapp.provider' => 'twilio',
+            'services.whatsapp.twilio.sid' => 'ACtest',
+            'services.whatsapp.twilio.token' => 'token',
+            'services.whatsapp.twilio.from' => 'whatsapp:+14155238886',
+        ]);
+        $student = User::factory()->paid()->create(['role' => UserRole::Student]);
+        StudentProfile::query()->create(['user_id' => $student->id, 'mobile_whatsapp' => '9832581198']);
+        $student->load('studentProfile');
+        $message = new WhatsAppContentMessage('HXupdate', ['1' => 'A', '2' => 'B', '3' => 'https://example.com']);
+
+        Log::spy();
+        Http::fake(['api.twilio.com/*' => Http::sequence()
+            ->push(['sid' => 'SM999', 'status' => 'queued'], 201)
+            ->push(['code' => 20003, 'message' => 'not approved'], 401)]);
+        app(WhatsAppNotificationService::class)->send($student, $message);
+
+        Log::shouldHaveReceived('info')->withArgs(fn (string $text, array $context): bool => $text === 'WhatsApp notification accepted by Twilio.'
+            && $context['message_sid'] === 'SM999' && $context['to'] === '+919832581198')->once();
+
+        app(WhatsAppNotificationService::class)->send($student, $message);
+
+        Log::shouldHaveReceived('error')->once();
+        Log::shouldHaveReceived('info')->once();
+    }
+
+    public function test_welcome_with_credentials_includes_whatsapp_channel_for_student_with_phone(): void
+    {
+        config(['services.whatsapp.enabled' => true]);
+
+        $student = User::factory()->paid()->create(['role' => UserRole::Student]);
+        StudentProfile::query()->create([
+            'user_id' => $student->id,
+            'mobile_whatsapp' => '+919832581198',
+        ]);
+        $student->load('studentProfile');
+
+        $channels = (new WelcomeWithCredentials('secret-pass', UserRole::Student))->via($student);
+
+        $this->assertContains(WhatsAppChannel::class, $channels);
+
+        config(['services.whatsapp.twilio.templates.update' => 'HXupdate']);
+        $content = (new WelcomeWithCredentials('secret-pass', UserRole::Student))->toWhatsAppContent($student);
+
+        $this->assertSame('HXupdate', $content->contentSid);
+        $this->assertStringContainsString($student->email, $content->variables['2']);
+        $this->assertStringNotContainsString('secret-pass', $content->variables['2']);
+    }
+
+    public function test_assignment_graded_whatsapp_content_uses_update_template(): void
+    {
+        config([
+            'services.whatsapp.enabled' => true,
+            'services.whatsapp.twilio.templates.update' => 'HXupdate',
+        ]);
+
+        $student = User::factory()->paid()->create([
+            'role' => UserRole::Student,
+            'name' => 'Rahul Sharma',
+        ]);
+
+        $submission = AssignmentSubmission::factory()->create([
+            'assignment_id' => Assignment::factory()->published()->create([
+                'title' => 'Grammar Test',
+                'max_score' => 10,
+            ])->id,
+            'status' => AssignmentSubmissionStatus::Graded,
+            'final_score' => 8,
+        ]);
+
+        $content = (new AssignmentGraded($submission->fresh(['assignment'])))->toWhatsAppContent($student);
+
+        $this->assertNotNull($content);
+        $this->assertSame('HXupdate', $content->contentSid);
+        $this->assertSame('Rahul Sharma', $content->variables['1']);
+        $this->assertStringContainsString('Grammar Test', $content->variables['2']);
+        $this->assertStringContainsString('/student/assignments/', $content->variables['3']);
     }
 
     /**

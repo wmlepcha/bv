@@ -1,21 +1,105 @@
+import { usePage } from '@inertiajs/react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
+import type { AppLayoutProps } from '@/types';
+import type { Auth } from '@/types/auth';
 import { AppContent } from '@app/components/app-content';
 import { AppShell } from '@app/components/app-shell';
 import { AppSidebar } from '@app/components/app-sidebar';
 import { AppSidebarHeader } from '@app/components/app-sidebar-header';
 import DashboardAccessGate from '@app/components/dashboard-access-gate';
+import { MobileBottomNav } from '@app/components/mobile-bottom-nav';
+import { MobileTopBar } from '@app/components/mobile-top-bar';
+import { PullToRefreshIndicator } from '@app/components/native/pull-to-refresh-indicator';
+import { StudentChatWidget } from '@app/components/student-chat-widget';
+import { getMainNavItems } from '@app/config/navigation';
+import { useKeyboardInset, usePullToRefresh } from '@app/lib/native';
 import { BrandPageBackground } from '@shared/components/brand-page-background';
-import type { AppLayoutProps } from '@/types';
+
+function MobileAppLayout({ children }: { children: React.ReactNode }) {
+    const page = usePage<{
+        auth: Auth;
+        unread_messages_count: number;
+        unread_notifications_count: number;
+    }>();
+    const {
+        auth,
+        unread_messages_count: unreadMessages,
+        unread_notifications_count: unreadNotifications,
+    } = page.props;
+    const { url } = page;
+    const role = auth.user?.role ?? 'student';
+    const locked =
+        role === 'student' && !(auth.user?.can_access_dashboard ?? false);
+    const pathname = url.split('?')[0];
+    const keyboardOpen = useKeyboardInset();
+    const pull = usePullToRefresh(!keyboardOpen);
+
+    return (
+        <div
+            className="mobile-app relative min-h-svh bg-background print:min-h-0 print:bg-white"
+            style={
+                {
+                    '--app-top-h': 'calc(3.5rem + env(safe-area-inset-top))',
+                    '--app-bottom-h': keyboardOpen
+                        ? '0px'
+                        : 'calc(4rem + env(safe-area-inset-bottom))',
+                } as React.CSSProperties
+            }
+        >
+            <MobileTopBar locked={locked} />
+            <main
+                className={cn(
+                    'min-w-0 overflow-x-clip px-1 pt-[var(--app-top-h)] print:overflow-visible print:p-0',
+                    !locked && !keyboardOpen && 'pb-[var(--app-bottom-h)]',
+                )}
+            >
+                <DashboardAccessGate>
+                    <div key={pathname} className="mobile-page-enter min-w-0">
+                        {children}
+                    </div>
+                </DashboardAccessGate>
+            </main>
+            <PullToRefreshIndicator
+                distance={pull.distance}
+                refreshing={pull.refreshing}
+            />
+            {!locked && !keyboardOpen && (
+                <MobileBottomNav
+                    items={getMainNavItems(
+                        role,
+                        unreadMessages,
+                        unreadNotifications,
+                    ).filter(
+                        (item) =>
+                            role !== 'student' || item.title !== 'Attendance',
+                    )}
+                />
+            )}
+            <StudentChatWidget />
+        </div>
+    );
+}
 
 export default function AppSidebarLayout({
     children,
     breadcrumbs = [],
 }: AppLayoutProps) {
+    const isMobile = useIsMobile();
+
+    if (isMobile) {
+        return <MobileAppLayout>{children}</MobileAppLayout>;
+    }
+
     return (
         <div className="relative min-h-svh bg-nav-rail">
             <BrandPageBackground />
             <AppShell variant="sidebar">
                 <AppSidebar />
-                <AppContent variant="sidebar" className="min-w-0 overflow-x-hidden">
+                <AppContent
+                    variant="sidebar"
+                    className="min-w-0 overflow-x-clip"
+                >
                     <AppSidebarHeader breadcrumbs={breadcrumbs} />
                     <DashboardAccessGate>
                         {/*
@@ -27,6 +111,7 @@ export default function AppSidebarLayout({
                     </DashboardAccessGate>
                 </AppContent>
             </AppShell>
+            <StudentChatWidget />
         </div>
     );
 }

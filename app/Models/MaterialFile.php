@@ -12,6 +12,8 @@ class MaterialFile extends Model
 
     public const KIND_YOUTUBE = 'youtube';
 
+    public const KIND_YOUTUBE_PLAYLIST = 'youtube_playlist';
+
     public const KIND_LINK = 'link';
 
     /**
@@ -25,6 +27,7 @@ class MaterialFile extends Model
         'disk',
         'path',
         'url',
+        'playlist_items',
         'mime_type',
         'extension',
         'size',
@@ -38,6 +41,7 @@ class MaterialFile extends Model
     {
         return [
             'size' => 'integer',
+            'playlist_items' => 'array',
         ];
     }
 
@@ -71,6 +75,11 @@ class MaterialFile extends Model
         return $this->kind === self::KIND_YOUTUBE;
     }
 
+    public function isYoutubePlaylist(): bool
+    {
+        return $this->kind === self::KIND_YOUTUBE_PLAYLIST;
+    }
+
     public function isLink(): bool
     {
         return $this->kind === self::KIND_LINK;
@@ -85,8 +94,36 @@ class MaterialFile extends Model
         return self::extractYoutubeVideoId($this->url);
     }
 
+    public function youtubePlaylistId(): ?string
+    {
+        if (! $this->isYoutubePlaylist() || blank($this->url)) {
+            return null;
+        }
+
+        return self::extractYoutubePlaylistId($this->url);
+    }
+
     public function embedUrl(): ?string
     {
+        if ($this->isYoutubePlaylist()) {
+            $playlistId = $this->youtubePlaylistId();
+
+            if ($playlistId === null) {
+                return null;
+            }
+
+            $items = $this->playlist_items;
+            $firstVideoId = null;
+
+            if (is_array($items) && $items !== []) {
+                $first = $items[0] ?? null;
+                $candidate = is_array($first) ? ($first['video_id'] ?? null) : null;
+                $firstVideoId = is_string($candidate) && $candidate !== '' ? $candidate : null;
+            }
+
+            return $this->embedUrlForVideo($firstVideoId);
+        }
+
         $videoId = $this->youtubeVideoId();
 
         if ($videoId === null) {
@@ -94,6 +131,40 @@ class MaterialFile extends Model
         }
 
         return 'https://www.youtube-nocookie.com/embed/'.$videoId;
+    }
+
+    public function embedUrlForVideo(?string $videoId): ?string
+    {
+        if ($this->isYoutubePlaylist()) {
+            $playlistId = $this->youtubePlaylistId();
+
+            if ($playlistId === null) {
+                return null;
+            }
+
+            if (is_string($videoId) && $videoId !== '' && preg_match('/^[A-Za-z0-9_-]{6,}$/', $videoId) === 1) {
+                return 'https://www.youtube-nocookie.com/embed/'.$videoId.'?list='.$playlistId;
+            }
+
+            return 'https://www.youtube-nocookie.com/embed/videoseries?list='.$playlistId;
+        }
+
+        return $this->embedUrl();
+    }
+
+    public static function isShareableYoutubePlaylistId(string $playlistId): bool
+    {
+        $playlistId = trim($playlistId);
+
+        if ($playlistId === '' || in_array($playlistId, ['WL', 'LL'], true)) {
+            return false;
+        }
+
+        if (str_starts_with($playlistId, 'RD')) {
+            return false;
+        }
+
+        return preg_match('/^[A-Za-z0-9_-]+$/', $playlistId) === 1;
     }
 
     public static function extractYoutubeVideoId(string $url): ?string
@@ -142,5 +213,45 @@ class MaterialFile extends Model
         }
 
         return null;
+    }
+
+    public static function extractYoutubePlaylistId(string $url): ?string
+    {
+        $url = trim($url);
+
+        if ($url === '') {
+            return null;
+        }
+
+        $parts = parse_url($url);
+
+        if ($parts === false || ! isset($parts['host'])) {
+            return null;
+        }
+
+        $host = strtolower($parts['host']);
+        $host = str_starts_with($host, 'www.') ? substr($host, 4) : $host;
+
+        if (! in_array($host, ['youtube.com', 'm.youtube.com', 'music.youtube.com', 'youtu.be'], true)) {
+            return null;
+        }
+
+        if (($parts['query'] ?? '') === '') {
+            return null;
+        }
+
+        parse_str($parts['query'], $query);
+
+        $playlistId = $query['list'] ?? null;
+
+        if (! is_string($playlistId) || $playlistId === '') {
+            return null;
+        }
+
+        if (preg_match('/^[A-Za-z0-9_-]+$/', $playlistId) !== 1) {
+            return null;
+        }
+
+        return $playlistId;
     }
 }

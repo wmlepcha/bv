@@ -1,20 +1,16 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import {
-    forwardRef,
-    useCallback,
-    useEffect,
-    useRef,
-    useState,
-} from 'react';
+import { forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import HTMLFlipBook from 'react-pageflip';
+import { cn } from '@/lib/utils';
 import CvCreatedAtFooter from '@app/components/cv-created-at-footer';
 import { groupBilingualForDisplay } from '@app/lib/bilingual-display';
 import {
     cvLabels,
-    localizeCivilStatus,
-    type CvLocale,
+    localizeCivilStatus
+    
 } from '@app/lib/cv-labels';
+import type {CvLocale} from '@app/lib/cv-labels';
 import { toStorageSrc } from '@app/lib/cv-media';
 import type {
     CvActivityEntry,
@@ -25,7 +21,6 @@ import type {
     CvQualification,
     CvTraining,
 } from '@app/types/cv';
-import { cn } from '@/lib/utils';
 
 const ACCENT = '#003399';
 const PANEL = '#F2F2F2';
@@ -68,21 +63,15 @@ function sheetClassName(
     extra = '',
 ): string {
     return cn(
-        'cv-print-sheet cv-full-sheet flex w-full flex-col border border-border border-t-[3px] bg-white text-neutral-900',
+        'cv-print-sheet cv-full-sheet flex w-full flex-col border border-t-[3px] border-border bg-white text-neutral-900',
         presentation === 'stack'
-            ? 'min-h-[297mm] overflow-hidden rounded-2xl shadow-sm print:max-w-none print:overflow-visible print:rounded-none print:border-0 print:border-t-[3px] print:shadow-none'
+            ? 'min-h-[297mm] overflow-hidden rounded-2xl shadow-sm max-sm:min-h-0 print:max-w-none print:overflow-visible print:rounded-none print:border-0 print:border-t-[3px] print:shadow-none'
             : 'h-full max-h-full overflow-hidden rounded-none shadow-none',
         extra,
     );
 }
 
-function DetailRow({
-    label,
-    value,
-}: {
-    label: string;
-    value: ReactNode;
-}) {
+function DetailRow({ label, value }: { label: string; value: ReactNode }) {
     if (value === null || value === undefined || value === '') {
         return null;
     }
@@ -206,7 +195,7 @@ function FullBodyPage({
                         className={cn(
                             'flex w-full flex-1 items-center justify-center rounded-sm border border-dashed border-neutral-300 bg-neutral-50 px-6 text-center text-sm text-neutral-500',
                             presentation === 'stack'
-                                ? 'min-h-[200mm] print:min-h-0'
+                                ? 'min-h-[200mm] max-sm:min-h-[40vh] print:min-h-0'
                                 : 'min-h-0',
                         )}
                     >
@@ -260,7 +249,9 @@ function QualificationEntry({
                 {hasText(item.title) && (
                     <p className="font-medium text-neutral-900">{item.title}</p>
                 )}
-                {collegeLine && <p className="text-neutral-700">{collegeLine}</p>}
+                {collegeLine && (
+                    <p className="text-neutral-700">{collegeLine}</p>
+                )}
                 {universityLine && universityLine !== collegeLine && (
                     <p className="text-neutral-700">{universityLine}</p>
                 )}
@@ -297,9 +288,7 @@ function TrainingEntry({
                 {hasText(topic) && (
                     <p className="font-medium text-neutral-900">{topic}</p>
                 )}
-                {hasText(place) && (
-                    <p className="text-neutral-700">{place}</p>
-                )}
+                {hasText(place) && <p className="text-neutral-700">{place}</p>}
             </div>
         </div>
     );
@@ -319,33 +308,39 @@ function ExperienceEntry({
     const org = joinParts([job.organization, job.city, job.state]);
 
     const details: Array<{ label: string; value: string }> = [];
+
     if (hasText(job.bed_capacity)) {
         details.push({ label: labels.bedCapacity, value: job.bed_capacity! });
     }
+
     if (hasText(job.departments_offered)) {
         details.push({
             label: labels.departmentsOffered,
             value: job.departments_offered!,
         });
     }
+
     if (hasText(job.accreditations)) {
         details.push({
             label: labels.accreditations,
             value: job.accreditations!,
         });
     }
+
     if (hasText(job.critical_cases)) {
         details.push({
             label: labels.criticalCases,
             value: job.critical_cases!,
         });
     }
+
     if (hasText(job.medical_equipment)) {
         details.push({
             label: labels.medicalEquipment,
             value: job.medical_equipment!,
         });
     }
+
     if (hasText(job.cases_handled)) {
         details.push({ label: labels.casesHandled, value: job.cases_handled! });
     }
@@ -362,7 +357,9 @@ function ExperienceEntry({
                 </p>
             )}
             {role && (
-                <p className="text-[14px] font-medium text-neutral-900">{role}</p>
+                <p className="text-[14px] font-medium text-neutral-900">
+                    {role}
+                </p>
             )}
             {org && (
                 <p className="text-[14px] leading-[1.55] text-neutral-700">
@@ -379,7 +376,7 @@ function ExperienceEntry({
                 </p>
             ))}
             {!job.has_experience_letter && (
-                <p className="text-[13px] italic text-neutral-400">
+                <p className="text-[13px] text-neutral-400 italic">
                     {labels.noExperienceLetter}
                 </p>
             )}
@@ -452,7 +449,10 @@ function PersonalSheet({
                             label={labels.firstName}
                             value={cv.first_name}
                         />
-                        <DetailRow label={labels.dob} value={cv.date_of_birth} />
+                        <DetailRow
+                            label={labels.dob}
+                            value={cv.date_of_birth}
+                        />
                         <DetailRow
                             label={labels.citizenship}
                             value={cv.nationality}
@@ -549,7 +549,7 @@ function ContentSheet({
                 cn(
                     'cv-full-sheet-content',
                     presentation === 'stack' &&
-                        'print:max-w-none print:min-h-0 print:overflow-visible print:rounded-none print:border-0 print:border-t-[3px] print:shadow-none',
+                        'print:min-h-0 print:max-w-none print:overflow-visible print:rounded-none print:border-0 print:border-t-[3px] print:shadow-none',
                     presentation === 'flipbook' && 'overflow-y-auto',
                 ),
             )}
@@ -823,16 +823,15 @@ function FullCvSheets({
     );
 }
 
-const FlipPage = forwardRef<
-    HTMLDivElement,
-    { children: ReactNode }
->(function FlipPage({ children }, ref) {
-    return (
-        <div ref={ref} className="h-full w-full overflow-hidden bg-white">
-            {children}
-        </div>
-    );
-});
+const FlipPage = forwardRef<HTMLDivElement, { children: ReactNode }>(
+    function FlipPage({ children }, ref) {
+        return (
+            <div ref={ref} className="h-full w-full overflow-hidden bg-white">
+                {children}
+            </div>
+        );
+    },
+);
 
 function FullCvFlipbook({ model }: { model: SheetModel }) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -850,6 +849,7 @@ function FullCvFlipbook({ model }: { model: SheetModel }) {
 
     useEffect(() => {
         const el = containerRef.current;
+
         if (!el) {
             return;
         }

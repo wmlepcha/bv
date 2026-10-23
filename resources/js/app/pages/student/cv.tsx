@@ -1,6 +1,24 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm, usePage } from '@inertiajs/react';
 import { ChevronDown, Download, ImageIcon, Upload, X } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/responsive-select';
+import { Spinner } from '@/components/ui/spinner';
+import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
+import {
+    edit as cvEdit,
+    translate as cvTranslate,
+    update as cvUpdate,
+} from '@/routes/student/cv';
 import BasicCvProfile from '@app/components/basic-cv-profile';
 import FullCvProfile from '@app/components/full-cv-profile';
 import type { CvLocale } from '@app/lib/cv-labels';
@@ -16,38 +34,16 @@ import type {
     CvTraining,
 } from '@app/types/cv';
 import { BirthDatePicker } from '@shared/components/birth-date-picker';
-import { PrivateSeoHead } from '@shared/components/seo-head';
 import InputError from '@shared/components/input-error';
+import { PrivateSeoHead } from '@shared/components/seo-head';
 import { BRAND_NAME_TM } from '@shared/lib/brand';
 import { normalizePhone, validatePhone } from '@shared/lib/phone';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import { Spinner } from '@/components/ui/spinner';
-import { Textarea } from '@/components/ui/textarea';
-import { cn } from '@/lib/utils';
-import {
-    edit as cvEdit,
-    translate as cvTranslate,
-    update as cvUpdate,
-} from '@/routes/student/cv';
 
 const PASSPORT_PHOTO_MAX_BYTES = 5 * 1024 * 1024;
 const FULL_BODY_PHOTO_MAX_BYTES = 8 * 1024 * 1024;
 const DOCUMENT_MAX_BYTES = 10 * 1024 * 1024;
 const ACCEPTED_PHOTO_TYPES = ['image/jpeg', 'image/png'];
-const ACCEPTED_DOCUMENT_TYPES = [
-    'image/jpeg',
-    'image/png',
-    'application/pdf',
-];
+const ACCEPTED_DOCUMENT_TYPES = ['image/jpeg', 'image/png', 'application/pdf'];
 const ACCEPTED_DOCUMENT_ACCEPT = 'image/jpeg,image/png,application/pdf';
 const ACCEPTED_PDF_TYPES = ['application/pdf'];
 const ACCEPTED_PDF_ACCEPT = 'application/pdf';
@@ -66,14 +62,7 @@ const LANGUAGE_TYPES = [
     'Foreign Language',
 ] as const;
 
-const CERTIFICATION_LEVELS = [
-    'A1',
-    'A2',
-    'B1',
-    'B2',
-    'C1',
-    'C2',
-] as const;
+const CERTIFICATION_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const;
 
 /** India's 22 Eighth Schedule (scheduled) languages */
 const REGIONAL_LANGUAGES_IN = [
@@ -136,9 +125,11 @@ function suggestedLanguageType(
     if (isRegionalLanguage(name)) {
         return 'Regional';
     }
+
     if (isForeignLanguageOption(name)) {
         return 'Foreign Language';
     }
+
     return null;
 }
 
@@ -171,6 +162,7 @@ type PageProps = {
 };
 
 type FormExperience = CvExperience & { certificate?: File | null };
+type FormQualification = CvQualification & { certificate?: File | null };
 type FormTraining = CvTraining & { certificate?: File | null };
 type FormActivity = CvActivityEntry & { certificate?: File | null };
 type FormCertification = CvCertification & { certificate?: File | null };
@@ -206,7 +198,7 @@ type FormData = {
     vitae: {
         is_newbie: boolean;
         experiences: FormExperience[];
-        qualifications: CvQualification[];
+        qualifications: FormQualification[];
         trainings: FormTraining[];
         seminars: FormActivity[];
         presentations: FormActivity[];
@@ -239,7 +231,7 @@ function emptyExperience(): FormExperience {
     };
 }
 
-function emptyQualification(): CvQualification {
+function emptyQualification(): FormQualification {
     return {
         start_date: '',
         end_date: '',
@@ -251,6 +243,8 @@ function emptyQualification(): CvQualification {
         country: '',
         board: '',
         language_of_instruction: '',
+        certificate_path: null,
+        certificate: null,
     };
 }
 
@@ -356,12 +350,14 @@ function defaultBilingualRows(): FormBilingual[] {
 }
 
 function ensureBilingualRows(
-    items: Array<Partial<FormBilingual> & {
-        language?: string | null;
-        proficiency?: string | null;
-        language_type?: string | null;
-        certification_level?: string | null;
-    }>,
+    items: Array<
+        Partial<FormBilingual> & {
+            language?: string | null;
+            proficiency?: string | null;
+            language_type?: string | null;
+            certification_level?: string | null;
+        }
+    >,
 ): FormBilingual[] {
     const rows = items.map((item) => normalizeBilingualEntry(item));
 
@@ -381,17 +377,14 @@ function normalizeBilingualEntry(
     },
 ): FormBilingual {
     const rawProficiency = String(item.proficiency ?? '').trim();
-    const isLevel = (
-        LANGUAGE_PROFICIENCY_LEVELS as readonly string[]
-    ).includes(rawProficiency);
+    const isLevel = (LANGUAGE_PROFICIENCY_LEVELS as readonly string[]).includes(
+        rawProficiency,
+    );
     const language =
-        String(item.language ?? '').trim() ||
-        (isLevel ? '' : rawProficiency);
+        String(item.language ?? '').trim() || (isLevel ? '' : rawProficiency);
 
     const rawType = String(item.language_type ?? '').trim();
-    const languageType = (LANGUAGE_TYPES as readonly string[]).includes(
-        rawType,
-    )
+    const languageType = (LANGUAGE_TYPES as readonly string[]).includes(rawType)
         ? rawType
         : '';
 
@@ -420,12 +413,15 @@ function bilingualLanguagePlaceholder(index: number): string {
     if (index === 0) {
         return 'Language 1 (Regional)';
     }
+
     if (index === 1) {
         return 'Language 2 (Regional/Foreign)';
     }
+
     if (index === 2) {
         return 'Language 3 (Regional/Foreign)';
     }
+
     if (index === 3) {
         return 'Language 4 (Foreign Language)';
     }
@@ -501,6 +497,12 @@ function stripFileFields(data: FormData): FormData {
                     certificate: null,
                 }),
             ),
+            qualifications: data.vitae.qualifications.map(
+                ({ certificate: _c, ...rest }) => ({
+                    ...rest,
+                    certificate: null,
+                }),
+            ),
             trainings: data.vitae.trainings.map(
                 ({ certificate: _c, ...rest }) => ({
                     ...rest,
@@ -554,6 +556,7 @@ function readCvDraft(): FormData | null {
 
     try {
         const raw = window.localStorage.getItem(CV_DRAFT_STORAGE_KEY);
+
         if (!raw) {
             return null;
         }
@@ -593,6 +596,7 @@ function readCvDraftStep(): CvStepId | null {
     }
 
     const saved = window.localStorage.getItem(CV_DRAFT_STEP_KEY);
+
     if (!saved) {
         return null;
     }
@@ -612,9 +616,11 @@ function Section({
     children: React.ReactNode;
 }) {
     return (
-        <section className="space-y-6 rounded-2xl border border-border/80 bg-card/40 p-6 shadow-sm sm:p-8">
+        <section className="space-y-5 sm:space-y-6 sm:rounded-2xl sm:border sm:border-border/80 sm:bg-card/40 sm:p-8 sm:shadow-sm">
             <div className="space-y-2">
-                <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
+                <h2 className="text-2xl font-bold tracking-tight sm:text-lg sm:font-semibold">
+                    {title}
+                </h2>
                 {description && (
                     <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
                         {description}
@@ -638,8 +644,19 @@ function Field({
     children: React.ReactNode;
 }) {
     return (
-        <div className="grid gap-2">
-            <Label>{label}</Label>
+        <div
+            className={cn(
+                'grid gap-2',
+                // iOS-style cell on phones: label above a borderless control inside a rounded card
+                'max-sm:gap-1 max-sm:rounded-2xl max-sm:border max-sm:border-border max-sm:bg-card/70 max-sm:px-4 max-sm:py-2.5',
+                'max-sm:[&_[data-slot=input]]:border-0 max-sm:[&_[data-slot=input]]:bg-transparent max-sm:[&_[data-slot=input]]:px-0 max-sm:[&_[data-slot=input]]:shadow-none max-sm:[&_[data-slot=input]]:focus-visible:ring-0',
+                'max-sm:[&_[data-slot=select-trigger]]:border-0 max-sm:[&_[data-slot=select-trigger]]:bg-transparent max-sm:[&_[data-slot=select-trigger]]:px-0 max-sm:[&_[data-slot=select-trigger]]:shadow-none',
+                'max-sm:[&_textarea]:border-0 max-sm:[&_textarea]:bg-transparent max-sm:[&_textarea]:px-0 max-sm:[&_textarea]:shadow-none max-sm:[&_textarea]:focus-visible:ring-0',
+            )}
+        >
+            <Label className="max-sm:text-xs max-sm:font-normal max-sm:text-muted-foreground">
+                {label}
+            </Label>
             {children}
             {hint && !error ? (
                 <p className="text-xs text-muted-foreground">{hint}</p>
@@ -702,6 +719,7 @@ function LimitedField({
                 maxLength={maxLength}
                 onChange={(e) => {
                     const cleaned = sanitizeCvText(e.target.value);
+
                     if (cleaned.length > maxLength) {
                         setLimitError(characterLimitError(maxLength));
                         onChange(cleaned.slice(0, maxLength));
@@ -720,6 +738,7 @@ function LimitedField({
                     const next = sanitizeCvText(
                         value.slice(0, start) + pasted + value.slice(end),
                     );
+
                     if (next.length > maxLength) {
                         e.preventDefault();
                         setLimitError(characterLimitError(maxLength));
@@ -763,6 +782,7 @@ function LimitedTextarea({
                 maxLength={maxLength}
                 onChange={(e) => {
                     const cleaned = sanitizeCvText(e.target.value);
+
                     if (cleaned.length > maxLength) {
                         setLimitError(characterLimitError(maxLength));
                         onChange(cleaned.slice(0, maxLength));
@@ -781,6 +801,7 @@ function LimitedTextarea({
                     const next = sanitizeCvText(
                         value.slice(0, start) + pasted + value.slice(end),
                     );
+
                     if (next.length > maxLength) {
                         e.preventDefault();
                         setLimitError(characterLimitError(maxLength));
@@ -792,10 +813,7 @@ function LimitedTextarea({
     );
 }
 
-function validatePhotoFile(
-    file: File,
-    maxBytes: number,
-): string | null {
+function validatePhotoFile(file: File, maxBytes: number): string | null {
     if (!ACCEPTED_PHOTO_TYPES.includes(file.type)) {
         return 'Please upload a JPG or PNG image.';
     }
@@ -880,7 +898,9 @@ function TextFieldWithUpload({
     const [clientError, setClientError] = useState<string | undefined>();
     const [limitError, setLimitError] = useState<string | undefined>();
     const displayName =
-        file?.name ?? fileBasename(existingPath) ?? (existingUrl ? 'Uploaded file' : null);
+        file?.name ??
+        fileBasename(existingPath) ??
+        (existingUrl ? 'Uploaded file' : null);
 
     return (
         <Field
@@ -896,6 +916,7 @@ function TextFieldWithUpload({
                     placeholder={placeholder}
                     onChange={(e) => {
                         const cleaned = sanitizeCvText(e.target.value);
+
                         if (cleaned.length > maxLength) {
                             setLimitError(characterLimitError(maxLength));
                             onChange(cleaned.slice(0, maxLength));
@@ -914,6 +935,7 @@ function TextFieldWithUpload({
                         const next = sanitizeCvText(
                             value.slice(0, start) + pasted + value.slice(end),
                         );
+
                         if (next.length > maxLength) {
                             e.preventDefault();
                             setLimitError(characterLimitError(maxLength));
@@ -924,7 +946,7 @@ function TextFieldWithUpload({
                 <Button
                     type="button"
                     variant="outline"
-                    className="shrink-0 gap-1.5"
+                    className="shrink-0 gap-1.5 max-sm:h-11 max-sm:w-full max-sm:rounded-full"
                     onClick={() => inputRef.current?.click()}
                 >
                     <Upload className="size-4" />
@@ -945,6 +967,7 @@ function TextFieldWithUpload({
                         }
 
                         const validationError = validateFile(next);
+
                         if (validationError) {
                             setClientError(validationError);
                             onFileChange(null);
@@ -1044,6 +1067,7 @@ function DocumentUploadField({
                         }
 
                         const validationError = validateFile(next);
+
                         if (validationError) {
                             setClientError(validationError);
                             onFileChange(null);
@@ -1136,9 +1160,7 @@ function ActivityListEditor({
                         <LimitedField
                             label="Organisation"
                             error={
-                                errors[
-                                    `vitae.${listKey}.${index}.organization`
-                                ]
+                                errors[`vitae.${listKey}.${index}.organization`]
                             }
                             value={item.organization ?? ''}
                             maxLength={LIMIT.standard}
@@ -1148,9 +1170,7 @@ function ActivityListEditor({
                         />
                         <LimitedField
                             label="Location"
-                            error={
-                                errors[`vitae.${listKey}.${index}.location`]
-                            }
+                            error={errors[`vitae.${listKey}.${index}.location`]}
                             value={item.location ?? ''}
                             maxLength={LIMIT.standard}
                             onChange={(value) =>
@@ -1225,9 +1245,7 @@ function ActivityListEditor({
                             <LimitedField
                                 label="Website link"
                                 error={
-                                    errors[
-                                        `vitae.${listKey}.${index}.link_url`
-                                    ]
+                                    errors[`vitae.${listKey}.${index}.link_url`]
                                 }
                                 value={item.link_url ?? ''}
                                 maxLength={LIMIT.veryLong}
@@ -1364,7 +1382,11 @@ function PhotoUploadField({
                                 return;
                             }
 
-                            const validationError = validatePhotoFile(next, maxBytes);
+                            const validationError = validatePhotoFile(
+                                next,
+                                maxBytes,
+                            );
+
                             if (validationError) {
                                 setClientError(validationError);
                                 onChange(null, validationError);
@@ -1407,7 +1429,11 @@ function PhotoUploadField({
                                 return;
                             }
 
-                            const validationError = validatePhotoFile(next, maxBytes);
+                            const validationError = validatePhotoFile(
+                                next,
+                                maxBytes,
+                            );
+
                             if (validationError) {
                                 setClientError(validationError);
                                 onChange(null, validationError);
@@ -1501,6 +1527,7 @@ export default function StudentCv({ cv, options }: Props) {
                         ? cv.vitae.qualifications.map((item) => ({
                               ...emptyQualification(),
                               ...item,
+                              certificate: null,
                           }))
                         : [emptyQualification()],
                 trainings:
@@ -1541,6 +1568,7 @@ export default function StudentCv({ cv, options }: Props) {
         };
 
         const draft = readCvDraft();
+
         if (!draft) {
             return fromServer;
         }
@@ -1564,6 +1592,7 @@ export default function StudentCv({ cv, options }: Props) {
                     (item) => ({
                         ...emptyQualification(),
                         ...item,
+                        certificate: null,
                     }),
                 ),
                 trainings: (draft.vitae.trainings ?? []).map((item) => ({
@@ -1723,7 +1752,8 @@ export default function StudentCv({ cv, options }: Props) {
         ...cv,
         first_name: form.data.first_name || cv.first_name,
         last_name: form.data.last_name || cv.last_name,
-        name: `${form.data.first_name} ${form.data.last_name}`.trim() || cv.name,
+        name:
+            `${form.data.first_name} ${form.data.last_name}`.trim() || cv.name,
         mobile_whatsapp: form.data.mobile_whatsapp || null,
         date_of_birth: form.data.date_of_birth || null,
         place_of_birth: form.data.place_of_birth || null,
@@ -1754,7 +1784,9 @@ export default function StudentCv({ cv, options }: Props) {
             experiences: (form.data.vitae.experiences ?? []).map(
                 ({ certificate: _c, ...rest }) => rest,
             ),
-            qualifications: form.data.vitae.qualifications ?? [],
+            qualifications: (form.data.vitae.qualifications ?? []).map(
+                ({ certificate: _c, ...rest }) => rest,
+            ),
             trainings: (form.data.vitae.trainings ?? []).map(
                 ({ certificate: _c, ...rest }) => rest,
             ),
@@ -1789,6 +1821,7 @@ export default function StudentCv({ cv, options }: Props) {
                 form.data.passport_photo,
                 PASSPORT_PHOTO_MAX_BYTES,
             );
+
             if (message) {
                 uploadErrors.passport_photo = message;
             }
@@ -1799,6 +1832,7 @@ export default function StudentCv({ cv, options }: Props) {
                 form.data.full_body_photo,
                 FULL_BODY_PHOTO_MAX_BYTES,
             );
+
             if (message) {
                 uploadErrors.full_body_photo = message;
             }
@@ -1806,6 +1840,7 @@ export default function StudentCv({ cv, options }: Props) {
 
         if (form.data.passport_document) {
             const message = validatePdfFile(form.data.passport_document);
+
             if (message) {
                 uploadErrors.passport_document = message;
             }
@@ -1815,6 +1850,7 @@ export default function StudentCv({ cv, options }: Props) {
             const message = validateDocumentFile(
                 form.data.drivers_license_document,
             );
+
             if (message) {
                 uploadErrors.drivers_license_document = message;
             }
@@ -1822,10 +1858,13 @@ export default function StudentCv({ cv, options }: Props) {
 
         const phoneErrors: Partial<Record<keyof FormData, string>> = {};
         const whatsappError = validatePhone(form.data.mobile_whatsapp);
+
         if (whatsappError) {
             phoneErrors.mobile_whatsapp = whatsappError;
         }
+
         const secondaryMobileError = validatePhone(form.data.secondary_mobile);
+
         if (secondaryMobileError) {
             phoneErrors.secondary_mobile = secondaryMobileError;
         }
@@ -1848,23 +1887,22 @@ export default function StudentCv({ cv, options }: Props) {
             return;
         }
 
-        form
-            .transform((data) => ({
-                ...data,
-                mobile_whatsapp: normalizePhone(data.mobile_whatsapp),
-                secondary_mobile: normalizePhone(data.secondary_mobile),
-            }))
-            .post(cvUpdate.url(), {
-                forceFormData: true,
-                preserveScroll: true,
-                preserveState: true,
-                onSuccess: () => {
-                    clearCvDraft();
-                    setDraftNotice(false);
-                    form.setDefaults(stripFileFields(form.data));
-                    setTab('preview');
-                },
-                onError: (errors) => {
+        form.transform((data) => ({
+            ...data,
+            mobile_whatsapp: normalizePhone(data.mobile_whatsapp),
+            secondary_mobile: normalizePhone(data.secondary_mobile),
+        }));
+        form.post(cvUpdate.url(), {
+            forceFormData: true,
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => {
+                clearCvDraft();
+                setDraftNotice(false);
+                form.setDefaults(stripFileFields(form.data));
+                setTab('preview');
+            },
+            onError: (errors) => {
                 const personalErrorKeys = [
                     'first_name',
                     'last_name',
@@ -1933,6 +1971,7 @@ export default function StudentCv({ cv, options }: Props) {
                 const payload = (await response.json()) as {
                     message?: string;
                 };
+
                 if (payload.message) {
                     message = payload.message;
                 }
@@ -1963,6 +2002,7 @@ export default function StudentCv({ cv, options }: Props) {
                     ? error.message
                     : 'Unable to prepare the German CV right now. Please try again.';
             setTranslateError(message);
+
             throw error;
         } finally {
             setIsTranslating(false);
@@ -2068,7 +2108,7 @@ export default function StudentCv({ cv, options }: Props) {
 
             <div
                 data-cv-print={printVariant}
-                className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-6 sm:px-6 print:max-w-none print:gap-0 print:p-0 lg:px-10"
+                className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-10 print:max-w-none print:gap-0 print:p-0"
             >
                 <div className="cv-print-hide flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                     <div className="space-y-2">
@@ -2084,7 +2124,7 @@ export default function StudentCv({ cv, options }: Props) {
                                 <span className="font-medium text-muted-foreground">
                                     Profile completion
                                 </span>
-                                <span className="tabular-nums font-semibold text-foreground">
+                                <span className="font-semibold text-foreground tabular-nums">
                                     {completionPercent}%
                                 </span>
                             </div>
@@ -2134,10 +2174,7 @@ export default function StudentCv({ cv, options }: Props) {
                             </button>
                         </div>
                         {completionPercent === 100 && (
-                            <div
-                                ref={downloadMenuRef}
-                                className="relative"
-                            >
+                            <div ref={downloadMenuRef} className="relative">
                                 <button
                                     type="button"
                                     onClick={() =>
@@ -2270,12 +2307,35 @@ export default function StudentCv({ cv, options }: Props) {
                     <form onSubmit={submit} className="cv-print-hide space-y-6">
                         <nav
                             aria-label="CV sections"
-                            className="rounded-2xl border border-border/80 bg-card/30 p-3 sm:p-4"
+                            className="sticky top-[var(--app-top-h,0px)] z-20 -mx-2 border-b border-border/60 bg-background/90 px-2 py-3 backdrop-blur-xl sm:static sm:mx-0 sm:rounded-2xl sm:border sm:border-border/80 sm:bg-card/30 sm:p-4 sm:backdrop-blur-none"
                         >
-                            <p className="mb-3 px-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                                Section {stepIndex + 1} of {CV_STEPS.length}
-                            </p>
-                            <div className="flex gap-2 overflow-x-auto pb-1">
+                            <div className="mb-2 flex items-center justify-between px-1 text-xs font-medium text-muted-foreground">
+                                <span className="tracking-wide uppercase">
+                                    Section {stepIndex + 1} of {CV_STEPS.length}
+                                </span>
+                                <span>
+                                    {Math.round(
+                                        ((stepIndex + 1) / CV_STEPS.length) *
+                                            100,
+                                    )}
+                                    %
+                                </span>
+                            </div>
+                            <div
+                                className="mb-3 h-1.5 overflow-hidden rounded-full bg-muted"
+                                role="progressbar"
+                                aria-valuemin={0}
+                                aria-valuemax={CV_STEPS.length}
+                                aria-valuenow={stepIndex + 1}
+                            >
+                                <div
+                                    className="h-full rounded-full bg-primary transition-all duration-300"
+                                    style={{
+                                        width: `${((stepIndex + 1) / CV_STEPS.length) * 100}%`,
+                                    }}
+                                />
+                            </div>
+                            <div className="-mx-2 flex scrollbar-none gap-2 overflow-x-auto px-2 pb-1 sm:mx-0 sm:px-0">
                                 {CV_STEPS.map((step, index) => {
                                     const active = step.id === stepId;
                                     const done = index < stepIndex;
@@ -2284,9 +2344,20 @@ export default function StudentCv({ cv, options }: Props) {
                                         <button
                                             key={step.id}
                                             type="button"
-                                            onClick={() => setStepId(step.id)}
+                                            ref={(node) => {
+                                                if (active && node) {
+                                                    node.scrollIntoView({
+                                                        inline: 'center',
+                                                        block: 'nearest',
+                                                    });
+                                                }
+                                            }}
+                                            onClick={() => {
+                                                setStepId(step.id);
+                                                window.scrollTo({ top: 0 });
+                                            }}
                                             className={cn(
-                                                'shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors sm:text-sm',
+                                                'shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition-colors active:scale-95',
                                                 active
                                                     ? 'border-primary bg-primary text-primary-foreground'
                                                     : done
@@ -2302,958 +2373,1935 @@ export default function StudentCv({ cv, options }: Props) {
                         </nav>
 
                         {stepId === 'personal' && (
-                        <Section
-                            title={currentStep.title}
-                            description={currentStep.description}
-                        >
-                            <div className="grid gap-5 sm:grid-cols-2 sm:gap-6">
-                                <LimitedField
-                                    label="First name"
-                                    error={form.errors.first_name}
-                                    value={form.data.first_name}
-                                    maxLength={LIMIT.standard}
-                                    onChange={(value) =>
-                                        form.setData('first_name', value)
-                                    }
-                                />
-                                <LimitedField
-                                    label="Last name"
-                                    error={form.errors.last_name}
-                                    value={form.data.last_name}
-                                    maxLength={LIMIT.standard}
-                                    onChange={(value) =>
-                                        form.setData('last_name', value)
-                                    }
-                                />
-                                <Field
-                                    label="Date of birth"
-                                    error={form.errors.date_of_birth}
-                                >
-                                    <BirthDatePicker
-                                        variant="compact"
-                                        value={form.data.date_of_birth}
-                                        onChange={(value) =>
-                                            form.setData('date_of_birth', value)
-                                        }
-                                    />
-                                </Field>
-                                <LimitedField
-                                    label="Place of birth (City, State)"
-                                    error={form.errors.place_of_birth}
-                                    value={form.data.place_of_birth}
-                                    maxLength={LIMIT.standard}
-                                    onChange={(value) =>
-                                        form.setData('place_of_birth', value)
-                                    }
-                                />
-                                <Field
-                                    label="Civil status"
-                                    error={form.errors.civil_status}
-                                >
-                                    <Select
-                                        value={form.data.civil_status || undefined}
-                                        onValueChange={(value) =>
-                                            form.setData('civil_status', value)
-                                        }
-                                    >
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {options.civilStatuses.map((status) => (
-                                                <SelectItem key={status} value={status}>
-                                                    {status}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </Field>
-                                <Field
-                                    label="Gender"
-                                    error={form.errors.gender}
-                                >
-                                    <Select
-                                        value={form.data.gender || undefined}
-                                        onValueChange={(value) =>
-                                            form.setData('gender', value)
-                                        }
-                                    >
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {options.genders.map((gender) => (
-                                                <SelectItem key={gender} value={gender}>
-                                                    {gender}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </Field>
-                                <LimitedField
-                                    label="Nationality"
-                                    error={form.errors.nationality}
-                                    value={form.data.nationality}
-                                    maxLength={LIMIT.medium}
-                                    onChange={(value) =>
-                                        form.setData('nationality', value)
-                                    }
-                                />
-                                <TextFieldWithUpload
-                                    id="passport-document"
-                                    label="Passport / ID number"
-                                    error={
-                                        form.errors.passport_or_id_number ??
-                                        form.errors.passport_document
-                                    }
-                                    value={form.data.passport_or_id_number}
-                                    maxLength={LIMIT.medium}
-                                    onChange={(value) =>
-                                        form.setData(
-                                            'passport_or_id_number',
-                                            value,
-                                        )
-                                    }
-                                    file={form.data.passport_document}
-                                    existingUrl={cv.passport_document_url}
-                                    existingPath={cv.passport_document_path}
-                                    onFileChange={(file) =>
-                                        form.setData('passport_document', file)
-                                    }
-                                    onClearPending={() =>
-                                        form.setData('passport_document', null)
-                                    }
-                                    accept={ACCEPTED_PDF_ACCEPT}
-                                    hint="Upload a PDF of your passport or ID — PDF only, up to 10MB."
-                                    validateFile={validatePdfFile}
-                                />
-                                <TextFieldWithUpload
-                                    id="drivers-license-document"
-                                    label="Driver's license"
-                                    error={
-                                        form.errors.drivers_license ??
-                                        form.errors.drivers_license_document
-                                    }
-                                    value={form.data.drivers_license}
-                                    maxLength={LIMIT.standard}
-                                    placeholder="Number and 2W/4W if any"
-                                    onChange={(value) =>
-                                        form.setData('drivers_license', value)
-                                    }
-                                    file={form.data.drivers_license_document}
-                                    existingUrl={cv.drivers_license_document_url}
-                                    existingPath={
-                                        cv.drivers_license_document_path
-                                    }
-                                    onFileChange={(file) =>
-                                        form.setData(
-                                            'drivers_license_document',
-                                            file,
-                                        )
-                                    }
-                                    onClearPending={() =>
-                                        form.setData(
-                                            'drivers_license_document',
-                                            null,
-                                        )
-                                    }
-                                />
-                                <Field label="Candidate ID">
-                                    <Input
-                                        value={cv.candidate_id ?? ''}
-                                        disabled
-                                    />
-                                </Field>                                <PhotoUploadField
-                                    id="passport-photo"
-                                    label="Passport-size photo"
-                                    error={form.errors.passport_photo}
-                                    file={form.data.passport_photo}
-                                    existingUrl={cv.passport_photo_url}
-                                    maxBytes={PASSPORT_PHOTO_MAX_BYTES}
-                                    onChange={(file) =>
-                                        form.setData('passport_photo', file)
-                                    }
-                                    onClearPending={() =>
-                                        form.setData('passport_photo', null)
-                                    }
-                                />
-                                <PhotoUploadField
-                                    id="full-body-photo"
-                                    label="Full professional photo (head to toe)"
-                                    error={form.errors.full_body_photo}
-                                    file={form.data.full_body_photo}
-                                    existingUrl={cv.full_body_photo_url}
-                                    maxBytes={FULL_BODY_PHOTO_MAX_BYTES}
-                                    onChange={(file) =>
-                                        form.setData('full_body_photo', file)
-                                    }
-                                    onClearPending={() =>
-                                        form.setData('full_body_photo', null)
-                                    }
-                                />
-                            </div>
-                        </Section>
-                        )}
-
-                        {stepId === 'contact' && (
-                        <Section
-                            title={CV_STEPS[1].title}
-                            description={CV_STEPS[1].description}
-                        >
-                            <div className="space-y-8">
+                            <Section
+                                title={currentStep.title}
+                                description={currentStep.description}
+                            >
                                 <div className="grid gap-5 sm:grid-cols-2 sm:gap-6">
-                                    <Field label="Email ID">
-                                        <Input value={cv.email} disabled />
-                                        <p className="text-xs text-muted-foreground">
-                                            To change your email, go to Profile
-                                            settings.
-                                        </p>
-                                    </Field>
                                     <LimitedField
-                                        label="Mobile (WhatsApp no.)"
-                                        error={form.errors.mobile_whatsapp}
-                                        value={form.data.mobile_whatsapp}
-                                        maxLength={LIMIT.short}
-                                        inputMode="tel"
-                                        autoComplete="tel"
-                                        placeholder="e.g. +919832581198"
+                                        label="First name"
+                                        error={form.errors.first_name}
+                                        value={form.data.first_name}
+                                        maxLength={LIMIT.standard}
                                         onChange={(value) =>
-                                            form.setData(
-                                                'mobile_whatsapp',
-                                                value,
-                                            )
+                                            form.setData('first_name', value)
                                         }
                                     />
-                                    <p className="-mt-3 text-xs text-muted-foreground sm:col-span-2">
-                                        Include country code with + (e.g. +91 for
-                                        India).
-                                    </p>
-                                    <LimitedTextarea
-                                        label="Current address"
-                                        error={form.errors.current_address}
-                                        value={form.data.current_address}
-                                        maxLength={LIMIT.long}
+                                    <LimitedField
+                                        label="Last name"
+                                        error={form.errors.last_name}
+                                        value={form.data.last_name}
+                                        maxLength={LIMIT.standard}
                                         onChange={(value) =>
-                                            form.setData(
-                                                'current_address',
-                                                value,
-                                            )
+                                            form.setData('last_name', value)
                                         }
                                     />
-                                    <LimitedTextarea
-                                        label="Permanent address"
-                                        error={form.errors.permanent_address}
-                                        value={form.data.permanent_address}
-                                        maxLength={LIMIT.long}
-                                        onChange={(value) =>
-                                            form.setData(
-                                                'permanent_address',
-                                                value,
-                                            )
-                                        }
-                                    />
-                                </div>
-
-                                <div className="space-y-5">
-                                    <h3 className="text-base font-semibold tracking-tight">
-                                        Emergency Contact - parent/guardian/spouse
-                                        (email Id) and their (mobile no.)
-                                    </h3>
-                                    <div className="grid gap-5 sm:grid-cols-2 sm:gap-6">
-                                        <LimitedField
-                                            label="(email Id)"
-                                            error={form.errors.secondary_email}
-                                            type="email"
-                                            value={form.data.secondary_email}
-                                            maxLength={LIMIT.standard}
+                                    <Field
+                                        label="Date of birth"
+                                        error={form.errors.date_of_birth}
+                                    >
+                                        <BirthDatePicker
+                                            variant="compact"
+                                            value={form.data.date_of_birth}
                                             onChange={(value) =>
                                                 form.setData(
-                                                    'secondary_email',
+                                                    'date_of_birth',
                                                     value,
                                                 )
                                             }
                                         />
+                                    </Field>
+                                    <LimitedField
+                                        label="Place of birth (City, State)"
+                                        error={form.errors.place_of_birth}
+                                        value={form.data.place_of_birth}
+                                        maxLength={LIMIT.standard}
+                                        onChange={(value) =>
+                                            form.setData(
+                                                'place_of_birth',
+                                                value,
+                                            )
+                                        }
+                                    />
+                                    <Field
+                                        label="Civil status"
+                                        error={form.errors.civil_status}
+                                    >
+                                        <Select
+                                            value={
+                                                form.data.civil_status ||
+                                                undefined
+                                            }
+                                            onValueChange={(value) =>
+                                                form.setData(
+                                                    'civil_status',
+                                                    value,
+                                                )
+                                            }
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue placeholder="Select" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {options.civilStatuses.map(
+                                                    (status) => (
+                                                        <SelectItem
+                                                            key={status}
+                                                            value={status}
+                                                        >
+                                                            {status}
+                                                        </SelectItem>
+                                                    ),
+                                                )}
+                                            </SelectContent>
+                                        </Select>
+                                    </Field>
+                                    <Field
+                                        label="Gender"
+                                        error={form.errors.gender}
+                                    >
+                                        <Select
+                                            value={
+                                                form.data.gender || undefined
+                                            }
+                                            onValueChange={(value) =>
+                                                form.setData('gender', value)
+                                            }
+                                        >
+                                            <SelectTrigger className="w-full">
+                                                <SelectValue placeholder="Select" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {options.genders.map(
+                                                    (gender) => (
+                                                        <SelectItem
+                                                            key={gender}
+                                                            value={gender}
+                                                        >
+                                                            {gender}
+                                                        </SelectItem>
+                                                    ),
+                                                )}
+                                            </SelectContent>
+                                        </Select>
+                                    </Field>
+                                    <LimitedField
+                                        label="Nationality"
+                                        error={form.errors.nationality}
+                                        value={form.data.nationality}
+                                        maxLength={LIMIT.medium}
+                                        onChange={(value) =>
+                                            form.setData('nationality', value)
+                                        }
+                                    />
+                                    <TextFieldWithUpload
+                                        id="passport-document"
+                                        label="Passport / ID number"
+                                        error={
+                                            form.errors.passport_or_id_number ??
+                                            form.errors.passport_document
+                                        }
+                                        value={form.data.passport_or_id_number}
+                                        maxLength={LIMIT.medium}
+                                        onChange={(value) =>
+                                            form.setData(
+                                                'passport_or_id_number',
+                                                value,
+                                            )
+                                        }
+                                        file={form.data.passport_document}
+                                        existingUrl={cv.passport_document_url}
+                                        existingPath={cv.passport_document_path}
+                                        onFileChange={(file) =>
+                                            form.setData(
+                                                'passport_document',
+                                                file,
+                                            )
+                                        }
+                                        onClearPending={() =>
+                                            form.setData(
+                                                'passport_document',
+                                                null,
+                                            )
+                                        }
+                                        accept={ACCEPTED_PDF_ACCEPT}
+                                        hint="Upload a PDF of your passport or ID — PDF only, up to 10MB."
+                                        validateFile={validatePdfFile}
+                                    />
+                                    <TextFieldWithUpload
+                                        id="drivers-license-document"
+                                        label="Driver's license"
+                                        error={
+                                            form.errors.drivers_license ??
+                                            form.errors.drivers_license_document
+                                        }
+                                        value={form.data.drivers_license}
+                                        maxLength={LIMIT.standard}
+                                        placeholder="Number and 2W/4W if any"
+                                        onChange={(value) =>
+                                            form.setData(
+                                                'drivers_license',
+                                                value,
+                                            )
+                                        }
+                                        file={
+                                            form.data.drivers_license_document
+                                        }
+                                        existingUrl={
+                                            cv.drivers_license_document_url
+                                        }
+                                        existingPath={
+                                            cv.drivers_license_document_path
+                                        }
+                                        onFileChange={(file) =>
+                                            form.setData(
+                                                'drivers_license_document',
+                                                file,
+                                            )
+                                        }
+                                        onClearPending={() =>
+                                            form.setData(
+                                                'drivers_license_document',
+                                                null,
+                                            )
+                                        }
+                                    />
+                                    <Field label="Candidate ID">
+                                        <Input
+                                            value={cv.candidate_id ?? ''}
+                                            disabled
+                                        />
+                                    </Field>{' '}
+                                    <PhotoUploadField
+                                        id="passport-photo"
+                                        label="Passport-size photo"
+                                        error={form.errors.passport_photo}
+                                        file={form.data.passport_photo}
+                                        existingUrl={cv.passport_photo_url}
+                                        maxBytes={PASSPORT_PHOTO_MAX_BYTES}
+                                        onChange={(file) =>
+                                            form.setData('passport_photo', file)
+                                        }
+                                        onClearPending={() =>
+                                            form.setData('passport_photo', null)
+                                        }
+                                    />
+                                    <PhotoUploadField
+                                        id="full-body-photo"
+                                        label="Full professional photo (head to toe)"
+                                        error={form.errors.full_body_photo}
+                                        file={form.data.full_body_photo}
+                                        existingUrl={cv.full_body_photo_url}
+                                        maxBytes={FULL_BODY_PHOTO_MAX_BYTES}
+                                        onChange={(file) =>
+                                            form.setData(
+                                                'full_body_photo',
+                                                file,
+                                            )
+                                        }
+                                        onClearPending={() =>
+                                            form.setData(
+                                                'full_body_photo',
+                                                null,
+                                            )
+                                        }
+                                    />
+                                </div>
+                            </Section>
+                        )}
+
+                        {stepId === 'contact' && (
+                            <Section
+                                title={CV_STEPS[1].title}
+                                description={CV_STEPS[1].description}
+                            >
+                                <div className="space-y-8">
+                                    <div className="grid gap-5 sm:grid-cols-2 sm:gap-6">
+                                        <Field label="Email ID">
+                                            <Input value={cv.email} disabled />
+                                            <p className="text-xs text-muted-foreground">
+                                                To change your email, go to
+                                                Profile settings.
+                                            </p>
+                                        </Field>
                                         <LimitedField
-                                            label="(mobile no.)"
-                                            error={form.errors.secondary_mobile}
-                                            value={form.data.secondary_mobile}
+                                            label="Mobile (WhatsApp no.)"
+                                            error={form.errors.mobile_whatsapp}
+                                            value={form.data.mobile_whatsapp}
                                             maxLength={LIMIT.short}
                                             inputMode="tel"
                                             autoComplete="tel"
                                             placeholder="e.g. +919832581198"
                                             onChange={(value) =>
                                                 form.setData(
-                                                    'secondary_mobile',
+                                                    'mobile_whatsapp',
+                                                    value,
+                                                )
+                                            }
+                                        />
+                                        <p className="-mt-3 text-xs text-muted-foreground sm:col-span-2">
+                                            Include country code with + (e.g.
+                                            +91 for India).
+                                        </p>
+                                        <LimitedTextarea
+                                            label="Current address"
+                                            error={form.errors.current_address}
+                                            value={form.data.current_address}
+                                            maxLength={LIMIT.long}
+                                            onChange={(value) =>
+                                                form.setData(
+                                                    'current_address',
+                                                    value,
+                                                )
+                                            }
+                                        />
+                                        <LimitedTextarea
+                                            label="Permanent address"
+                                            error={
+                                                form.errors.permanent_address
+                                            }
+                                            value={form.data.permanent_address}
+                                            maxLength={LIMIT.long}
+                                            onChange={(value) =>
+                                                form.setData(
+                                                    'permanent_address',
                                                     value,
                                                 )
                                             }
                                         />
                                     </div>
+
+                                    <div className="space-y-5">
+                                        <h3 className="text-base font-semibold tracking-tight">
+                                            Emergency Contact -
+                                            parent/guardian/spouse (email Id)
+                                            and their (mobile no.)
+                                        </h3>
+                                        <div className="grid gap-5 sm:grid-cols-2 sm:gap-6">
+                                            <LimitedField
+                                                label="(email Id)"
+                                                error={
+                                                    form.errors.secondary_email
+                                                }
+                                                type="email"
+                                                value={
+                                                    form.data.secondary_email
+                                                }
+                                                maxLength={LIMIT.standard}
+                                                onChange={(value) =>
+                                                    form.setData(
+                                                        'secondary_email',
+                                                        value,
+                                                    )
+                                                }
+                                            />
+                                            <LimitedField
+                                                label="(mobile no.)"
+                                                error={
+                                                    form.errors.secondary_mobile
+                                                }
+                                                value={
+                                                    form.data.secondary_mobile
+                                                }
+                                                maxLength={LIMIT.short}
+                                                inputMode="tel"
+                                                autoComplete="tel"
+                                                placeholder="e.g. +919832581198"
+                                                onChange={(value) =>
+                                                    form.setData(
+                                                        'secondary_mobile',
+                                                        value,
+                                                    )
+                                                }
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </Section>
+                            </Section>
                         )}
 
                         {stepId === 'certification' && (
-                        <>
-                        <Section
-                            title="Professional certification"
-                            description="Name, short description, and optional certificate upload for each professional certification."
-                        >
-                            <div className="space-y-3">
-                                {form.data.vitae.certifications.map(
-                                    (cert, index) => (
-                                        <div
-                                            key={index}
-                                            className="grid gap-3 rounded-lg border border-border/70 p-3 sm:grid-cols-2"
-                                        >
-                                            <LimitedField
-                                                label="Name"
-                                                error={
-                                                    form.errors[
-                                                        `vitae.certifications.${index}.name`
-                                                    ]
-                                                }
-                                                value={cert.name ?? ''}
-                                                maxLength={LIMIT.standard}
-                                                onChange={(value) => {
-                                                    const certifications = [
-                                                        ...form.data.vitae
-                                                            .certifications,
-                                                    ];
-                                                    certifications[index] = {
-                                                        ...cert,
-                                                        name: value,
-                                                    };
-                                                    form.setData('vitae', {
-                                                        ...form.data.vitae,
-                                                        certifications,
-                                                    });
-                                                }}
-                                            />
-                                            <LimitedField
-                                                label="Short description"
-                                                error={
-                                                    form.errors[
-                                                        `vitae.certifications.${index}.description`
-                                                    ]
-                                                }
-                                                value={cert.description ?? ''}
-                                                maxLength={LIMIT.note}
-                                                onChange={(value) => {
-                                                    const certifications = [
-                                                        ...form.data.vitae
-                                                            .certifications,
-                                                    ];
-                                                    certifications[index] = {
-                                                        ...cert,
-                                                        description: value,
-                                                    };
-                                                    form.setData('vitae', {
-                                                        ...form.data.vitae,
-                                                        certifications,
-                                                    });
-                                                }}
-                                            />
-                                            <DocumentUploadField
-                                                id={`certification-file-${index}`}
-                                                label="Upload certificate"
-                                                error={
-                                                    form.errors[
-                                                        `vitae.certifications.${index}.certificate`
-                                                    ]
-                                                }
-                                                file={cert.certificate ?? null}
-                                                existingPath={
-                                                    cert.certificate_path
-                                                }
-                                                onFileChange={(next) => {
-                                                    const certifications = [
-                                                        ...form.data.vitae
-                                                            .certifications,
-                                                    ];
-                                                    certifications[index] = {
-                                                        ...cert,
-                                                        certificate: next,
-                                                    };
-                                                    form.setData('vitae', {
-                                                        ...form.data.vitae,
-                                                        certifications,
-                                                    });
-                                                }}
-                                                onClearPending={() => {
-                                                    const certifications = [
-                                                        ...form.data.vitae
-                                                            .certifications,
-                                                    ];
-                                                    certifications[index] = {
-                                                        ...cert,
-                                                        certificate: null,
-                                                    };
-                                                    form.setData('vitae', {
-                                                        ...form.data.vitae,
-                                                        certifications,
-                                                    });
-                                                }}
-                                                hint="Upload a scan or photo of the certificate — JPG, PNG, or PDF, up to 10MB."
-                                            />
-                                            {form.data.vitae.certifications
-                                                .length > 1 && (
-                                                <div className="flex items-end">
-                                                    <Button
-                                                        type="button"
-                                                        variant="outline"
-                                                        onClick={() => {
+                            <>
+                                <Section
+                                    title="Professional certification"
+                                    description="Name, short description, and optional certificate upload for each professional certification."
+                                >
+                                    <div className="space-y-3">
+                                        {form.data.vitae.certifications.map(
+                                            (cert, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="grid gap-3 rounded-lg border border-border/70 p-3 sm:grid-cols-2"
+                                                >
+                                                    <LimitedField
+                                                        label="Name"
+                                                        error={
+                                                            form.errors[
+                                                                `vitae.certifications.${index}.name`
+                                                            ]
+                                                        }
+                                                        value={cert.name ?? ''}
+                                                        maxLength={
+                                                            LIMIT.standard
+                                                        }
+                                                        onChange={(value) => {
+                                                            const certifications =
+                                                                [
+                                                                    ...form.data
+                                                                        .vitae
+                                                                        .certifications,
+                                                                ];
+                                                            certifications[
+                                                                index
+                                                            ] = {
+                                                                ...cert,
+                                                                name: value,
+                                                            };
                                                             form.setData(
                                                                 'vitae',
                                                                 {
                                                                     ...form.data
                                                                         .vitae,
-                                                                    certifications:
-                                                                        form.data.vitae.certifications.filter(
-                                                                            (
-                                                                                _,
-                                                                                i,
-                                                                            ) =>
-                                                                                i !==
-                                                                                index,
-                                                                        ),
+                                                                    certifications,
                                                                 },
                                                             );
                                                         }}
-                                                    >
-                                                        Remove
-                                                    </Button>
+                                                    />
+                                                    <LimitedField
+                                                        label="Short description"
+                                                        error={
+                                                            form.errors[
+                                                                `vitae.certifications.${index}.description`
+                                                            ]
+                                                        }
+                                                        value={
+                                                            cert.description ??
+                                                            ''
+                                                        }
+                                                        maxLength={LIMIT.note}
+                                                        onChange={(value) => {
+                                                            const certifications =
+                                                                [
+                                                                    ...form.data
+                                                                        .vitae
+                                                                        .certifications,
+                                                                ];
+                                                            certifications[
+                                                                index
+                                                            ] = {
+                                                                ...cert,
+                                                                description:
+                                                                    value,
+                                                            };
+                                                            form.setData(
+                                                                'vitae',
+                                                                {
+                                                                    ...form.data
+                                                                        .vitae,
+                                                                    certifications,
+                                                                },
+                                                            );
+                                                        }}
+                                                    />
+                                                    <DocumentUploadField
+                                                        id={`certification-file-${index}`}
+                                                        label="Upload certificate"
+                                                        error={
+                                                            form.errors[
+                                                                `vitae.certifications.${index}.certificate`
+                                                            ]
+                                                        }
+                                                        file={
+                                                            cert.certificate ??
+                                                            null
+                                                        }
+                                                        existingPath={
+                                                            cert.certificate_path
+                                                        }
+                                                        onFileChange={(
+                                                            next,
+                                                        ) => {
+                                                            const certifications =
+                                                                [
+                                                                    ...form.data
+                                                                        .vitae
+                                                                        .certifications,
+                                                                ];
+                                                            certifications[
+                                                                index
+                                                            ] = {
+                                                                ...cert,
+                                                                certificate:
+                                                                    next,
+                                                            };
+                                                            form.setData(
+                                                                'vitae',
+                                                                {
+                                                                    ...form.data
+                                                                        .vitae,
+                                                                    certifications,
+                                                                },
+                                                            );
+                                                        }}
+                                                        onClearPending={() => {
+                                                            const certifications =
+                                                                [
+                                                                    ...form.data
+                                                                        .vitae
+                                                                        .certifications,
+                                                                ];
+                                                            certifications[
+                                                                index
+                                                            ] = {
+                                                                ...cert,
+                                                                certificate:
+                                                                    null,
+                                                            };
+                                                            form.setData(
+                                                                'vitae',
+                                                                {
+                                                                    ...form.data
+                                                                        .vitae,
+                                                                    certifications,
+                                                                },
+                                                            );
+                                                        }}
+                                                        hint="Upload a scan or photo of the certificate — JPG, PNG, or PDF, up to 10MB."
+                                                    />
+                                                    {form.data.vitae
+                                                        .certifications.length >
+                                                        1 && (
+                                                        <div className="flex items-end">
+                                                            <Button
+                                                                type="button"
+                                                                variant="outline"
+                                                                onClick={() => {
+                                                                    form.setData(
+                                                                        'vitae',
+                                                                        {
+                                                                            ...form
+                                                                                .data
+                                                                                .vitae,
+                                                                            certifications:
+                                                                                form.data.vitae.certifications.filter(
+                                                                                    (
+                                                                                        _,
+                                                                                        i,
+                                                                                    ) =>
+                                                                                        i !==
+                                                                                        index,
+                                                                                ),
+                                                                        },
+                                                                    );
+                                                                }}
+                                                            >
+                                                                Remove
+                                                            </Button>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            )}
-                                        </div>
-                                    ),
-                                )}
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() =>
-                                        form.setData('vitae', {
-                                            ...form.data.vitae,
-                                            certifications: [
-                                                ...form.data.vitae
-                                                    .certifications,
-                                                emptyCertification(),
-                                            ],
-                                        })
-                                    }
-                                >
-                                    Add more
-                                </Button>
-                            </div>
-                        </Section>
+                                            ),
+                                        )}
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={() =>
+                                                form.setData('vitae', {
+                                                    ...form.data.vitae,
+                                                    certifications: [
+                                                        ...form.data.vitae
+                                                            .certifications,
+                                                        emptyCertification(),
+                                                    ],
+                                                })
+                                            }
+                                        >
+                                            Add more
+                                        </Button>
+                                    </div>
+                                </Section>
 
-                        <Section
-                            title="License"
-                            description="Profession, license number, and optional license upload."
-                        >
-                            <div className="space-y-3">
-                                {form.data.vitae.licenses.map(
-                                    (license, index) => (
-                                        <div
-                                            key={index}
-                                            className="grid gap-3 rounded-lg border border-border/70 p-3 sm:grid-cols-2"
-                                        >
-                                            <LimitedField
-                                                label="Profession"
-                                                error={
-                                                    form.errors[
-                                                        `vitae.licenses.${index}.title`
-                                                    ]
-                                                }
-                                                value={license.title ?? ''}
-                                                maxLength={LIMIT.standard}
-                                                onChange={(value) => {
-                                                    const licenses = [
-                                                        ...form.data.vitae
-                                                            .licenses,
-                                                    ];
-                                                    licenses[index] = {
-                                                        ...license,
-                                                        title: value,
-                                                    };
-                                                    form.setData('vitae', {
-                                                        ...form.data.vitae,
-                                                        licenses,
-                                                    });
-                                                }}
-                                            />
-                                            <LimitedField
-                                                label="License no."
-                                                error={
-                                                    form.errors[
-                                                        `vitae.licenses.${index}.registration_number`
-                                                    ]
-                                                }
-                                                value={
-                                                    license.registration_number ??
-                                                    ''
-                                                }
-                                                maxLength={LIMIT.standard}
-                                                onChange={(value) => {
-                                                    const licenses = [
-                                                        ...form.data.vitae
-                                                            .licenses,
-                                                    ];
-                                                    licenses[index] = {
-                                                        ...license,
-                                                        registration_number:
-                                                            value,
-                                                    };
-                                                    form.setData('vitae', {
-                                                        ...form.data.vitae,
-                                                        licenses,
-                                                    });
-                                                }}
-                                            />
-                                            <DocumentUploadField
-                                                id={`license-file-${index}`}
-                                                label="Upload license"
-                                                error={
-                                                    form.errors[
-                                                        `vitae.licenses.${index}.certificate`
-                                                    ]
-                                                }
-                                                file={
-                                                    license.certificate ?? null
-                                                }
-                                                existingPath={
-                                                    license.certificate_path
-                                                }
-                                                onFileChange={(next) => {
-                                                    const licenses = [
-                                                        ...form.data.vitae
-                                                            .licenses,
-                                                    ];
-                                                    licenses[index] = {
-                                                        ...license,
-                                                        certificate: next,
-                                                    };
-                                                    form.setData('vitae', {
-                                                        ...form.data.vitae,
-                                                        licenses,
-                                                    });
-                                                }}
-                                                onClearPending={() => {
-                                                    const licenses = [
-                                                        ...form.data.vitae
-                                                            .licenses,
-                                                    ];
-                                                    licenses[index] = {
-                                                        ...license,
-                                                        certificate: null,
-                                                    };
-                                                    form.setData('vitae', {
-                                                        ...form.data.vitae,
-                                                        licenses,
-                                                    });
-                                                }}
-                                                hint="Upload a scan or photo of the license — JPG, PNG, or PDF, up to 10MB."
-                                            />
-                                            {form.data.vitae.licenses.length >
-                                                1 && (
-                                                <div className="flex items-end">
-                                                    <Button
-                                                        type="button"
-                                                        variant="outline"
-                                                        onClick={() => {
+                                <Section
+                                    title="License"
+                                    description="Profession, license number, and optional license upload."
+                                >
+                                    <div className="space-y-3">
+                                        {form.data.vitae.licenses.map(
+                                            (license, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="grid gap-3 rounded-lg border border-border/70 p-3 sm:grid-cols-2"
+                                                >
+                                                    <LimitedField
+                                                        label="Profession"
+                                                        error={
+                                                            form.errors[
+                                                                `vitae.licenses.${index}.title`
+                                                            ]
+                                                        }
+                                                        value={
+                                                            license.title ?? ''
+                                                        }
+                                                        maxLength={
+                                                            LIMIT.standard
+                                                        }
+                                                        onChange={(value) => {
+                                                            const licenses = [
+                                                                ...form.data
+                                                                    .vitae
+                                                                    .licenses,
+                                                            ];
+                                                            licenses[index] = {
+                                                                ...license,
+                                                                title: value,
+                                                            };
                                                             form.setData(
                                                                 'vitae',
                                                                 {
                                                                     ...form.data
                                                                         .vitae,
-                                                                    licenses:
-                                                                        form.data.vitae.licenses.filter(
-                                                                            (
-                                                                                _,
-                                                                                i,
-                                                                            ) =>
-                                                                                i !==
-                                                                                index,
-                                                                        ),
+                                                                    licenses,
                                                                 },
                                                             );
                                                         }}
-                                                    >
-                                                        Remove
-                                                    </Button>
+                                                    />
+                                                    <LimitedField
+                                                        label="License no."
+                                                        error={
+                                                            form.errors[
+                                                                `vitae.licenses.${index}.registration_number`
+                                                            ]
+                                                        }
+                                                        value={
+                                                            license.registration_number ??
+                                                            ''
+                                                        }
+                                                        maxLength={
+                                                            LIMIT.standard
+                                                        }
+                                                        onChange={(value) => {
+                                                            const licenses = [
+                                                                ...form.data
+                                                                    .vitae
+                                                                    .licenses,
+                                                            ];
+                                                            licenses[index] = {
+                                                                ...license,
+                                                                registration_number:
+                                                                    value,
+                                                            };
+                                                            form.setData(
+                                                                'vitae',
+                                                                {
+                                                                    ...form.data
+                                                                        .vitae,
+                                                                    licenses,
+                                                                },
+                                                            );
+                                                        }}
+                                                    />
+                                                    <DocumentUploadField
+                                                        id={`license-file-${index}`}
+                                                        label="Upload license"
+                                                        error={
+                                                            form.errors[
+                                                                `vitae.licenses.${index}.certificate`
+                                                            ]
+                                                        }
+                                                        file={
+                                                            license.certificate ??
+                                                            null
+                                                        }
+                                                        existingPath={
+                                                            license.certificate_path
+                                                        }
+                                                        onFileChange={(
+                                                            next,
+                                                        ) => {
+                                                            const licenses = [
+                                                                ...form.data
+                                                                    .vitae
+                                                                    .licenses,
+                                                            ];
+                                                            licenses[index] = {
+                                                                ...license,
+                                                                certificate:
+                                                                    next,
+                                                            };
+                                                            form.setData(
+                                                                'vitae',
+                                                                {
+                                                                    ...form.data
+                                                                        .vitae,
+                                                                    licenses,
+                                                                },
+                                                            );
+                                                        }}
+                                                        onClearPending={() => {
+                                                            const licenses = [
+                                                                ...form.data
+                                                                    .vitae
+                                                                    .licenses,
+                                                            ];
+                                                            licenses[index] = {
+                                                                ...license,
+                                                                certificate:
+                                                                    null,
+                                                            };
+                                                            form.setData(
+                                                                'vitae',
+                                                                {
+                                                                    ...form.data
+                                                                        .vitae,
+                                                                    licenses,
+                                                                },
+                                                            );
+                                                        }}
+                                                        hint="Upload a scan or photo of the license — JPG, PNG, or PDF, up to 10MB."
+                                                    />
+                                                    {form.data.vitae.licenses
+                                                        .length > 1 && (
+                                                        <div className="flex items-end">
+                                                            <Button
+                                                                type="button"
+                                                                variant="outline"
+                                                                onClick={() => {
+                                                                    form.setData(
+                                                                        'vitae',
+                                                                        {
+                                                                            ...form
+                                                                                .data
+                                                                                .vitae,
+                                                                            licenses:
+                                                                                form.data.vitae.licenses.filter(
+                                                                                    (
+                                                                                        _,
+                                                                                        i,
+                                                                                    ) =>
+                                                                                        i !==
+                                                                                        index,
+                                                                                ),
+                                                                        },
+                                                                    );
+                                                                }}
+                                                            >
+                                                                Remove
+                                                            </Button>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            )}
-                                        </div>
-                                    ),
-                                )}
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() =>
-                                        form.setData('vitae', {
-                                            ...form.data.vitae,
-                                            licenses: [
-                                                ...form.data.vitae.licenses,
-                                                emptyLicense(),
-                                            ],
-                                        })
-                                    }
-                                >
-                                    Add license
-                                </Button>
-                            </div>
-                        </Section>
-                        </>
+                                            ),
+                                        )}
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={() =>
+                                                form.setData('vitae', {
+                                                    ...form.data.vitae,
+                                                    licenses: [
+                                                        ...form.data.vitae
+                                                            .licenses,
+                                                        emptyLicense(),
+                                                    ],
+                                                })
+                                            }
+                                        >
+                                            Add license
+                                        </Button>
+                                    </div>
+                                </Section>
+                            </>
                         )}
 
                         {stepId === 'experience' && (
-                        <Section
-                            title={CV_STEPS[3].title}
-                            description={CV_STEPS[3].description}
-                        >
-                            <Field label="Are you a fresher?">
-                                <Select
-                                    value={
-                                        form.data.vitae.is_newbie
-                                            ? 'yes'
-                                            : 'no'
-                                    }
-                                    onValueChange={(value) => {
-                                        const isNewbie = value === 'yes';
-                                        form.setData('vitae', {
-                                            ...form.data.vitae,
-                                            is_newbie: isNewbie,
-                                            experiences:
-                                                !isNewbie &&
-                                                form.data.vitae.experiences
-                                                    .length === 0
-                                                    ? [emptyExperience()]
-                                                    : form.data.vitae
-                                                          .experiences,
-                                        });
-                                    }}
-                                >
-                                    <SelectTrigger className="w-full sm:max-w-xs">
-                                        <SelectValue placeholder="Select" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="yes">Yes</SelectItem>
-                                        <SelectItem value="no">No</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </Field>
+                            <Section
+                                title={CV_STEPS[3].title}
+                                description={CV_STEPS[3].description}
+                            >
+                                <Field label="Are you a fresher?">
+                                    <Select
+                                        value={
+                                            form.data.vitae.is_newbie
+                                                ? 'yes'
+                                                : 'no'
+                                        }
+                                        onValueChange={(value) => {
+                                            const isNewbie = value === 'yes';
+                                            form.setData('vitae', {
+                                                ...form.data.vitae,
+                                                is_newbie: isNewbie,
+                                                experiences:
+                                                    !isNewbie &&
+                                                    form.data.vitae.experiences
+                                                        .length === 0
+                                                        ? [emptyExperience()]
+                                                        : form.data.vitae
+                                                              .experiences,
+                                            });
+                                        }}
+                                    >
+                                        <SelectTrigger className="w-full sm:max-w-xs">
+                                            <SelectValue placeholder="Select" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="yes">
+                                                Yes
+                                            </SelectItem>
+                                            <SelectItem value="no">
+                                                No
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </Field>
 
-                            {form.data.vitae.is_newbie ? (
-                                <LimitedTextarea
-                                    label="What are your current plans?"
-                                    error={form.errors.gap_reasons}
-                                    value={form.data.gap_reasons}
-                                    maxLength={LIMIT.veryLong}
-                                    placeholder="Share what you are focusing on right now — studies, training, or next steps."
-                                    onChange={(value) =>
-                                        form.setData('gap_reasons', value)
-                                    }
-                                />
-                            ) : (
+                                {form.data.vitae.is_newbie ? (
+                                    <LimitedTextarea
+                                        label="What are your current plans?"
+                                        error={form.errors.gap_reasons}
+                                        value={form.data.gap_reasons}
+                                        maxLength={LIMIT.veryLong}
+                                        placeholder="Share what you are focusing on right now — studies, training, or next steps."
+                                        onChange={(value) =>
+                                            form.setData('gap_reasons', value)
+                                        }
+                                    />
+                                ) : (
+                                    <div className="space-y-4">
+                                        {form.data.vitae.experiences.map(
+                                            (job, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="grid gap-4 rounded-xl border border-border/70 p-4 sm:grid-cols-2 sm:p-5"
+                                                >
+                                                    <LimitedField
+                                                        label="Start Date (M/Y)"
+                                                        value={
+                                                            job.start_date ?? ''
+                                                        }
+                                                        maxLength={LIMIT.short}
+                                                        placeholder="MM/YYYY"
+                                                        onChange={(value) => {
+                                                            const experiences =
+                                                                [
+                                                                    ...form.data
+                                                                        .vitae
+                                                                        .experiences,
+                                                                ];
+                                                            experiences[index] =
+                                                                {
+                                                                    ...job,
+                                                                    start_date:
+                                                                        value,
+                                                                };
+                                                            form.setData(
+                                                                'vitae',
+                                                                {
+                                                                    ...form.data
+                                                                        .vitae,
+                                                                    experiences,
+                                                                },
+                                                            );
+                                                        }}
+                                                    />
+                                                    <LimitedField
+                                                        label="End Date (M/Y)"
+                                                        value={
+                                                            job.end_date ?? ''
+                                                        }
+                                                        maxLength={LIMIT.short}
+                                                        placeholder="MM/YYYY"
+                                                        onChange={(value) => {
+                                                            const experiences =
+                                                                [
+                                                                    ...form.data
+                                                                        .vitae
+                                                                        .experiences,
+                                                                ];
+                                                            experiences[index] =
+                                                                {
+                                                                    ...job,
+                                                                    end_date:
+                                                                        value,
+                                                                };
+                                                            form.setData(
+                                                                'vitae',
+                                                                {
+                                                                    ...form.data
+                                                                        .vitae,
+                                                                    experiences,
+                                                                },
+                                                            );
+                                                        }}
+                                                    />
+                                                    <LimitedField
+                                                        label="Designation"
+                                                        value={
+                                                            job.designation ??
+                                                            ''
+                                                        }
+                                                        maxLength={
+                                                            LIMIT.standard
+                                                        }
+                                                        onChange={(value) => {
+                                                            const experiences =
+                                                                [
+                                                                    ...form.data
+                                                                        .vitae
+                                                                        .experiences,
+                                                                ];
+                                                            experiences[index] =
+                                                                {
+                                                                    ...job,
+                                                                    designation:
+                                                                        value,
+                                                                };
+                                                            form.setData(
+                                                                'vitae',
+                                                                {
+                                                                    ...form.data
+                                                                        .vitae,
+                                                                    experiences,
+                                                                },
+                                                            );
+                                                        }}
+                                                    />
+                                                    <LimitedField
+                                                        label="Department"
+                                                        value={
+                                                            job.department ?? ''
+                                                        }
+                                                        maxLength={
+                                                            LIMIT.standard
+                                                        }
+                                                        onChange={(value) => {
+                                                            const experiences =
+                                                                [
+                                                                    ...form.data
+                                                                        .vitae
+                                                                        .experiences,
+                                                                ];
+                                                            experiences[index] =
+                                                                {
+                                                                    ...job,
+                                                                    department:
+                                                                        value,
+                                                                };
+                                                            form.setData(
+                                                                'vitae',
+                                                                {
+                                                                    ...form.data
+                                                                        .vitae,
+                                                                    experiences,
+                                                                },
+                                                            );
+                                                        }}
+                                                    />
+                                                    <LimitedField
+                                                        label="Organization name"
+                                                        value={
+                                                            job.organization ??
+                                                            ''
+                                                        }
+                                                        maxLength={
+                                                            LIMIT.standard
+                                                        }
+                                                        onChange={(value) => {
+                                                            const experiences =
+                                                                [
+                                                                    ...form.data
+                                                                        .vitae
+                                                                        .experiences,
+                                                                ];
+                                                            experiences[index] =
+                                                                {
+                                                                    ...job,
+                                                                    organization:
+                                                                        value,
+                                                                };
+                                                            form.setData(
+                                                                'vitae',
+                                                                {
+                                                                    ...form.data
+                                                                        .vitae,
+                                                                    experiences,
+                                                                },
+                                                            );
+                                                        }}
+                                                    />
+                                                    <LimitedField
+                                                        label="City"
+                                                        value={job.city ?? ''}
+                                                        maxLength={
+                                                            LIMIT.standard
+                                                        }
+                                                        onChange={(value) => {
+                                                            const experiences =
+                                                                [
+                                                                    ...form.data
+                                                                        .vitae
+                                                                        .experiences,
+                                                                ];
+                                                            experiences[index] =
+                                                                {
+                                                                    ...job,
+                                                                    city: value,
+                                                                };
+                                                            form.setData(
+                                                                'vitae',
+                                                                {
+                                                                    ...form.data
+                                                                        .vitae,
+                                                                    experiences,
+                                                                },
+                                                            );
+                                                        }}
+                                                    />
+                                                    <LimitedField
+                                                        label="State"
+                                                        value={job.state ?? ''}
+                                                        maxLength={
+                                                            LIMIT.standard
+                                                        }
+                                                        onChange={(value) => {
+                                                            const experiences =
+                                                                [
+                                                                    ...form.data
+                                                                        .vitae
+                                                                        .experiences,
+                                                                ];
+                                                            experiences[index] =
+                                                                {
+                                                                    ...job,
+                                                                    state: value,
+                                                                };
+                                                            form.setData(
+                                                                'vitae',
+                                                                {
+                                                                    ...form.data
+                                                                        .vitae,
+                                                                    experiences,
+                                                                },
+                                                            );
+                                                        }}
+                                                    />
+                                                    <LimitedTextarea
+                                                        label="Cases Handled"
+                                                        value={
+                                                            job.cases_handled ??
+                                                            ''
+                                                        }
+                                                        maxLength={
+                                                            LIMIT.veryLong
+                                                        }
+                                                        onChange={(value) => {
+                                                            const experiences =
+                                                                [
+                                                                    ...form.data
+                                                                        .vitae
+                                                                        .experiences,
+                                                                ];
+                                                            experiences[index] =
+                                                                {
+                                                                    ...job,
+                                                                    cases_handled:
+                                                                        value,
+                                                                };
+                                                            form.setData(
+                                                                'vitae',
+                                                                {
+                                                                    ...form.data
+                                                                        .vitae,
+                                                                    experiences,
+                                                                },
+                                                            );
+                                                        }}
+                                                    />
+
+                                                    <div className="space-y-3 sm:col-span-2">
+                                                        <p className="text-sm font-medium text-foreground">
+                                                            For Healthcare
+                                                            professionals
+                                                        </p>
+                                                        <div className="grid gap-4 sm:grid-cols-2">
+                                                            <LimitedField
+                                                                label="Medical equipments used"
+                                                                value={
+                                                                    job.medical_equipment ??
+                                                                    ''
+                                                                }
+                                                                maxLength={
+                                                                    LIMIT.paragraph
+                                                                }
+                                                                onChange={(
+                                                                    value,
+                                                                ) => {
+                                                                    const experiences =
+                                                                        [
+                                                                            ...form
+                                                                                .data
+                                                                                .vitae
+                                                                                .experiences,
+                                                                        ];
+                                                                    experiences[
+                                                                        index
+                                                                    ] = {
+                                                                        ...job,
+                                                                        medical_equipment:
+                                                                            value,
+                                                                    };
+                                                                    form.setData(
+                                                                        'vitae',
+                                                                        {
+                                                                            ...form
+                                                                                .data
+                                                                                .vitae,
+                                                                            experiences,
+                                                                        },
+                                                                    );
+                                                                }}
+                                                            />
+                                                            <LimitedField
+                                                                label="Bedded capacity"
+                                                                value={
+                                                                    job.bed_capacity ??
+                                                                    ''
+                                                                }
+                                                                maxLength={
+                                                                    LIMIT.standard
+                                                                }
+                                                                onChange={(
+                                                                    value,
+                                                                ) => {
+                                                                    const experiences =
+                                                                        [
+                                                                            ...form
+                                                                                .data
+                                                                                .vitae
+                                                                                .experiences,
+                                                                        ];
+                                                                    experiences[
+                                                                        index
+                                                                    ] = {
+                                                                        ...job,
+                                                                        bed_capacity:
+                                                                            value,
+                                                                    };
+                                                                    form.setData(
+                                                                        'vitae',
+                                                                        {
+                                                                            ...form
+                                                                                .data
+                                                                                .vitae,
+                                                                            experiences,
+                                                                        },
+                                                                    );
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <DocumentUploadField
+                                                        id={`experience-certificate-${index}`}
+                                                        label="Upload Experience Certificate"
+                                                        error={
+                                                            form.errors[
+                                                                `vitae.experiences.${index}.certificate`
+                                                            ]
+                                                        }
+                                                        file={
+                                                            job.certificate ??
+                                                            null
+                                                        }
+                                                        existingPath={
+                                                            job.certificate_path
+                                                        }
+                                                        onFileChange={(
+                                                            next,
+                                                        ) => {
+                                                            const experiences =
+                                                                [
+                                                                    ...form.data
+                                                                        .vitae
+                                                                        .experiences,
+                                                                ];
+                                                            experiences[index] =
+                                                                {
+                                                                    ...job,
+                                                                    certificate:
+                                                                        next,
+                                                                };
+                                                            form.setData(
+                                                                'vitae',
+                                                                {
+                                                                    ...form.data
+                                                                        .vitae,
+                                                                    experiences,
+                                                                },
+                                                            );
+                                                        }}
+                                                        onClearPending={() => {
+                                                            const experiences =
+                                                                [
+                                                                    ...form.data
+                                                                        .vitae
+                                                                        .experiences,
+                                                                ];
+                                                            experiences[index] =
+                                                                {
+                                                                    ...job,
+                                                                    certificate:
+                                                                        null,
+                                                                };
+                                                            form.setData(
+                                                                'vitae',
+                                                                {
+                                                                    ...form.data
+                                                                        .vitae,
+                                                                    experiences,
+                                                                },
+                                                            );
+                                                        }}
+                                                        hint="Upload a scan or photo of the experience certificate — JPG, PNG, or PDF, up to 10MB."
+                                                    />
+
+                                                    {form.data.vitae.experiences
+                                                        .length > 1 && (
+                                                        <div className="flex items-end sm:col-span-2">
+                                                            <Button
+                                                                type="button"
+                                                                variant="outline"
+                                                                onClick={() =>
+                                                                    form.setData(
+                                                                        'vitae',
+                                                                        {
+                                                                            ...form
+                                                                                .data
+                                                                                .vitae,
+                                                                            experiences:
+                                                                                form.data.vitae.experiences.filter(
+                                                                                    (
+                                                                                        _,
+                                                                                        i,
+                                                                                    ) =>
+                                                                                        i !==
+                                                                                        index,
+                                                                                ),
+                                                                        },
+                                                                    )
+                                                                }
+                                                            >
+                                                                Remove
+                                                            </Button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ),
+                                        )}
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={() =>
+                                                form.setData('vitae', {
+                                                    ...form.data.vitae,
+                                                    experiences: [
+                                                        ...form.data.vitae
+                                                            .experiences,
+                                                        emptyExperience(),
+                                                    ],
+                                                })
+                                            }
+                                        >
+                                            Add more experience
+                                        </Button>
+                                    </div>
+                                )}
+                            </Section>
+                        )}
+
+                        {stepId === 'bilingual' && (
+                            <Section
+                                title={CV_STEPS[4].title}
+                                description={CV_STEPS[4].description}
+                            >
                                 <div className="space-y-4">
-                                    {form.data.vitae.experiences.map(
-                                        (job, index) => (
+                                    {form.data.vitae.bilingual.map(
+                                        (entry, index) => {
+                                            const knownLanguage =
+                                                isKnownLanguageOption(
+                                                    entry.language ?? '',
+                                                );
+                                            const languageSelectValue =
+                                                knownLanguage
+                                                    ? (entry.language ??
+                                                      undefined)
+                                                    : entry.language
+                                                      ? LANGUAGE_PICKER_OTHER
+                                                      : undefined;
+
+                                            const updateBilingualEntry = (
+                                                patch: Partial<FormBilingual>,
+                                            ) => {
+                                                const bilingual = [
+                                                    ...form.data.vitae
+                                                        .bilingual,
+                                                ];
+                                                bilingual[index] = {
+                                                    ...entry,
+                                                    ...patch,
+                                                };
+                                                form.setData('vitae', {
+                                                    ...form.data.vitae,
+                                                    bilingual,
+                                                });
+                                            };
+
+                                            return (
+                                                <div
+                                                    key={index}
+                                                    className="grid gap-4 rounded-xl border border-border/70 p-4 sm:grid-cols-2 sm:items-start sm:p-5 lg:grid-cols-3"
+                                                >
+                                                    <Field
+                                                        label="Language Known"
+                                                        error={
+                                                            form.errors[
+                                                                `vitae.bilingual.${index}.language`
+                                                            ]
+                                                        }
+                                                        hint={characterLimitHint(
+                                                            LIMIT.standard,
+                                                        )}
+                                                    >
+                                                        <Select
+                                                            value={
+                                                                languageSelectValue
+                                                            }
+                                                            onValueChange={(
+                                                                value,
+                                                            ) => {
+                                                                if (
+                                                                    value ===
+                                                                    LANGUAGE_PICKER_OTHER
+                                                                ) {
+                                                                    updateBilingualEntry(
+                                                                        {
+                                                                            language:
+                                                                                knownLanguage
+                                                                                    ? ''
+                                                                                    : (entry.language ??
+                                                                                      ''),
+                                                                        },
+                                                                    );
+
+                                                                    return;
+                                                                }
+
+                                                                const suggested =
+                                                                    suggestedLanguageType(
+                                                                        value,
+                                                                    );
+                                                                const nextType =
+                                                                    entry.language_type ||
+                                                                    suggested ||
+                                                                    '';
+                                                                updateBilingualEntry(
+                                                                    {
+                                                                        language:
+                                                                            value,
+                                                                        language_type:
+                                                                            nextType,
+                                                                        ...(nextType ===
+                                                                        'Regional'
+                                                                            ? {
+                                                                                  certification_level:
+                                                                                      '',
+                                                                              }
+                                                                            : {}),
+                                                                    },
+                                                                );
+                                                            }}
+                                                        >
+                                                            <SelectTrigger className="w-full">
+                                                                <SelectValue
+                                                                    placeholder={bilingualLanguagePlaceholder(
+                                                                        index,
+                                                                    )}
+                                                                />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem
+                                                                    value={
+                                                                        LANGUAGE_PICKER_OTHER
+                                                                    }
+                                                                >
+                                                                    Other (type
+                                                                    below)
+                                                                </SelectItem>
+                                                                {REGIONAL_LANGUAGES_IN.map(
+                                                                    (name) => (
+                                                                        <SelectItem
+                                                                            key={`regional-${name}`}
+                                                                            value={
+                                                                                name
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                name
+                                                                            }
+                                                                        </SelectItem>
+                                                                    ),
+                                                                )}
+                                                                {FOREIGN_LANGUAGE_OPTIONS.map(
+                                                                    (name) => (
+                                                                        <SelectItem
+                                                                            key={`foreign-${name}`}
+                                                                            value={
+                                                                                name
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                name
+                                                                            }
+                                                                        </SelectItem>
+                                                                    ),
+                                                                )}
+                                                            </SelectContent>
+                                                        </Select>
+                                                        {!knownLanguage ? (
+                                                            <Input
+                                                                className="mt-2"
+                                                                value={
+                                                                    entry.language ??
+                                                                    ''
+                                                                }
+                                                                placeholder={bilingualLanguagePlaceholder(
+                                                                    index,
+                                                                )}
+                                                                onChange={(
+                                                                    event,
+                                                                ) => {
+                                                                    const value =
+                                                                        sanitizeCvText(
+                                                                            event
+                                                                                .target
+                                                                                .value,
+                                                                        ).slice(
+                                                                            0,
+                                                                            LIMIT.standard,
+                                                                        );
+                                                                    updateBilingualEntry(
+                                                                        {
+                                                                            language:
+                                                                                value,
+                                                                        },
+                                                                    );
+                                                                }}
+                                                            />
+                                                        ) : null}
+                                                    </Field>
+                                                    <Field
+                                                        label="Language type"
+                                                        error={
+                                                            form.errors[
+                                                                `vitae.bilingual.${index}.language_type`
+                                                            ]
+                                                        }
+                                                    >
+                                                        <Select
+                                                            value={
+                                                                entry.language_type ||
+                                                                undefined
+                                                            }
+                                                            onValueChange={(
+                                                                value,
+                                                            ) => {
+                                                                updateBilingualEntry(
+                                                                    {
+                                                                        language_type:
+                                                                            value,
+                                                                        ...(value ===
+                                                                        'Regional'
+                                                                            ? {
+                                                                                  certification_level:
+                                                                                      '',
+                                                                              }
+                                                                            : {}),
+                                                                    },
+                                                                );
+                                                            }}
+                                                        >
+                                                            <SelectTrigger className="w-full">
+                                                                <SelectValue placeholder="Select type" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {LANGUAGE_TYPES.map(
+                                                                    (type) => (
+                                                                        <SelectItem
+                                                                            key={
+                                                                                type
+                                                                            }
+                                                                            value={
+                                                                                type
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                type
+                                                                            }
+                                                                        </SelectItem>
+                                                                    ),
+                                                                )}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </Field>
+                                                    <Field
+                                                        label="Language Proficiency"
+                                                        error={
+                                                            form.errors[
+                                                                `vitae.bilingual.${index}.proficiency`
+                                                            ]
+                                                        }
+                                                    >
+                                                        <Select
+                                                            value={
+                                                                entry.proficiency ||
+                                                                undefined
+                                                            }
+                                                            onValueChange={(
+                                                                value,
+                                                            ) => {
+                                                                updateBilingualEntry(
+                                                                    {
+                                                                        proficiency:
+                                                                            value,
+                                                                    },
+                                                                );
+                                                            }}
+                                                        >
+                                                            <SelectTrigger className="w-full">
+                                                                <SelectValue placeholder="Select level" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {LANGUAGE_PROFICIENCY_LEVELS.map(
+                                                                    (level) => (
+                                                                        <SelectItem
+                                                                            key={
+                                                                                level
+                                                                            }
+                                                                            value={
+                                                                                level
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                level
+                                                                            }
+                                                                        </SelectItem>
+                                                                    ),
+                                                                )}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </Field>
+                                                    {entry.language_type !==
+                                                        'Regional' && (
+                                                        <Field
+                                                            label="Certification level"
+                                                            error={
+                                                                form.errors[
+                                                                    `vitae.bilingual.${index}.certification_level`
+                                                                ]
+                                                            }
+                                                            hint="Optional CEFR level (A1–C2)"
+                                                        >
+                                                            <Select
+                                                                value={
+                                                                    entry.certification_level ||
+                                                                    '__none__'
+                                                                }
+                                                                onValueChange={(
+                                                                    value,
+                                                                ) => {
+                                                                    updateBilingualEntry(
+                                                                        {
+                                                                            certification_level:
+                                                                                value ===
+                                                                                '__none__'
+                                                                                    ? ''
+                                                                                    : value,
+                                                                        },
+                                                                    );
+                                                                }}
+                                                            >
+                                                                <SelectTrigger className="w-full">
+                                                                    <SelectValue placeholder="None" />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    <SelectItem value="__none__">
+                                                                        None
+                                                                    </SelectItem>
+                                                                    {CERTIFICATION_LEVELS.map(
+                                                                        (
+                                                                            level,
+                                                                        ) => (
+                                                                            <SelectItem
+                                                                                key={
+                                                                                    level
+                                                                                }
+                                                                                value={
+                                                                                    level
+                                                                                }
+                                                                            >
+                                                                                {
+                                                                                    level
+                                                                                }
+                                                                            </SelectItem>
+                                                                        ),
+                                                                    )}
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </Field>
+                                                    )}
+                                                    <DocumentUploadField
+                                                        id={`bilingual-certificate-${index}`}
+                                                        label="Upload Certificates"
+                                                        error={
+                                                            form.errors[
+                                                                `vitae.bilingual.${index}.certificate`
+                                                            ]
+                                                        }
+                                                        file={
+                                                            entry.certificate ??
+                                                            null
+                                                        }
+                                                        existingPath={
+                                                            entry.certificate_path
+                                                        }
+                                                        onFileChange={(
+                                                            next,
+                                                        ) => {
+                                                            updateBilingualEntry(
+                                                                {
+                                                                    certificate:
+                                                                        next,
+                                                                },
+                                                            );
+                                                        }}
+                                                        onClearPending={() => {
+                                                            updateBilingualEntry(
+                                                                {
+                                                                    certificate:
+                                                                        null,
+                                                                },
+                                                            );
+                                                        }}
+                                                        hint="JPG, PNG, or PDF, up to 10MB."
+                                                    />
+                                                    {form.data.vitae.bilingual
+                                                        .length > 4 && (
+                                                        <div className="flex items-end sm:col-span-2 lg:col-span-3">
+                                                            <Button
+                                                                type="button"
+                                                                variant="outline"
+                                                                onClick={() => {
+                                                                    form.setData(
+                                                                        'vitae',
+                                                                        {
+                                                                            ...form
+                                                                                .data
+                                                                                .vitae,
+                                                                            bilingual:
+                                                                                form.data.vitae.bilingual.filter(
+                                                                                    (
+                                                                                        _,
+                                                                                        i,
+                                                                                    ) =>
+                                                                                        i !==
+                                                                                        index,
+                                                                                ),
+                                                                        },
+                                                                    );
+                                                                }}
+                                                            >
+                                                                Remove
+                                                            </Button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        },
+                                    )}
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() =>
+                                            form.setData('vitae', {
+                                                ...form.data.vitae,
+                                                bilingual: [
+                                                    ...form.data.vitae
+                                                        .bilingual,
+                                                    emptyBilingual(),
+                                                ],
+                                            })
+                                        }
+                                    >
+                                        Add language
+                                    </Button>
+                                </div>
+                            </Section>
+                        )}
+
+                        {stepId === 'qualification' && (
+                            <Section
+                                title={CV_STEPS[5].title}
+                                description={CV_STEPS[5].description}
+                            >
+                                <div className="space-y-4">
+                                    {form.data.vitae.qualifications.map(
+                                        (item, index) => (
                                             <div
                                                 key={index}
                                                 className="grid gap-4 rounded-xl border border-border/70 p-4 sm:grid-cols-2 sm:p-5"
                                             >
                                                 <LimitedField
-                                                    label="Start Date (M/Y)"
-                                                    value={job.start_date ?? ''}
-                                                    maxLength={LIMIT.short}
-                                                    placeholder="MM/YYYY"
-                                                    onChange={(value) => {
-                                                        const experiences = [
-                                                            ...form.data.vitae
-                                                                .experiences,
-                                                        ];
-                                                        experiences[index] = {
-                                                            ...job,
-                                                            start_date: value,
-                                                        };
-                                                        form.setData('vitae', {
-                                                            ...form.data.vitae,
-                                                            experiences,
-                                                        });
-                                                    }}
-                                                />
-                                                <LimitedField
-                                                    label="End Date (M/Y)"
-                                                    value={job.end_date ?? ''}
-                                                    maxLength={LIMIT.short}
-                                                    placeholder="MM/YYYY"
-                                                    onChange={(value) => {
-                                                        const experiences = [
-                                                            ...form.data.vitae
-                                                                .experiences,
-                                                        ];
-                                                        experiences[index] = {
-                                                            ...job,
-                                                            end_date: value,
-                                                        };
-                                                        form.setData('vitae', {
-                                                            ...form.data.vitae,
-                                                            experiences,
-                                                        });
-                                                    }}
-                                                />
-                                                <LimitedField
-                                                    label="Designation"
-                                                    value={job.designation ?? ''}
-                                                    maxLength={LIMIT.standard}
-                                                    onChange={(value) => {
-                                                        const experiences = [
-                                                            ...form.data.vitae
-                                                                .experiences,
-                                                        ];
-                                                        experiences[index] = {
-                                                            ...job,
-                                                            designation: value,
-                                                        };
-                                                        form.setData('vitae', {
-                                                            ...form.data.vitae,
-                                                            experiences,
-                                                        });
-                                                    }}
-                                                />
-                                                <LimitedField
-                                                    label="Department"
-                                                    value={job.department ?? ''}
-                                                    maxLength={LIMIT.standard}
-                                                    onChange={(value) => {
-                                                        const experiences = [
-                                                            ...form.data.vitae
-                                                                .experiences,
-                                                        ];
-                                                        experiences[index] = {
-                                                            ...job,
-                                                            department: value,
-                                                        };
-                                                        form.setData('vitae', {
-                                                            ...form.data.vitae,
-                                                            experiences,
-                                                        });
-                                                    }}
-                                                />
-                                                <LimitedField
-                                                    label="Organization name"
+                                                    label="Start date - M/Y"
                                                     value={
-                                                        job.organization ?? ''
+                                                        item.start_date ?? ''
+                                                    }
+                                                    maxLength={LIMIT.short}
+                                                    placeholder="MM/YYYY"
+                                                    onChange={(value) => {
+                                                        const qualifications = [
+                                                            ...form.data.vitae
+                                                                .qualifications,
+                                                        ];
+                                                        qualifications[index] =
+                                                            {
+                                                                ...item,
+                                                                start_date:
+                                                                    value,
+                                                            };
+                                                        form.setData('vitae', {
+                                                            ...form.data.vitae,
+                                                            qualifications,
+                                                        });
+                                                    }}
+                                                />
+                                                <LimitedField
+                                                    label="End date (M/Y)"
+                                                    value={item.end_date ?? ''}
+                                                    maxLength={LIMIT.short}
+                                                    placeholder="MM/YYYY"
+                                                    onChange={(value) => {
+                                                        const qualifications = [
+                                                            ...form.data.vitae
+                                                                .qualifications,
+                                                        ];
+                                                        qualifications[index] =
+                                                            {
+                                                                ...item,
+                                                                end_date: value,
+                                                            };
+                                                        form.setData('vitae', {
+                                                            ...form.data.vitae,
+                                                            qualifications,
+                                                        });
+                                                    }}
+                                                />
+                                                <LimitedField
+                                                    label="Qualification"
+                                                    value={item.title ?? ''}
+                                                    maxLength={LIMIT.standard}
+                                                    onChange={(value) => {
+                                                        const qualifications = [
+                                                            ...form.data.vitae
+                                                                .qualifications,
+                                                        ];
+                                                        qualifications[index] =
+                                                            {
+                                                                ...item,
+                                                                title: value,
+                                                            };
+                                                        form.setData('vitae', {
+                                                            ...form.data.vitae,
+                                                            qualifications,
+                                                        });
+                                                    }}
+                                                />
+                                                <LimitedField
+                                                    label="College/School"
+                                                    value={item.college ?? ''}
+                                                    maxLength={LIMIT.standard}
+                                                    onChange={(value) => {
+                                                        const qualifications = [
+                                                            ...form.data.vitae
+                                                                .qualifications,
+                                                        ];
+                                                        qualifications[index] =
+                                                            {
+                                                                ...item,
+                                                                college: value,
+                                                            };
+                                                        form.setData('vitae', {
+                                                            ...form.data.vitae,
+                                                            qualifications,
+                                                        });
+                                                    }}
+                                                />
+                                                <LimitedField
+                                                    label="University/Board"
+                                                    value={
+                                                        item.university ?? ''
                                                     }
                                                     maxLength={LIMIT.standard}
                                                     onChange={(value) => {
-                                                        const experiences = [
+                                                        const qualifications = [
                                                             ...form.data.vitae
-                                                                .experiences,
+                                                                .qualifications,
                                                         ];
-                                                        experiences[index] = {
-                                                            ...job,
-                                                            organization: value,
-                                                        };
+                                                        qualifications[index] =
+                                                            {
+                                                                ...item,
+                                                                university:
+                                                                    value,
+                                                            };
                                                         form.setData('vitae', {
                                                             ...form.data.vitae,
-                                                            experiences,
+                                                            qualifications,
                                                         });
                                                     }}
                                                 />
                                                 <LimitedField
                                                     label="City"
-                                                    value={job.city ?? ''}
+                                                    value={item.city ?? ''}
                                                     maxLength={LIMIT.standard}
                                                     onChange={(value) => {
-                                                        const experiences = [
+                                                        const qualifications = [
                                                             ...form.data.vitae
-                                                                .experiences,
+                                                                .qualifications,
                                                         ];
-                                                        experiences[index] = {
-                                                            ...job,
-                                                            city: value,
-                                                        };
+                                                        qualifications[index] =
+                                                            {
+                                                                ...item,
+                                                                city: value,
+                                                            };
                                                         form.setData('vitae', {
                                                             ...form.data.vitae,
-                                                            experiences,
+                                                            qualifications,
                                                         });
                                                     }}
                                                 />
                                                 <LimitedField
                                                     label="State"
-                                                    value={job.state ?? ''}
+                                                    value={item.state ?? ''}
                                                     maxLength={LIMIT.standard}
                                                     onChange={(value) => {
-                                                        const experiences = [
+                                                        const qualifications = [
                                                             ...form.data.vitae
-                                                                .experiences,
+                                                                .qualifications,
                                                         ];
-                                                        experiences[index] = {
-                                                            ...job,
-                                                            state: value,
-                                                        };
+                                                        qualifications[index] =
+                                                            {
+                                                                ...item,
+                                                                state: value,
+                                                            };
                                                         form.setData('vitae', {
                                                             ...form.data.vitae,
-                                                            experiences,
+                                                            qualifications,
                                                         });
                                                     }}
                                                 />
-                                                <LimitedTextarea
-                                                    label="Cases Handled"
-                                                    value={
-                                                        job.cases_handled ?? ''
-                                                    }
-                                                    maxLength={LIMIT.veryLong}
+                                                <LimitedField
+                                                    label="Country"
+                                                    value={item.country ?? ''}
+                                                    maxLength={LIMIT.standard}
                                                     onChange={(value) => {
-                                                        const experiences = [
+                                                        const qualifications = [
                                                             ...form.data.vitae
-                                                                .experiences,
+                                                                .qualifications,
                                                         ];
-                                                        experiences[index] = {
-                                                            ...job,
-                                                            cases_handled:
-                                                                value,
-                                                        };
+                                                        qualifications[index] =
+                                                            {
+                                                                ...item,
+                                                                country: value,
+                                                            };
                                                         form.setData('vitae', {
                                                             ...form.data.vitae,
-                                                            experiences,
+                                                            qualifications,
                                                         });
                                                     }}
                                                 />
-
-                                                <div className="space-y-3 sm:col-span-2">
-                                                    <p className="text-sm font-medium text-foreground">
-                                                        For Healthcare
-                                                        professionals
-                                                    </p>
-                                                    <div className="grid gap-4 sm:grid-cols-2">
-                                                        <LimitedField
-                                                            label="Medical equipments used"
-                                                            value={
-                                                                job.medical_equipment ??
-                                                                ''
-                                                            }
-                                                            maxLength={
-                                                                LIMIT.paragraph
-                                                            }
-                                                            onChange={(
-                                                                value,
-                                                            ) => {
-                                                                const experiences =
-                                                                    [
-                                                                        ...form
-                                                                            .data
-                                                                            .vitae
-                                                                            .experiences,
-                                                                    ];
-                                                                experiences[
-                                                                    index
-                                                                ] = {
-                                                                    ...job,
-                                                                    medical_equipment:
-                                                                        value,
-                                                                };
-                                                                form.setData(
-                                                                    'vitae',
-                                                                    {
-                                                                        ...form
-                                                                            .data
-                                                                            .vitae,
-                                                                        experiences,
-                                                                    },
-                                                                );
-                                                            }}
-                                                        />
-                                                        <LimitedField
-                                                            label="Bedded capacity"
-                                                            value={
-                                                                job.bed_capacity ??
-                                                                ''
-                                                            }
-                                                            maxLength={
-                                                                LIMIT.standard
-                                                            }
-                                                            onChange={(
-                                                                value,
-                                                            ) => {
-                                                                const experiences =
-                                                                    [
-                                                                        ...form
-                                                                            .data
-                                                                            .vitae
-                                                                            .experiences,
-                                                                    ];
-                                                                experiences[
-                                                                    index
-                                                                ] = {
-                                                                    ...job,
-                                                                    bed_capacity:
-                                                                        value,
-                                                                };
-                                                                form.setData(
-                                                                    'vitae',
-                                                                    {
-                                                                        ...form
-                                                                            .data
-                                                                            .vitae,
-                                                                        experiences,
-                                                                    },
-                                                                );
-                                                            }}
-                                                        />
-                                                    </div>
-                                                </div>
-
+                                                <LimitedField
+                                                    label="Language of instruction"
+                                                    value={
+                                                        item.language_of_instruction ??
+                                                        ''
+                                                    }
+                                                    maxLength={LIMIT.medium}
+                                                    onChange={(value) => {
+                                                        const qualifications = [
+                                                            ...form.data.vitae
+                                                                .qualifications,
+                                                        ];
+                                                        qualifications[index] =
+                                                            {
+                                                                ...item,
+                                                                language_of_instruction:
+                                                                    value,
+                                                            };
+                                                        form.setData('vitae', {
+                                                            ...form.data.vitae,
+                                                            qualifications,
+                                                        });
+                                                    }}
+                                                />
                                                 <DocumentUploadField
-                                                    id={`experience-certificate-${index}`}
-                                                    label="Upload Experience Certificate"
+                                                    id={`qualification-file-${index}`}
+                                                    label="Upload certificate"
                                                     error={
                                                         form.errors[
-                                                            `vitae.experiences.${index}.certificate`
+                                                            `vitae.qualifications.${index}.certificate`
                                                         ]
                                                     }
                                                     file={
-                                                        job.certificate ?? null
+                                                        item.certificate ?? null
                                                     }
                                                     existingPath={
-                                                        job.certificate_path
+                                                        item.certificate_path
                                                     }
                                                     onFileChange={(next) => {
-                                                        const experiences = [
+                                                        const qualifications = [
                                                             ...form.data.vitae
-                                                                .experiences,
+                                                                .qualifications,
                                                         ];
-                                                        experiences[index] = {
-                                                            ...job,
-                                                            certificate: next,
-                                                        };
+                                                        qualifications[index] =
+                                                            {
+                                                                ...item,
+                                                                certificate:
+                                                                    next,
+                                                            };
                                                         form.setData('vitae', {
                                                             ...form.data.vitae,
-                                                            experiences,
+                                                            qualifications,
                                                         });
                                                     }}
                                                     onClearPending={() => {
-                                                        const experiences = [
+                                                        const qualifications = [
                                                             ...form.data.vitae
-                                                                .experiences,
+                                                                .qualifications,
                                                         ];
-                                                        experiences[index] = {
-                                                            ...job,
-                                                            certificate: null,
-                                                        };
+                                                        qualifications[index] =
+                                                            {
+                                                                ...item,
+                                                                certificate:
+                                                                    null,
+                                                            };
                                                         form.setData('vitae', {
                                                             ...form.data.vitae,
-                                                            experiences,
+                                                            qualifications,
                                                         });
                                                     }}
-                                                    hint="Upload a scan or photo of the experience certificate — JPG, PNG, or PDF, up to 10MB."
+                                                    hint="Upload your degree or mark sheet — JPG, PNG, or PDF, up to 10MB."
                                                 />
-
-                                                {form.data.vitae.experiences
+                                                {form.data.vitae.qualifications
                                                     .length > 1 && (
-                                                    <div className="flex items-end sm:col-span-2">
+                                                    <div className="flex items-end">
                                                         <Button
                                                             type="button"
                                                             variant="outline"
@@ -3264,8 +4312,8 @@ export default function StudentCv({ cv, options }: Props) {
                                                                         ...form
                                                                             .data
                                                                             .vitae,
-                                                                        experiences:
-                                                                            form.data.vitae.experiences.filter(
+                                                                        qualifications:
+                                                                            form.data.vitae.qualifications.filter(
                                                                                 (
                                                                                     _,
                                                                                     i,
@@ -3290,761 +4338,172 @@ export default function StudentCv({ cv, options }: Props) {
                                         onClick={() =>
                                             form.setData('vitae', {
                                                 ...form.data.vitae,
-                                                experiences: [
+                                                qualifications: [
                                                     ...form.data.vitae
-                                                        .experiences,
-                                                    emptyExperience(),
+                                                        .qualifications,
+                                                    emptyQualification(),
                                                 ],
                                             })
                                         }
                                     >
-                                        Add more experience
+                                        Add qualification
                                     </Button>
                                 </div>
-                            )}
-                        </Section>
-                        )}
-
-                        {stepId === 'bilingual' && (
-                        <Section
-                            title={CV_STEPS[4].title}
-                            description={CV_STEPS[4].description}
-                        >
-                            <div className="space-y-4">
-                                {form.data.vitae.bilingual.map(
-                                    (entry, index) => {
-                                        const knownLanguage =
-                                            isKnownLanguageOption(
-                                                entry.language ?? '',
-                                            );
-                                        const languageSelectValue =
-                                            knownLanguage
-                                                ? (entry.language ?? undefined)
-                                                : entry.language
-                                                  ? LANGUAGE_PICKER_OTHER
-                                                  : undefined;
-
-                                        const updateBilingualEntry = (
-                                            patch: Partial<FormBilingual>,
-                                        ) => {
-                                            const bilingual = [
-                                                ...form.data.vitae.bilingual,
-                                            ];
-                                            bilingual[index] = {
-                                                ...entry,
-                                                ...patch,
-                                            };
-                                            form.setData('vitae', {
-                                                ...form.data.vitae,
-                                                bilingual,
-                                            });
-                                        };
-
-                                        return (
-                                        <div
-                                            key={index}
-                                            className="grid gap-4 rounded-xl border border-border/70 p-4 sm:grid-cols-2 lg:grid-cols-3 sm:items-start sm:p-5"
-                                        >
-                                            <Field
-                                                label="Language Known"
-                                                error={
-                                                    form.errors[
-                                                        `vitae.bilingual.${index}.language`
-                                                    ]
-                                                }
-                                                hint={characterLimitHint(
-                                                    LIMIT.standard,
-                                                )}
-                                            >
-                                                <Select
-                                                    value={languageSelectValue}
-                                                    onValueChange={(value) => {
-                                                        if (
-                                                            value ===
-                                                            LANGUAGE_PICKER_OTHER
-                                                        ) {
-                                                            updateBilingualEntry(
-                                                                {
-                                                                    language:
-                                                                        knownLanguage
-                                                                            ? ''
-                                                                            : (entry.language ??
-                                                                              ''),
-                                                                },
-                                                            );
-                                                            return;
-                                                        }
-
-                                                        const suggested =
-                                                            suggestedLanguageType(
-                                                                value,
-                                                            );
-                                                        const nextType =
-                                                            entry.language_type ||
-                                                            suggested ||
-                                                            '';
-                                                        updateBilingualEntry({
-                                                            language: value,
-                                                            language_type:
-                                                                nextType,
-                                                            ...(nextType ===
-                                                            'Regional'
-                                                                ? {
-                                                                      certification_level:
-                                                                          '',
-                                                                  }
-                                                                : {}),
-                                                        });
-                                                    }}
-                                                >
-                                                    <SelectTrigger className="w-full">
-                                                        <SelectValue placeholder={bilingualLanguagePlaceholder(
-                                                            index,
-                                                        )} />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem
-                                                            value={
-                                                                LANGUAGE_PICKER_OTHER
-                                                            }
-                                                        >
-                                                            Other (type below)
-                                                        </SelectItem>
-                                                        {REGIONAL_LANGUAGES_IN.map(
-                                                            (name) => (
-                                                                <SelectItem
-                                                                    key={`regional-${name}`}
-                                                                    value={name}
-                                                                >
-                                                                    {name}
-                                                                </SelectItem>
-                                                            ),
-                                                        )}
-                                                        {FOREIGN_LANGUAGE_OPTIONS.map(
-                                                            (name) => (
-                                                                <SelectItem
-                                                                    key={`foreign-${name}`}
-                                                                    value={name}
-                                                                >
-                                                                    {name}
-                                                                </SelectItem>
-                                                            ),
-                                                        )}
-                                                    </SelectContent>
-                                                </Select>
-                                                {!knownLanguage ? (
-                                                    <Input
-                                                        className="mt-2"
-                                                        value={
-                                                            entry.language ?? ''
-                                                        }
-                                                        placeholder={bilingualLanguagePlaceholder(
-                                                            index,
-                                                        )}
-                                                        onChange={(event) => {
-                                                            const value =
-                                                                sanitizeCvText(
-                                                                    event.target
-                                                                        .value,
-                                                                ).slice(
-                                                                    0,
-                                                                    LIMIT.standard,
-                                                                );
-                                                            updateBilingualEntry(
-                                                                {
-                                                                    language:
-                                                                        value,
-                                                                },
-                                                            );
-                                                        }}
-                                                    />
-                                                ) : null}
-                                            </Field>
-                                            <Field
-                                                label="Language type"
-                                                error={
-                                                    form.errors[
-                                                        `vitae.bilingual.${index}.language_type`
-                                                    ]
-                                                }
-                                            >
-                                                <Select
-                                                    value={
-                                                        entry.language_type ||
-                                                        undefined
-                                                    }
-                                                    onValueChange={(value) => {
-                                                        updateBilingualEntry({
-                                                            language_type:
-                                                                value,
-                                                            ...(value ===
-                                                            'Regional'
-                                                                ? {
-                                                                      certification_level:
-                                                                          '',
-                                                                  }
-                                                                : {}),
-                                                        });
-                                                    }}
-                                                >
-                                                    <SelectTrigger className="w-full">
-                                                        <SelectValue placeholder="Select type" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {LANGUAGE_TYPES.map(
-                                                            (type) => (
-                                                                <SelectItem
-                                                                    key={type}
-                                                                    value={type}
-                                                                >
-                                                                    {type}
-                                                                </SelectItem>
-                                                            ),
-                                                        )}
-                                                    </SelectContent>
-                                                </Select>
-                                            </Field>
-                                            <Field
-                                                label="Language Proficiency"
-                                                error={
-                                                    form.errors[
-                                                        `vitae.bilingual.${index}.proficiency`
-                                                    ]
-                                                }
-                                            >
-                                                <Select
-                                                    value={
-                                                        entry.proficiency ||
-                                                        undefined
-                                                    }
-                                                    onValueChange={(value) => {
-                                                        updateBilingualEntry({
-                                                            proficiency: value,
-                                                        });
-                                                    }}
-                                                >
-                                                    <SelectTrigger className="w-full">
-                                                        <SelectValue placeholder="Select level" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        {LANGUAGE_PROFICIENCY_LEVELS.map(
-                                                            (level) => (
-                                                                <SelectItem
-                                                                    key={level}
-                                                                    value={
-                                                                        level
-                                                                    }
-                                                                >
-                                                                    {level}
-                                                                </SelectItem>
-                                                            ),
-                                                        )}
-                                                    </SelectContent>
-                                                </Select>
-                                            </Field>
-                                            {entry.language_type !==
-                                                'Regional' && (
-                                            <Field
-                                                label="Certification level"
-                                                error={
-                                                    form.errors[
-                                                        `vitae.bilingual.${index}.certification_level`
-                                                    ]
-                                                }
-                                                hint="Optional CEFR level (A1–C2)"
-                                            >
-                                                <Select
-                                                    value={
-                                                        entry.certification_level ||
-                                                        '__none__'
-                                                    }
-                                                    onValueChange={(value) => {
-                                                        updateBilingualEntry({
-                                                            certification_level:
-                                                                value ===
-                                                                '__none__'
-                                                                    ? ''
-                                                                    : value,
-                                                        });
-                                                    }}
-                                                >
-                                                    <SelectTrigger className="w-full">
-                                                        <SelectValue placeholder="None" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="__none__">
-                                                            None
-                                                        </SelectItem>
-                                                        {CERTIFICATION_LEVELS.map(
-                                                            (level) => (
-                                                                <SelectItem
-                                                                    key={level}
-                                                                    value={
-                                                                        level
-                                                                    }
-                                                                >
-                                                                    {level}
-                                                                </SelectItem>
-                                                            ),
-                                                        )}
-                                                    </SelectContent>
-                                                </Select>
-                                            </Field>
-                                            )}
-                                            <DocumentUploadField
-                                                id={`bilingual-certificate-${index}`}
-                                                label="Upload Certificates"
-                                                error={
-                                                    form.errors[
-                                                        `vitae.bilingual.${index}.certificate`
-                                                    ]
-                                                }
-                                                file={
-                                                    entry.certificate ?? null
-                                                }
-                                                existingPath={
-                                                    entry.certificate_path
-                                                }
-                                                onFileChange={(next) => {
-                                                    updateBilingualEntry({
-                                                        certificate: next,
-                                                    });
-                                                }}
-                                                onClearPending={() => {
-                                                    updateBilingualEntry({
-                                                        certificate: null,
-                                                    });
-                                                }}
-                                                hint="JPG, PNG, or PDF, up to 10MB."
-                                            />
-                                            {form.data.vitae.bilingual
-                                                .length > 4 && (
-                                                <div className="flex items-end sm:col-span-2 lg:col-span-3">
-                                                    <Button
-                                                        type="button"
-                                                        variant="outline"
-                                                        onClick={() => {
-                                                            form.setData(
-                                                                'vitae',
-                                                                {
-                                                                    ...form.data
-                                                                        .vitae,
-                                                                    bilingual:
-                                                                        form.data.vitae.bilingual.filter(
-                                                                            (
-                                                                                _,
-                                                                                i,
-                                                                            ) =>
-                                                                                i !==
-                                                                                index,
-                                                                        ),
-                                                                },
-                                                            );
-                                                        }}
-                                                    >
-                                                        Remove
-                                                    </Button>
-                                                </div>
-                                            )}
-                                        </div>
-                                        );
-                                    },
-                                )}
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() =>
-                                        form.setData('vitae', {
-                                            ...form.data.vitae,
-                                            bilingual: [
-                                                ...form.data.vitae.bilingual,
-                                                emptyBilingual(),
-                                            ],
-                                        })
-                                    }
-                                >
-                                    Add language
-                                </Button>
-                            </div>
-                        </Section>
-                        )}
-
-                        {stepId === 'qualification' && (
-                        <Section
-                            title={CV_STEPS[5].title}
-                            description={CV_STEPS[5].description}
-                        >
-                            <div className="space-y-4">
-                                {form.data.vitae.qualifications.map(
-                                    (item, index) => (
-                                        <div
-                                            key={index}
-                                            className="grid gap-4 rounded-xl border border-border/70 p-4 sm:grid-cols-2 sm:p-5"
-                                        >
-                                            <LimitedField
-                                                label="Start date - M/Y"
-                                                value={item.start_date ?? ''}
-                                                maxLength={LIMIT.short}
-                                                placeholder="MM/YYYY"
-                                                onChange={(value) => {
-                                                    const qualifications = [
-                                                        ...form.data.vitae
-                                                            .qualifications,
-                                                    ];
-                                                    qualifications[index] = {
-                                                        ...item,
-                                                        start_date: value,
-                                                    };
-                                                    form.setData('vitae', {
-                                                        ...form.data.vitae,
-                                                        qualifications,
-                                                    });
-                                                }}
-                                            />
-                                            <LimitedField
-                                                label="End date (M/Y)"
-                                                value={item.end_date ?? ''}
-                                                maxLength={LIMIT.short}
-                                                placeholder="MM/YYYY"
-                                                onChange={(value) => {
-                                                    const qualifications = [
-                                                        ...form.data.vitae
-                                                            .qualifications,
-                                                    ];
-                                                    qualifications[index] = {
-                                                        ...item,
-                                                        end_date: value,
-                                                    };
-                                                    form.setData('vitae', {
-                                                        ...form.data.vitae,
-                                                        qualifications,
-                                                    });
-                                                }}
-                                            />
-                                            <LimitedField
-                                                label="Qualification"
-                                                value={item.title ?? ''}
-                                                maxLength={LIMIT.standard}
-                                                onChange={(value) => {
-                                                    const qualifications = [
-                                                        ...form.data.vitae
-                                                            .qualifications,
-                                                    ];
-                                                    qualifications[index] = {
-                                                        ...item,
-                                                        title: value,
-                                                    };
-                                                    form.setData('vitae', {
-                                                        ...form.data.vitae,
-                                                        qualifications,
-                                                    });
-                                                }}
-                                            />
-                                            <LimitedField
-                                                label="College/School"
-                                                value={item.college ?? ''}
-                                                maxLength={LIMIT.standard}
-                                                onChange={(value) => {
-                                                    const qualifications = [
-                                                        ...form.data.vitae
-                                                            .qualifications,
-                                                    ];
-                                                    qualifications[index] = {
-                                                        ...item,
-                                                        college: value,
-                                                    };
-                                                    form.setData('vitae', {
-                                                        ...form.data.vitae,
-                                                        qualifications,
-                                                    });
-                                                }}
-                                            />
-                                            <LimitedField
-                                                label="University/Board"
-                                                value={item.university ?? ''}
-                                                maxLength={LIMIT.standard}
-                                                onChange={(value) => {
-                                                    const qualifications = [
-                                                        ...form.data.vitae
-                                                            .qualifications,
-                                                    ];
-                                                    qualifications[index] = {
-                                                        ...item,
-                                                        university: value,
-                                                    };
-                                                    form.setData('vitae', {
-                                                        ...form.data.vitae,
-                                                        qualifications,
-                                                    });
-                                                }}
-                                            />
-                                            <LimitedField
-                                                label="City"
-                                                value={item.city ?? ''}
-                                                maxLength={LIMIT.standard}
-                                                onChange={(value) => {
-                                                    const qualifications = [
-                                                        ...form.data.vitae
-                                                            .qualifications,
-                                                    ];
-                                                    qualifications[index] = {
-                                                        ...item,
-                                                        city: value,
-                                                    };
-                                                    form.setData('vitae', {
-                                                        ...form.data.vitae,
-                                                        qualifications,
-                                                    });
-                                                }}
-                                            />
-                                            <LimitedField
-                                                label="State"
-                                                value={item.state ?? ''}
-                                                maxLength={LIMIT.standard}
-                                                onChange={(value) => {
-                                                    const qualifications = [
-                                                        ...form.data.vitae
-                                                            .qualifications,
-                                                    ];
-                                                    qualifications[index] = {
-                                                        ...item,
-                                                        state: value,
-                                                    };
-                                                    form.setData('vitae', {
-                                                        ...form.data.vitae,
-                                                        qualifications,
-                                                    });
-                                                }}
-                                            />
-                                            <LimitedField
-                                                label="Country"
-                                                value={item.country ?? ''}
-                                                maxLength={LIMIT.standard}
-                                                onChange={(value) => {
-                                                    const qualifications = [
-                                                        ...form.data.vitae
-                                                            .qualifications,
-                                                    ];
-                                                    qualifications[index] = {
-                                                        ...item,
-                                                        country: value,
-                                                    };
-                                                    form.setData('vitae', {
-                                                        ...form.data.vitae,
-                                                        qualifications,
-                                                    });
-                                                }}
-                                            />
-                                            <LimitedField
-                                                label="Language of instruction"
-                                                value={
-                                                    item.language_of_instruction ??
-                                                    ''
-                                                }
-                                                maxLength={LIMIT.medium}
-                                                onChange={(value) => {
-                                                    const qualifications = [
-                                                        ...form.data.vitae
-                                                            .qualifications,
-                                                    ];
-                                                    qualifications[index] = {
-                                                        ...item,
-                                                        language_of_instruction:
-                                                            value,
-                                                    };
-                                                    form.setData('vitae', {
-                                                        ...form.data.vitae,
-                                                        qualifications,
-                                                    });
-                                                }}
-                                            />
-                                            {form.data.vitae.qualifications
-                                                .length > 1 && (
-                                                <div className="flex items-end">
-                                                    <Button
-                                                        type="button"
-                                                        variant="outline"
-                                                        onClick={() =>
-                                                            form.setData(
-                                                                'vitae',
-                                                                {
-                                                                    ...form.data
-                                                                        .vitae,
-                                                                    qualifications:
-                                                                        form.data.vitae.qualifications.filter(
-                                                                            (
-                                                                                _,
-                                                                                i,
-                                                                            ) =>
-                                                                                i !==
-                                                                                index,
-                                                                        ),
-                                                                },
-                                                            )
-                                                        }
-                                                    >
-                                                        Remove
-                                                    </Button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ),
-                                )}
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() =>
-                                        form.setData('vitae', {
-                                            ...form.data.vitae,
-                                            qualifications: [
-                                                ...form.data.vitae
-                                                    .qualifications,
-                                                emptyQualification(),
-                                            ],
-                                        })
-                                    }
-                                >
-                                    Add qualification
-                                </Button>
-                            </div>
-                        </Section>
+                            </Section>
                         )}
 
                         {stepId === 'training' && (
-                        <Section
-                            title={CV_STEPS[6].title}
-                            description={CV_STEPS[6].description}
-                        >
-                            <div className="space-y-8">
-                                <ActivityListEditor
-                                    title="Seminar"
-                                    addLabel="Add seminar"
-                                    listKey="seminars"
-                                    items={form.data.vitae.seminars ?? []}
-                                    errors={form.errors}
-                                    onChange={(seminars) =>
-                                        form.setData('vitae', {
-                                            ...form.data.vitae,
-                                            seminars,
-                                        })
-                                    }
-                                />
-                                <ActivityListEditor
-                                    title="Presentation"
-                                    addLabel="Add presentation"
-                                    listKey="presentations"
-                                    items={form.data.vitae.presentations ?? []}
-                                    errors={form.errors}
-                                    onChange={(presentations) =>
-                                        form.setData('vitae', {
-                                            ...form.data.vitae,
-                                            presentations,
-                                        })
-                                    }
-                                />
-                                <ActivityListEditor
-                                    title="Publication"
-                                    addLabel="Add publication"
-                                    listKey="publications"
-                                    items={form.data.vitae.publications ?? []}
-                                    errors={form.errors}
-                                    onChange={(publications) =>
-                                        form.setData('vitae', {
-                                            ...form.data.vitae,
-                                            publications,
-                                        })
-                                    }
-                                />
-                            </div>
-                        </Section>
+                            <Section
+                                title={CV_STEPS[6].title}
+                                description={CV_STEPS[6].description}
+                            >
+                                <div className="space-y-8">
+                                    <ActivityListEditor
+                                        title="Seminar"
+                                        addLabel="Add seminar"
+                                        listKey="seminars"
+                                        items={form.data.vitae.seminars ?? []}
+                                        errors={form.errors}
+                                        onChange={(seminars) =>
+                                            form.setData('vitae', {
+                                                ...form.data.vitae,
+                                                seminars,
+                                            })
+                                        }
+                                    />
+                                    <ActivityListEditor
+                                        title="Presentation"
+                                        addLabel="Add presentation"
+                                        listKey="presentations"
+                                        items={
+                                            form.data.vitae.presentations ?? []
+                                        }
+                                        errors={form.errors}
+                                        onChange={(presentations) =>
+                                            form.setData('vitae', {
+                                                ...form.data.vitae,
+                                                presentations,
+                                            })
+                                        }
+                                    />
+                                    <ActivityListEditor
+                                        title="Publication"
+                                        addLabel="Add publication"
+                                        listKey="publications"
+                                        items={
+                                            form.data.vitae.publications ?? []
+                                        }
+                                        errors={form.errors}
+                                        onChange={(publications) =>
+                                            form.setData('vitae', {
+                                                ...form.data.vitae,
+                                                publications,
+                                            })
+                                        }
+                                    />
+                                </div>
+                            </Section>
                         )}
 
                         {stepId === 'intro' && (
-                        <Section
-                            title={CV_STEPS[7].title}
-                            description={CV_STEPS[7].description}
-                        >
-                            <div className="space-y-8">
-                                <div className="space-y-3">
-                                    <h3 className="text-sm font-semibold tracking-wide text-foreground">
-                                        Introduction
-                                    </h3>
-                                    <LimitedTextarea
-                                        label="Introduction"
-                                        error={form.errors.introduction}
-                                        value={form.data.introduction}
-                                        maxLength={LIMIT.introduction}
-                                        rows={5}
-                                        placeholder="Write a short introduction about yourself."
-                                        onChange={(value) =>
-                                            form.setData('introduction', value)
-                                        }
-                                    />
+                            <Section
+                                title={CV_STEPS[7].title}
+                                description={CV_STEPS[7].description}
+                            >
+                                <div className="space-y-8">
+                                    <div className="space-y-3">
+                                        <h3 className="text-sm font-semibold tracking-wide text-foreground">
+                                            Introduction
+                                        </h3>
+                                        <LimitedTextarea
+                                            label="Introduction"
+                                            error={form.errors.introduction}
+                                            value={form.data.introduction}
+                                            maxLength={LIMIT.introduction}
+                                            rows={5}
+                                            placeholder="Write a short introduction about yourself."
+                                            onChange={(value) =>
+                                                form.setData(
+                                                    'introduction',
+                                                    value,
+                                                )
+                                            }
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <h3 className="text-sm font-semibold tracking-wide text-foreground">
+                                            Skills
+                                        </h3>
+                                        <LimitedField
+                                            label="Skills"
+                                            error={form.errors.skills}
+                                            value={form.data.skills}
+                                            maxLength={LIMIT.long}
+                                            placeholder="Patient education, Teamwork, Leadership"
+                                            onChange={(value) =>
+                                                form.setData('skills', value)
+                                            }
+                                        />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <h3 className="text-sm font-semibold tracking-wide text-foreground">
+                                            Hobbies
+                                        </h3>
+                                        <LimitedField
+                                            label="Hobbies"
+                                            error={form.errors.hobbies}
+                                            value={form.data.hobbies}
+                                            maxLength={LIMIT.long}
+                                            placeholder="Reading, Travel, Music"
+                                            onChange={(value) =>
+                                                form.setData('hobbies', value)
+                                            }
+                                        />
+                                    </div>
                                 </div>
-                                <div className="space-y-3">
-                                    <h3 className="text-sm font-semibold tracking-wide text-foreground">
-                                        Skills
-                                    </h3>
-                                    <LimitedField
-                                        label="Skills"
-                                        error={form.errors.skills}
-                                        value={form.data.skills}
-                                        maxLength={LIMIT.long}
-                                        placeholder="Patient education, Teamwork, Leadership"
-                                        onChange={(value) =>
-                                            form.setData('skills', value)
-                                        }
-                                    />
-                                </div>
-                                <div className="space-y-3">
-                                    <h3 className="text-sm font-semibold tracking-wide text-foreground">
-                                        Hobbies
-                                    </h3>
-                                    <LimitedField
-                                        label="Hobbies"
-                                        error={form.errors.hobbies}
-                                        value={form.data.hobbies}
-                                        maxLength={LIMIT.long}
-                                        placeholder="Reading, Travel, Music"
-                                        onChange={(value) =>
-                                            form.setData('hobbies', value)
-                                        }
-                                    />
-                                </div>
-                            </div>
-                        </Section>
+                            </Section>
                         )}
 
-                        <div className="flex flex-col gap-3 rounded-2xl border border-border/80 bg-card/30 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+                        <div className="sticky bottom-[var(--app-bottom-h,0px)] z-10 -mx-2 flex items-center gap-3 border-t border-border/60 bg-background/90 px-4 py-3 backdrop-blur-xl sm:static sm:mx-0 sm:justify-between sm:rounded-2xl sm:border sm:bg-card/30 sm:p-5 sm:backdrop-blur-none">
                             <Button
                                 type="button"
                                 variant="outline"
+                                className="max-sm:h-12 max-sm:rounded-full max-sm:px-5"
                                 disabled={isFirstStep}
                                 onClick={goBack}
                             >
                                 Back
                             </Button>
-                            <div className="flex flex-wrap gap-3">
+                            <div className="flex flex-1 gap-3 sm:flex-none sm:flex-wrap">
                                 <Button
                                     type="submit"
                                     variant="outline"
+                                    className="max-sm:h-12 max-sm:flex-1 max-sm:rounded-full"
                                     disabled={form.processing}
                                 >
                                     {form.processing && <Spinner />}
-                                    Save CV
+                                    Save
                                 </Button>
                                 {isLastStep ? (
                                     <Button
                                         type="button"
+                                        className="max-sm:h-12 max-sm:flex-1 max-sm:rounded-full"
                                         onClick={() => {
                                             setPrintVariant('basic');
                                             setTab('preview');
                                         }}
                                     >
-                                        Preview CV
+                                        Preview
                                     </Button>
                                 ) : (
-                                    <Button type="button" onClick={goNext}>
+                                    <Button
+                                        type="button"
+                                        className="max-sm:h-12 max-sm:flex-1 max-sm:rounded-full"
+                                        onClick={() => {
+                                            goNext();
+                                            window.scrollTo({ top: 0 });
+                                        }}
+                                    >
                                         Continue
                                     </Button>
                                 )}
@@ -4055,10 +4514,7 @@ export default function StudentCv({ cv, options }: Props) {
 
                 {printVariant === 'full' && (
                     <div className="cv-print-only" aria-hidden>
-                        <FullCvProfile
-                            cv={displayCv}
-                            locale={previewLocale}
-                        />
+                        <FullCvProfile cv={displayCv} locale={previewLocale} />
                     </div>
                 )}
             </div>

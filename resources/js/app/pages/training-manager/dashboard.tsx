@@ -1,7 +1,8 @@
 import { Link } from '@inertiajs/react';
-import { BadgeCheck, Layers, type LucideIcon, Users } from 'lucide-react';
-import { PrivateSeoHead } from '@shared/components/seo-head';
+import { BadgeCheck, Layers,  Users } from 'lucide-react';
+import type {LucideIcon} from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { PrivateSeoHead } from '@shared/components/seo-head';
 
 type Props = {
     stats: {

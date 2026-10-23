@@ -7,6 +7,8 @@ use App\Http\Requests\Materials\ShareMaterialWithBatchesRequest;
 use App\Models\MaterialFile;
 use App\Models\MaterialFolder;
 use App\Services\MaterialAssignmentService;
+use App\Services\YoutubePlaylistService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -57,6 +59,9 @@ class MaterialController extends Controller
                 'kind' => $file->kind ?? MaterialFile::KIND_FILE,
                 'url' => $file->url,
                 'embed_url' => $file->embedUrl(),
+                'playlist_items' => $file->isYoutubePlaylist()
+                    ? ($file->playlist_items ?? [])
+                    : null,
                 'created_at' => $file->created_at?->toIso8601String(),
                 'shared_batch_ids' => $this->assignments->sharedBatchIds($file),
                 'type' => 'file',
@@ -117,6 +122,25 @@ class MaterialController extends Controller
             $file->path,
             $file->display_name.'.'.$file->extension,
         );
+    }
+
+    public function playlistItems(
+        Request $request,
+        MaterialFile $file,
+        YoutubePlaylistService $youtubePlaylists,
+    ): JsonResponse {
+        abort_unless(
+            $this->assignments->trainerCanAccessFile($request->user(), $file),
+            403,
+        );
+        abort_unless($file->isYoutubePlaylist(), 404);
+
+        $items = $youtubePlaylists->resolveItemsFor($file);
+
+        return response()->json([
+            'items' => $items,
+            'api_configured' => $youtubePlaylists->hasApiKey(),
+        ]);
     }
 
     /**

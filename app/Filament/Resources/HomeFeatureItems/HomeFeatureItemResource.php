@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\HomeFeatureItems;
 
 use App\Filament\Clusters\FrontendEditsCluster;
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\HomeFeatureItems\Pages\CreateHomeFeatureItem;
 use App\Filament\Resources\HomeFeatureItems\Pages\EditHomeFeatureItem;
 use App\Filament\Resources\HomeFeatureItems\Pages\ListHomeFeatureItems;
@@ -18,6 +19,8 @@ use UnitEnum;
 
 class HomeFeatureItemResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = HomeFeatureItem::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedListBullet;

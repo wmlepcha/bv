@@ -20,6 +20,11 @@ class UserIdentityForm
                 ->email()
                 ->required()
                 ->unique(ignoreRecord: true),
+            TextInput::make('whatsapp_number')
+                ->label('WhatsApp number')
+                ->tel()
+                ->maxLength(30)
+                ->helperText('Include the country code. Used for WhatsApp updates.'),
             TextInput::make('password')
                 ->password()
                 ->required(fn (string $operation): bool => $operation === 'create')

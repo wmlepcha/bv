@@ -10,11 +10,11 @@ class RoleMiddlewareTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_recruiter_cannot_access_student_classes(): void
+    public function test_recruiter_cannot_access_student_my_learning(): void
     {
         $user = User::factory()->recruiter()->create();
 
-        $response = $this->actingAs($user)->get(route('student.classes.index'));
+        $response = $this->actingAs($user)->get(route('student.my-learning.index'));
 
         $response->assertForbidden();
     }

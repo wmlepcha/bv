@@ -1,7 +1,7 @@
-import { Breadcrumbs } from '@shared/components/breadcrumbs';
-import RegistrationRenewalBanner from '@app/components/registration-renewal-banner';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { BreadcrumbItem as BreadcrumbItemType } from '@/types';
+import RegistrationRenewalBanner from '@app/components/registration-renewal-banner';
+import { Breadcrumbs } from '@shared/components/breadcrumbs';
 
 export function AppSidebarHeader({
     breadcrumbs = [],

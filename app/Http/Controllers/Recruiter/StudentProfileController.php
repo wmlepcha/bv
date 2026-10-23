@@ -2,13 +2,18 @@
 
 namespace App\Http\Controllers\Recruiter;
 
+use App\Enums\CourseLevel;
+use App\Enums\Profession;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Recruiter\CandidateFilterRequest;
 use App\Models\BatchEnrollment;
 use App\Models\StudentProfile;
 use App\Models\User;
 use App\Services\BatchTransferService;
 use App\Services\CvTranslationService;
 use App\Support\CvProfilePresenter;
+use App\Support\LanguageProgressPresenter;
+use App\Support\RecruiterCandidatePresenter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,13 +23,16 @@ use RuntimeException;
 
 class StudentProfileController extends Controller
 {
-    public function index(): Response
+    public function index(CandidateFilterRequest $request): Response
     {
         /** @var User $viewer */
         $viewer = Auth::user();
 
         $query = StudentProfile::query()
-            ->with('user:id,name,email,student_number,first_name,last_name');
+            ->listedForRecruiters()
+            ->when($viewer->isRecruiter() || $viewer->isEmployee(), fn ($q) => $q->registeredForPlacement())
+            ->with('user.batchEnrollment.batch')
+            ->matching($request->validated());
 
         if ($viewer->isTeacher()) {
             $query->whereHas('user.batchEnrollment.batch', function ($q) use ($viewer): void {
@@ -34,33 +42,50 @@ class StudentProfileController extends Controller
 
         $profiles = $query
             ->latest()
-            ->get()
-            ->map(fn (StudentProfile $profile) => [
-                'id' => $profile->id,
-                'name' => $profile->user->name,
-                'email' => $profile->user->email,
-                'student_number' => $profile->user->student_number,
-                'headline' => $profile->headline,
-                'photo_url' => $this->publicStorageUrl(
-                    $profile->passport_photo_path ?: $profile->full_body_photo_path,
-                ),
-            ]);
+            ->paginate(24)
+            ->withQueryString()
+            ->through(fn (StudentProfile $profile): array => RecruiterCandidatePresenter::card($profile));
 
         return Inertia::render('app/recruiter/students/index', [
             'profiles' => $profiles,
+            'filters' => [
+                'profession' => $request->validated('profession'),
+                'experience' => $request->validated('experience'),
+                'level' => $request->validated('level'),
+                'status' => $request->validated('status'),
+                'q' => $request->validated('q'),
+            ],
+            'filterOptions' => [
+                'professions' => Profession::options(),
+                'levels' => CourseLevel::options(),
+            ],
         ]);
     }
 
     public function show(
         StudentProfile $studentProfile,
         BatchTransferService $transfers,
+        LanguageProgressPresenter $progress,
     ): Response {
         /** @var User $viewer */
         $viewer = Auth::user();
 
         $this->ensureTeacherCanAccess($viewer, $studentProfile);
 
+        abort_unless(
+            $viewer->isTeacher() || $viewer->isAdmin() || $viewer->isRecruitmentManager() || StudentProfile::query()->listedForRecruiters()->registeredForPlacement()->whereKey($studentProfile->id)->exists(),
+            404,
+        );
+
         $studentProfile->load('user.batchEnrollment.batch.teacher', 'user.batchEnrollment.batch.center');
+
+        if (! $studentProfile->isFullyViewableBy($viewer)) {
+            return Inertia::render('app/recruiter/students/show', [
+                'restricted' => true,
+                'summary' => RecruiterCandidatePresenter::card($studentProfile),
+                'profileId' => $studentProfile->id,
+            ]);
+        }
 
         $enrollment = $studentProfile->user->batchEnrollment;
         $batch = $enrollment?->batch;
@@ -85,11 +110,15 @@ class StudentProfileController extends Controller
         }
 
         return Inertia::render('app/recruiter/students/show', [
+            'restricted' => false,
+            'summary' => RecruiterCandidatePresenter::card($studentProfile),
             'cv' => CvProfilePresenter::present($studentProfile->user, $studentProfile),
             'profileId' => $studentProfile->id,
             'assignment' => $assignment,
+            'language' => $progress->present($studentProfile->user),
             'transferTargets' => $transferTargets,
             'canTransfer' => $viewer->isTeacher() && $assignment !== null,
+            'shortlistProjects' => $viewer->isTeacher() ? null : $this->shortlistProjects($viewer, $studentProfile),
         ]);
     }
 
@@ -102,6 +131,8 @@ class StudentProfileController extends Controller
         $viewer = Auth::user();
 
         $this->ensureTeacherCanAccess($viewer, $studentProfile);
+        abort_if(($viewer->isRecruiter() || $viewer->isEmployee()) && ! $studentProfile->wantsPlacement(), 404);
+        abort_unless($studentProfile->isFullyViewableBy($viewer), 403);
 
         $validated = $request->validate([
             'locale' => ['required', 'string', 'in:de'],
@@ -130,6 +161,23 @@ class StudentProfileController extends Controller
         ]);
     }
 
+    /**
+     * @return list<array{id: int, name: string, added: bool}>
+     */
+    private function shortlistProjects(User $viewer, StudentProfile $studentProfile): array
+    {
+        return $viewer->recruiterProjects()
+            ->withExists(['candidates as added' => fn ($q) => $q->whereKey($studentProfile->id)])
+            ->orderBy('name')
+            ->get()
+            ->map(fn ($project): array => [
+                'id' => $project->id,
+                'name' => $project->name,
+                'added' => (bool) $project->added,
+            ])
+            ->all();
+    }
+
     private function ensureTeacherCanAccess(User $viewer, StudentProfile $studentProfile): void
     {
         if (! $viewer->isTeacher()) {
@@ -144,14 +192,5 @@ class StudentProfileController extends Controller
         if (! $ownsStudent) {
             abort(403);
         }
-    }
-
-    private function publicStorageUrl(?string $path): ?string
-    {
-        if (blank($path)) {
-            return null;
-        }
-
-        return '/storage/'.ltrim(str_replace('\\', '/', $path), '/');
     }
 }

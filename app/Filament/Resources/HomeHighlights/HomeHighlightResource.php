@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\HomeHighlights;
 
 use App\Filament\Clusters\FrontendEditsCluster;
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\HomeHighlights\Pages\CreateHomeHighlight;
 use App\Filament\Resources\HomeHighlights\Pages\EditHomeHighlight;
 use App\Filament\Resources\HomeHighlights\Pages\ListHomeHighlights;
@@ -18,6 +19,8 @@ use UnitEnum;
 
 class HomeHighlightResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = HomeHighlight::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTag;

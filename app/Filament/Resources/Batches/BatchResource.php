@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Batches;
 
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\Batches\Pages\CreateBatch;
 use App\Filament\Resources\Batches\Pages\EditBatch;
 use App\Filament\Resources\Batches\Pages\ListBatches;
@@ -18,6 +19,8 @@ use UnitEnum;
 
 class BatchResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = Batch::class;
 
     protected static ?string $recordTitleAttribute = 'name';

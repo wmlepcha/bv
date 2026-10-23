@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { FadeUp } from '@marketing/components/animations/primitives';
-import type { ServiceCategory } from '@marketing/types/services-page';
-import { useLenis } from '@marketing/providers/lenis-provider';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import { FadeUp } from '@marketing/components/animations/primitives';
+import { useLenis } from '@marketing/providers/lenis-provider';
+import type { ServiceCategory } from '@marketing/types/services-page';
 
 interface ServicesTabNavProps {
     categories: ServiceCategory[];

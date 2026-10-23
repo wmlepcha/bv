@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\NavigationItems;
 
 use App\Filament\Clusters\FrontendEditsCluster;
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\NavigationItems\Pages\CreateNavigationItem;
 use App\Filament\Resources\NavigationItems\Pages\EditNavigationItem;
 use App\Filament\Resources\NavigationItems\Pages\ListNavigationItems;
@@ -18,6 +19,8 @@ use UnitEnum;
 
 class NavigationItemResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = NavigationItem::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBars3;

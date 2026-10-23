@@ -1,11 +1,11 @@
 // Components
 import { Form } from '@inertiajs/react';
-import { PrivateSeoHead } from '@shared/components/seo-head';
-import TextLink from '@shared/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { logout } from '@/routes';
 import { send } from '@/routes/verification';
+import { PrivateSeoHead } from '@shared/components/seo-head';
+import TextLink from '@shared/components/text-link';
 
 export default function VerifyEmail({ status }: { status?: string }) {
     return (

@@ -3,9 +3,10 @@ import {
     FolderKanban,
     Home,
     LogIn,
-    Users,
-    type LucideIcon,
+    Users
+    
 } from 'lucide-react';
+import type {LucideIcon} from 'lucide-react';
 
 const iconMap: Record<string, LucideIcon> = {
     home: Home,

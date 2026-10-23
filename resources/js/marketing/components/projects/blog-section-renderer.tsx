@@ -1,5 +1,5 @@
-import type { BlogSection } from '@marketing/types/projects-page';
 import { cn } from '@/lib/utils';
+import type { BlogSection } from '@marketing/types/projects-page';
 
 type BlogSectionRendererProps = {
     section: BlogSection;

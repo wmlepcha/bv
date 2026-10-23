@@ -32,9 +32,31 @@ class AuthenticateUser
             return $user;
         }
 
+        if ($portal === 'recruitment_manager') {
+            if (! $user->isRecruitmentManager()) {
+                throw ValidationException::withMessages([
+                    Fortify::username() => $this->wrongPortalMessage($user, 'recruitment_manager'),
+                ]);
+            }
+
+            return $user;
+        }
+
         if ($user->isTrainingManager()) {
             throw ValidationException::withMessages([
                 Fortify::username() => 'This account is for training managers. Please use the training manager login.',
+            ]);
+        }
+
+        if ($user->isRecruitmentManager()) {
+            throw ValidationException::withMessages([
+                Fortify::username() => 'This account is for recruitment managers. Please use the recruitment manager login.',
+            ]);
+        }
+
+        if ($user->isSalesTeam()) {
+            throw ValidationException::withMessages([
+                Fortify::username() => 'This account is for the sales team. Please sign in at the BV admin login.',
             ]);
         }
 
@@ -73,11 +95,19 @@ class AuthenticateUser
             return 'This account is for training managers. Please use the training manager login.';
         }
 
+        if ($user->isRecruitmentManager()) {
+            return 'This account is for recruitment managers. Please use the recruitment manager login.';
+        }
+
         if ($attemptedPortal === 'student') {
             return 'This account is for recruiters or employees. Please use the recruiter/employee login.';
         }
 
         if ($attemptedPortal === 'teacher') {
+            return 'This account is for recruiters or employees. Please use the recruiter/employee login.';
+        }
+
+        if ($attemptedPortal === 'recruitment_manager') {
             return 'This account is for recruiters or employees. Please use the recruiter/employee login.';
         }
 

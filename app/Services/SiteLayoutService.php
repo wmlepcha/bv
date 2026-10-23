@@ -33,6 +33,10 @@ class SiteLayoutService
     protected function buildPayload(): array
     {
         return [
+            'auth' => [
+                'recruitmentManagerImageUrl' => $this->optionalAssetUrl(SiteSetting::getValue('auth.recruitment_manager_image')),
+                'trainingManagerImageUrl' => $this->optionalAssetUrl(SiteSetting::getValue('auth.training_manager_image')),
+            ],
             'header' => [
                 'logoUrlLight' => Brand::marketingLogoLightUrl(),
                 'logoUrlDark' => Brand::marketingLogoDarkUrl(),
@@ -102,5 +106,10 @@ class SiteLayoutService
         }
 
         return asset('storage/'.$path);
+    }
+
+    protected function optionalAssetUrl(?string $path): ?string
+    {
+        return filled($path) ? $this->publicAssetUrl($path) : null;
     }
 }

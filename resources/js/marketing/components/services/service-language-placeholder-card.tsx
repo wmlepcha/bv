@@ -1,6 +1,6 @@
+import { cn } from '@/lib/utils';
 import { ServiceImagePlaceholder } from '@marketing/components/services/service-item-card';
 import type { ServiceItem } from '@marketing/types/services-page';
-import { cn } from '@/lib/utils';
 
 interface ServiceLanguagePlaceholderCardProps {
     item: ServiceItem;

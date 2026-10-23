@@ -1,5 +1,6 @@
 import { router } from '@inertiajs/react';
-import { useCallback, useState, type FormEvent } from 'react';
+import { useCallback, useState  } from 'react';
+import type {FormEvent} from 'react';
 
 type CashfreeCheckoutResult = {
     error?: unknown;
@@ -147,6 +148,7 @@ export function useRegistrationCheckout({
                 setActivePlanId(planId);
                 setPhoneError(null);
                 setPhoneDialogOpen(true);
+
                 return;
             }
 
@@ -190,6 +192,7 @@ export function useRegistrationCheckout({
                         setPhoneError(payload.errors.phone[0]);
                         setPhoneDialogOpen(true);
                         setIsPaying(false);
+
                         return;
                     }
 
@@ -238,6 +241,7 @@ export function useRegistrationCheckout({
 
                     if (result?.error) {
                         setIsPaying(false);
+
                         return;
                     }
 
@@ -262,6 +266,7 @@ export function useRegistrationCheckout({
 
             if (!normalized) {
                 setPhoneError('Enter a valid 10-digit Indian mobile number.');
+
                 return;
             }
 

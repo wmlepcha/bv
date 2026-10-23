@@ -1,16 +1,16 @@
 import { Form } from '@inertiajs/react';
-import { PrivateSeoHead } from '@shared/components/seo-head';
 import {
     index as confirmOptions,
     store as confirmStore,
 } from '@/actions/Laravel/Passkeys/Http/Controllers/PasskeyConfirmationController';
-import InputError from '@shared/components/input-error';
-import PasskeyVerify from '@app/components/passkey-verify';
-import PasswordInput from '@shared/components/password-input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { store } from '@/routes/password/confirm';
+import PasskeyVerify from '@app/components/passkey-verify';
+import InputError from '@shared/components/input-error';
+import PasswordInput from '@shared/components/password-input';
+import { PrivateSeoHead } from '@shared/components/seo-head';
 
 export default function ConfirmPassword() {
     return (

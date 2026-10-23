@@ -1,5 +1,5 @@
-import { FadeIn } from '@marketing/components/animations/primitives';
 import { cn } from '@/lib/utils';
+import { FadeIn } from '@marketing/components/animations/primitives';
 
 interface ScrollIndicatorProps {
     className?: string;

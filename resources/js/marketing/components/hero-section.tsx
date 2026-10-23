@@ -1,11 +1,11 @@
-import { SplitStaggerReveal } from '@marketing/components/animations/text';
-import { FadeUp } from '@marketing/components/animations/primitives';
+import { cn } from '@/lib/utils';
 import { ParallaxBackground } from '@marketing/components/animations/parallax';
+import { FadeUp } from '@marketing/components/animations/primitives';
+import { StaggerChildren } from '@marketing/components/animations/primitives';
+import { SplitStaggerReveal } from '@marketing/components/animations/text';
 import { CountUpStat } from '@marketing/components/count-up-stat';
 import { ScrollIndicator } from '@marketing/components/scroll-indicator';
-import { StaggerChildren } from '@marketing/components/animations/primitives';
 import type { HomePageProps } from '@marketing/types/home-page';
-import { cn } from '@/lib/utils';
 
 interface HeroSectionProps {
     hero: HomePageProps['hero'];
@@ -119,7 +119,7 @@ export function HeroSection({ hero }: HeroSectionProps) {
                     </FadeUp>
                 </div>
 
-                <ScrollIndicator className="mt-10" />
+                <ScrollIndicator className="mt-10 max-md:hidden" />
             </section>
         </ParallaxBackground>
     );

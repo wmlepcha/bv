@@ -18,6 +18,7 @@ class RegistrationAccessService
 
         $user->forceFill([
             'registration_paid_at' => now(),
+            'dashboard_activated_at' => $user->dashboard_activated_at ?? now(),
             'registration_expires_at' => $base->copy()->addMonths($durationMonths),
             'registration_plan_id' => $planId,
         ])->save();

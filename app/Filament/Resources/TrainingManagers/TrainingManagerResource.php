@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\TrainingManagers;
 
 use App\Enums\UserRole;
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\TrainingManagers\Pages\CreateTrainingManager;
 use App\Filament\Resources\TrainingManagers\Pages\EditTrainingManager;
 use App\Filament\Resources\TrainingManagers\Pages\ListTrainingManagers;
@@ -19,6 +20,8 @@ use UnitEnum;
 
 class TrainingManagerResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = User::class;
 
     protected static ?string $slug = 'training-managers';

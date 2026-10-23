@@ -1,8 +1,8 @@
-import { ServiceSpecRow } from '@marketing/components/services/service-spec-row';
-import { ServiceIntakePeriods } from '@marketing/components/services/service-intake-periods';
-import { formatDeliveryModes } from '@marketing/components/services/service-formatters';
-import type { ServiceItem } from '@marketing/types/services-page';
 import { cn } from '@/lib/utils';
+import { formatDeliveryModes } from '@marketing/components/services/service-formatters';
+import { ServiceIntakePeriods } from '@marketing/components/services/service-intake-periods';
+import { ServiceSpecRow } from '@marketing/components/services/service-spec-row';
+import type { ServiceItem } from '@marketing/types/services-page';
 
 interface ServiceImagePlaceholderProps {
     imageUrl?: string | null;

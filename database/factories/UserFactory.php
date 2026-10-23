@@ -42,6 +42,7 @@ class UserFactory extends Factory
             'special_id' => null,
             'registration_year' => null,
             'registration_paid_at' => null,
+            'dashboard_activated_at' => null,
             'registration_expires_at' => null,
             'registration_plan_id' => null,
             'registration_fee_paid_via' => null,
@@ -99,10 +100,27 @@ class UserFactory extends Factory
         ]);
     }
 
+    public function salesTeam(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => UserRole::SalesTeam,
+            'registration_paid_at' => now(),
+        ]);
+    }
+
+    public function recruitmentManager(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => UserRole::RecruitmentManager,
+            'registration_paid_at' => now(),
+        ]);
+    }
+
     public function paid(): static
     {
         return $this->state(fn (array $attributes) => [
             'registration_paid_at' => now(),
+            'dashboard_activated_at' => now(),
             'registration_expires_at' => now()->addYears(2),
             'student_number' => $attributes['student_number'] ?? 'SK-COI-2026-'.fake()->unique()->numerify('##'),
             'state_code' => $attributes['state_code'] ?? 'SK',
@@ -115,6 +133,7 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'registration_paid_at' => now()->subYears(2),
+            'dashboard_activated_at' => now()->subYears(2),
             'registration_expires_at' => now()->subDay(),
             'student_number' => $attributes['student_number'] ?? 'SK-COI-2026-'.fake()->unique()->numerify('##'),
             'state_code' => $attributes['state_code'] ?? 'SK',
@@ -127,6 +146,7 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'registration_paid_at' => null,
+            'dashboard_activated_at' => null,
             'registration_expires_at' => null,
             'registration_plan_id' => null,
             'student_number' => $attributes['student_number'] ?? 'SK-COI-2026-'.fake()->unique()->numerify('##'),

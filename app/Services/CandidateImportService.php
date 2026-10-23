@@ -4,19 +4,24 @@ namespace App\Services;
 
 use App\Enums\CivilStatus;
 use App\Enums\Gender;
+use App\Enums\OfflinePaymentMethod;
 use App\Enums\SpecialId;
 use App\Enums\UserRole;
+use App\Models\Payment;
+use App\Models\Plan;
 use App\Models\StudentProfile;
 use App\Models\User;
 use App\Notifications\WelcomeWithCredentials;
 use App\Support\IndianStates;
 use App\Support\PhoneNumber;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 use Throwable;
 
 class CandidateImportService
@@ -49,18 +54,38 @@ class CandidateImportService
         'gender',
     ];
 
+    /**
+     * Optional columns for older students who already paid: filling paid_on, amount and payment_method
+     * records the payment and unlocks them from today (no registration code needed).
+     *
+     * @var list<string>
+     */
+    public const PAYMENT_HEADERS = [
+        'paid_on',
+        'amount',
+        'payment_method',
+        'duration_months',
+        'access_until',
+        'reference',
+    ];
+
     public function __construct(
         private readonly StudentNumberGenerator $studentNumberGenerator,
+        private readonly PaidStudentMappingService $payments,
     ) {}
 
     /**
+     * Creates new candidates; rows with payment columns also record the earlier payment and unlock the student.
+     * An email that already exists is skipped, unless the row has payment columns: then that student is mapped as paid.
+     *
      * @return array{
-     *     created: list<array{email: string, candidate_id: string, temp_password: string}>,
+     *     created: list<array{email: string, candidate_id: string, temp_password: string, paid_on: string|null, expires_at: string|null}>,
+     *     mapped: list<array{row: int, email: string, candidate_id: string|null, paid_on: string, amount: int, expires_at: string|null}>,
      *     skipped: list<array{row: int, email: string, reason: string}>,
      *     failed: list<array{row: int, email: string|null, errors: string}>
      * }
      */
-    public function import(string $absolutePath): array
+    public function import(string $absolutePath, ?User $by = null): array
     {
         $spreadsheet = IOFactory::load($absolutePath);
         $sheet = $spreadsheet->getActiveSheet();
@@ -75,6 +100,7 @@ class CandidateImportService
         $this->assertHeaders($headers);
 
         $created = [];
+        $mapped = [];
         $skipped = [];
         $failed = [];
 
@@ -94,35 +120,72 @@ class CandidateImportService
                 );
             }
 
-            $validator = Validator::make($data, $this->rowRules());
-
-            if ($validator->fails()) {
-                $failed[] = [
-                    'row' => $rowNumber,
-                    'email' => $email,
-                    'errors' => $validator->errors()->all() !== []
-                        ? implode('; ', $validator->errors()->all())
-                        : 'Validation failed.',
-                ];
-
-                continue;
-            }
-
-            $validated = $validator->validated();
-
-            if (User::query()->where('email', $validated['email'])->exists()) {
-                $skipped[] = [
-                    'row' => $rowNumber,
-                    'email' => $validated['email'],
-                    'reason' => 'Email already exists.',
-                ];
-
-                continue;
-            }
-
             try {
-                $result = $this->createCandidate($validated);
-                $created[] = $result;
+                $payment = $this->paymentFromRow($data, $by);
+                $existing = filled($email) ? User::query()->where('email', $email)->first() : null;
+
+                if ($existing !== null) {
+                    if ($payment === null) {
+                        $skipped[] = ['row' => $rowNumber, 'email' => $email, 'reason' => 'Email already exists.'];
+
+                        continue;
+                    }
+
+                    if (! $existing->isStudent()) {
+                        throw new \InvalidArgumentException('This email belongs to a non-student account.');
+                    }
+
+                    if ($existing->hasActiveRegistration()) {
+                        $skipped[] = ['row' => $rowNumber, 'email' => $email, 'reason' => 'Already has active access.'];
+
+                        continue;
+                    }
+
+                    $record = $this->mapStudent($existing, $payment, $by);
+                    $existing = $existing->fresh();
+
+                    $mapped[] = [
+                        'row' => $rowNumber,
+                        'email' => $existing->email,
+                        'candidate_id' => $existing->student_number,
+                        'paid_on' => $record->paid_at->toDateString(),
+                        'amount' => (int) ($record->amount / 100),
+                        'expires_at' => $existing->registration_expires_at?->toDateString(),
+                    ];
+
+                    continue;
+                }
+
+                $validator = Validator::make($data, $this->rowRules());
+
+                if ($validator->fails()) {
+                    $failed[] = [
+                        'row' => $rowNumber,
+                        'email' => $email,
+                        'errors' => $validator->errors()->all() !== []
+                            ? implode('; ', $validator->errors()->all())
+                            : 'Validation failed.',
+                    ];
+
+                    continue;
+                }
+
+                $created[] = DB::transaction(function () use ($validator, $payment, $by): array {
+                    $result = $this->createCandidate($validator->validated());
+                    $record = null;
+
+                    if ($payment !== null) {
+                        $student = User::query()->where('email', $result['email'])->firstOrFail();
+                        $record = $this->mapStudent($student, $payment, $by);
+                        $student->refresh();
+                    }
+
+                    return [
+                        ...$result,
+                        'paid_on' => $record?->paid_at->toDateString(),
+                        'expires_at' => isset($student) ? $student->registration_expires_at?->toDateString() : null,
+                    ];
+                });
             } catch (Throwable $exception) {
                 $failed[] = [
                     'row' => $rowNumber,
@@ -132,14 +195,95 @@ class CandidateImportService
             }
         }
 
-        return compact('created', 'skipped', 'failed');
+        return compact('created', 'mapped', 'skipped', 'failed');
+    }
+
+    /**
+     * The row's payment details, or null when the row has none (an ordinary unpaid candidate).
+     *
+     * @param  array<string, mixed>  $data
+     * @return array{paid_on: string, amount: int, payment_method: string, duration_months: int, access_until: string|null, reference: string|null}|null
+     *
+     * @throws \InvalidArgumentException
+     */
+    private function paymentFromRow(array $data, ?User $by): ?array
+    {
+        if (blank($data['paid_on'] ?? null) && blank($data['amount'] ?? null) && blank($data['payment_method'] ?? null)) {
+            return null;
+        }
+
+        if ($by === null) {
+            throw new \InvalidArgumentException('A signed-in staff member is needed to record payments.');
+        }
+
+        $data['paid_on'] = $this->parseDate($data['paid_on'] ?? null);
+        $data['access_until'] = $this->parseDate($data['access_until'] ?? null);
+
+        $validator = Validator::make($data, [
+            'paid_on' => ['required', 'date', 'before_or_equal:today'],
+            'amount' => ['required', 'numeric', 'gt:0'],
+            'payment_method' => ['required', Rule::in(array_column(OfflinePaymentMethod::cases(), 'value'))],
+            'duration_months' => ['nullable', 'integer', 'min:1', 'max:120'],
+            'access_until' => ['nullable', 'date', 'after:today'],
+            'reference' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        if ($validator->fails()) {
+            throw new \InvalidArgumentException('Payment columns: '.implode('; ', $validator->errors()->all()));
+        }
+
+        $payment = $validator->validated();
+
+        return [
+            'paid_on' => $payment['paid_on'],
+            'amount' => (int) round((float) $payment['amount']),
+            'payment_method' => $payment['payment_method'],
+            'duration_months' => (int) ($payment['duration_months'] ?? PaidStudentMappingService::DEFAULT_DURATION_MONTHS),
+            'access_until' => $payment['access_until'] ?? null,
+            'reference' => $payment['reference'] ?? null,
+        ];
+    }
+
+    /**
+     * @param  array{paid_on: string, amount: int, payment_method: string, duration_months: int, access_until: string|null, reference: string|null}  $payment
+     */
+    private function mapStudent(User $student, array $payment, User $by): Payment
+    {
+        return $this->payments->map(
+            $student,
+            Plan::query()->active()->where('duration_months', $payment['duration_months'])->ordered()->first(),
+            $payment['duration_months'],
+            $payment['amount'],
+            CarbonImmutable::parse($payment['paid_on']),
+            OfflinePaymentMethod::from($payment['payment_method']),
+            $payment['reference'],
+            $payment['access_until'] !== null ? CarbonImmutable::parse($payment['access_until'])->endOfDay() : null,
+            $by,
+        );
+    }
+
+    private function parseDate(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (is_numeric($value)) {
+            return CarbonImmutable::instance(ExcelDate::excelToDateTimeObject((float) $value))->toDateString();
+        }
+
+        try {
+            return CarbonImmutable::parse((string) $value)->toDateString();
+        } catch (Throwable) {
+            return (string) $value;
+        }
     }
 
     /**
      * @param  array<string, mixed>  $data
      * @return array{email: string, candidate_id: string, temp_password: string}
      */
-    private function createCandidate(array $data): array
+    public function createCandidate(array $data): array
     {
         $stateCode = IndianStates::codeForName($data['state']);
 
@@ -211,7 +355,7 @@ class CandidateImportService
     /**
      * @return array<string, list<mixed>>
      */
-    private function rowRules(): array
+    public function rowRules(): array
     {
         return [
             'last_name' => ['required', 'string', 'max:255'],
@@ -236,7 +380,7 @@ class CandidateImportService
      * @param  list<mixed>|null  $headerRow
      * @return list<string>
      */
-    private function normalizeHeaders(?array $headerRow): array
+    public function normalizeHeaders(?array $headerRow): array
     {
         if ($headerRow === null) {
             return [];
@@ -267,7 +411,7 @@ class CandidateImportService
      * @param  list<mixed>  $row
      * @return array<string, mixed>
      */
-    private function mapRow(array $headers, array $row): array
+    public function mapRow(array $headers, array $row): array
     {
         $data = [];
 
@@ -305,7 +449,7 @@ class CandidateImportService
     /**
      * @param  list<mixed>  $row
      */
-    private function rowIsEmpty(array $row): bool
+    public function rowIsEmpty(array $row): bool
     {
         foreach ($row as $cell) {
             if ($cell !== null && trim((string) $cell) !== '') {

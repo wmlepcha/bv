@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Clusters\FrontendEditsCluster;
+use App\Filament\Concerns\AdminOnly;
 use App\Models\SiteSetting;
 use App\Services\ServicesPageService;
 use BackedEnum;
@@ -26,6 +27,8 @@ use UnitEnum;
  */
 class ManageServicesPageSettings extends Page
 {
+    use AdminOnly;
+
     /**
      * @var array<string, mixed>|null
      */

@@ -1,10 +1,11 @@
-import { forwardRef, useRef, type ReactNode } from 'react';
+import { forwardRef, useRef  } from 'react';
+import type {ReactNode} from 'react';
+import { cn } from '@/lib/utils';
+import { presets } from '@marketing/animations/gsap/timelines/presets';
 import type { AnimationComponentProps } from '@marketing/animations/types/animation-props';
 import { useScrollAnimation } from '@marketing/hooks/use-gsap-context';
 import { useReducedMotion } from '@marketing/hooks/use-reduced-motion';
 import { mergeRefs } from '@marketing/utils/animation-helpers';
-import { presets } from '@marketing/animations/gsap/timelines/presets';
-import { cn } from '@/lib/utils';
 
 interface PrimitiveProps extends AnimationComponentProps {
     children?: ReactNode;

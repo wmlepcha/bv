@@ -1,22 +1,24 @@
+import type { PendingVisit, VisitOptions } from '@inertiajs/core';
+import { router } from '@inertiajs/react';
 import {
     createContext,
     useContext,
     useEffect,
     useRef,
-    useState,
-    type ReactNode,
+    useState
+    
 } from 'react';
-import { router } from '@inertiajs/react';
-import type { PendingVisit, VisitOptions } from '@inertiajs/core';
+import type {ReactNode} from 'react';
 import { gsap } from '@marketing/animations/gsap/register-plugins';
 import {
     createEnterTransition,
     createExitTransition,
-    resetPageTransition,
-    type TransitionType,
+    resetPageTransition
+    
 } from '@marketing/animations/gsap/timelines/transitions';
-import { useScrollConfig } from '@marketing/hooks/use-scroll-config';
+import type {TransitionType} from '@marketing/animations/gsap/timelines/transitions';
 import { useReducedMotion } from '@marketing/hooks/use-reduced-motion';
+import { useScrollConfig } from '@marketing/hooks/use-scroll-config';
 import {
     refreshScrollAnimations,
     resetScrollPosition,
@@ -132,6 +134,7 @@ export function TransitionProvider({ children }: { children: ReactNode }) {
         const removeBefore = router.on('before', (event) => {
             if (isResumingVisit.current) {
                 isResumingVisit.current = false;
+
                 return;
             }
 
@@ -159,6 +162,7 @@ export function TransitionProvider({ children }: { children: ReactNode }) {
         const removeNavigate = router.on('navigate', () => {
             if (!wrapperRef.current) {
                 refreshScrollAnimations();
+
                 return;
             }
 

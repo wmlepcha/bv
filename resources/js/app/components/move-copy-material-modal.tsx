@@ -10,7 +10,7 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from '@/components/ui/dialog';
+} from '@/components/ui/responsive-dialog';
 import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
 
@@ -63,6 +63,7 @@ export function MoveCopyMaterialModal({
         }
 
         const ids = new Set<number>(target.disabledFolderIds ?? []);
+
         if (target.folderId !== undefined) {
             ids.add(target.folderId);
         }
@@ -129,6 +130,7 @@ export function MoveCopyMaterialModal({
         if (target.type === 'file') {
             if (selected === 'root' || selectedFolderId === null) {
                 setSubmitting(null);
+
                 return;
             }
 
@@ -179,7 +181,10 @@ export function MoveCopyMaterialModal({
                 }
             }}
         >
-            <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-md">
+            <DialogContent
+                phone="flush"
+                className="gap-0 overflow-hidden p-0 sm:max-w-md"
+            >
                 <DialogHeader className="space-y-1.5 border-b border-border/70 px-5 py-4">
                     <DialogTitle className="pr-8 text-lg">
                         Move or copy “{target.name}”
@@ -234,7 +239,7 @@ export function MoveCopyMaterialModal({
                                         Library root
                                     </span>
                                     {isCurrentRoot && (
-                                        <span className="shrink-0 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                                        <span className="shrink-0 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
                                             Current
                                         </span>
                                     )}
@@ -287,13 +292,13 @@ export function MoveCopyMaterialModal({
                                             {folder.name}
                                         </span>
                                         {isCurrentParent && (
-                                            <span className="shrink-0 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                                            <span className="shrink-0 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
                                                 Current
                                             </span>
                                         )}
                                         {target.type === 'folder' &&
                                             folder.id === target.folderId && (
-                                                <span className="shrink-0 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                                                <span className="shrink-0 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
                                                     This folder
                                                 </span>
                                             )}

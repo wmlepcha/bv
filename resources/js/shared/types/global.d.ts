@@ -24,6 +24,10 @@ export type SiteLayoutSocialLink = {
 };
 
 export type SiteLayout = {
+    auth: {
+        recruitmentManagerImageUrl: string | null;
+        trainingManagerImageUrl: string | null;
+    };
     header: {
         logoUrlLight: string;
         logoUrlDark: string;
@@ -48,6 +52,7 @@ export type InquirySelectOption = {
 
 export type InquiryOptions = {
     educationLevels: InquirySelectOption[];
+    turnstileSiteKey: string | null;
 };
 
 declare module 'react' {
@@ -74,6 +79,8 @@ declare module '@inertiajs/core' {
             registrationPlans: RegistrationPlan[];
             registrationTermsHtml: string;
             studentPhone: string | null;
+            unread_notifications_count: number;
+            unread_messages_count: number;
             siteLayout: SiteLayout;
             inquiryOptions: InquiryOptions;
             [key: string]: unknown;

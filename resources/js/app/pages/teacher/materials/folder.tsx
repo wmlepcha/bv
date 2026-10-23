@@ -1,13 +1,14 @@
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { MaterialFileCard } from '@app/components/material-file-card';
 import { MaterialFolderCard } from '@app/components/material-folder-card';
 import {
-    ShareToBatchesModal,
-    type ShareBatchOption,
+    ShareToBatchesModal
+    
 } from '@app/components/share-to-batches-modal';
+import type {ShareBatchOption} from '@app/components/share-to-batches-modal';
 import { PrivateSeoHead } from '@shared/components/seo-head';
-import { Button } from '@/components/ui/button';
 
 type Props = {
     folder: {
@@ -27,9 +28,10 @@ type Props = {
         id: number;
         name: string;
         extension: string;
-        kind?: 'file' | 'youtube' | 'link';
+        kind?: 'file' | 'youtube' | 'youtube_playlist' | 'link';
         url?: string | null;
         embed_url?: string | null;
+        playlist_items?: Array<{ video_id: string; title: string }> | null;
         created_at: string | null;
         type: string;
         shared_batch_ids?: number[];
@@ -184,6 +186,13 @@ export default function TeacherMaterialFolder({
                                             kind={file.kind ?? 'file'}
                                             url={file.url}
                                             embedUrl={file.embed_url}
+                                            playlistItems={file.playlist_items}
+                                            playlistItemsUrl={
+                                                (file.kind ?? 'file') ===
+                                                'youtube_playlist'
+                                                    ? `/teacher/materials/files/${file.id}/playlist-items`
+                                                    : null
+                                            }
                                             uploadedAt={file.created_at}
                                             downloadHref={
                                                 (file.kind ?? 'file') === 'file'

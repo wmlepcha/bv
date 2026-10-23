@@ -33,6 +33,9 @@ class BatchEnrollment extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Batch, $this>
+     */
     public function batch(): BelongsTo
     {
         return $this->belongsTo(Batch::class);

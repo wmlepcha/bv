@@ -29,6 +29,8 @@ class BatchFactory extends Factory
             'level' => CourseLevel::B1,
             'teacher_id' => User::factory()->teacher(),
             'is_active' => true,
+            'starts_on' => now()->subWeeks(2)->toDateString(),
+            'ends_on' => now()->addWeeks(10)->toDateString(),
         ];
     }
 }

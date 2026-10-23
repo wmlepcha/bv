@@ -27,3 +27,9 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# mailbox credentials (per-business mail connector)
+.mail-credentials
+
+# local Claude Code settings (machine-specific paths)
+.claude/settings.local.json

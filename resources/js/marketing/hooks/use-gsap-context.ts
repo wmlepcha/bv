@@ -1,6 +1,6 @@
 import { useGSAP } from '@gsap/react';
-import type { DependencyList, RefObject } from 'react';
 import type gsap from 'gsap';
+import type { DependencyList, RefObject } from 'react';
 
 type GsapContext = ReturnType<typeof gsap.context>;
 

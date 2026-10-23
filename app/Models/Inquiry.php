@@ -4,6 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property string $type
+ * @property array<string, mixed> $data
+ */
 class Inquiry extends Model
 {
     /**

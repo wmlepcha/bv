@@ -1,7 +1,7 @@
 import { usePage } from '@inertiajs/react';
+import { cn } from '@/lib/utils';
 import AppLogoIcon from '@app/components/app-logo-icon';
 import { BRAND_NAME_TM } from '@shared/lib/brand';
-import { cn } from '@/lib/utils';
 
 type AppLogoProps = {
     /** Force high-contrast logo treatment for the brand-colored nav rail. */

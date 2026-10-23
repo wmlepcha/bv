@@ -4,6 +4,8 @@ namespace App\Notifications;
 
 use App\Enums\UserRole;
 use App\Support\PortalLoginUrl;
+use App\Support\StudentNotificationChannels;
+use App\Support\WhatsAppContentMessage;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -23,7 +25,22 @@ class WelcomeWithCredentials extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return StudentNotificationChannels::for($notifiable);
+    }
+
+    public function toWhatsAppContent(object $notifiable): ?WhatsAppContentMessage
+    {
+        $contentSid = (string) config('services.whatsapp.twilio.templates.update', '');
+
+        if ($contentSid === '') {
+            return null;
+        }
+
+        return new WhatsAppContentMessage($contentSid, [
+            '1' => filled($notifiable->name ?? null) ? (string) $notifiable->name : 'Candidate',
+            '2' => 'Your account is ready. Your login details have been sent to '.$notifiable->email.'. Please change your password after your first login',
+            '3' => PortalLoginUrl::forRole($this->role ?? ($notifiable->role ?? null)),
+        ]);
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -60,6 +77,8 @@ class WelcomeWithCredentials extends Notification implements ShouldQueue
             UserRole::TrainingManager => 'a training manager',
             UserRole::Admin => 'an admin',
             UserRole::Recruiter => 'a recruiter',
+            UserRole::RecruitmentManager => 'a recruitment manager',
+            UserRole::SalesTeam => 'a sales team member',
             UserRole::Employee => 'staff',
             UserRole::Student => 'a candidate',
             default => null,

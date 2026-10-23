@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\HomeTestimonials;
 
 use App\Filament\Clusters\FrontendEditsCluster;
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\HomeTestimonials\Pages\CreateHomeTestimonial;
 use App\Filament\Resources\HomeTestimonials\Pages\EditHomeTestimonial;
 use App\Filament\Resources\HomeTestimonials\Pages\ListHomeTestimonials;
@@ -18,6 +19,8 @@ use UnitEnum;
 
 class HomeTestimonialResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = HomeTestimonial::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChatBubbleLeftRight;

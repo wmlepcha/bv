@@ -33,7 +33,8 @@ namespace App\Support;
  *     state: string|null,
  *     country: string|null,
  *     board: string|null,
- *     language_of_instruction: string|null
+ *     language_of_instruction: string|null,
+ *     certificate_path: string|null
  * }
  * @phpstan-type Training array{
  *     date: string|null,
@@ -217,6 +218,7 @@ class VitaeData
             'country' => null,
             'board' => null,
             'language_of_instruction' => null,
+            'certificate_path' => null,
         ];
     }
 

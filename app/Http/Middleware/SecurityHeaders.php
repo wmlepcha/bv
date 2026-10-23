@@ -25,6 +25,11 @@ class SecurityHeaders
             $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
         }
 
+        // Document previews send their own narrow policy; the page-wide one (object-src 'none') stops browsers drawing PDFs.
+        if ($response->headers->has('Content-Security-Policy')) {
+            return $response;
+        }
+
         $isViteDev = app()->environment('local') && Vite::isRunningHot();
 
         $viteSources = $isViteDev ? $this->viteDevSources() : ['http' => '', 'connect' => ''];

@@ -146,6 +146,120 @@ class MaterialAssignmentService
         return false;
     }
 
+    public function studentCanAccessFolder(User $student, MaterialFolder $folder): bool
+    {
+        $batchId = $this->studentBatchId($student);
+
+        if ($batchId === null) {
+            return false;
+        }
+
+        $current = $folder->loadMissing('parent');
+
+        while ($current !== null) {
+            if ($this->hasDirectBatchAssignment($current, $batchId)) {
+                return true;
+            }
+
+            $current = $current->parent;
+        }
+
+        return false;
+    }
+
+    public function studentCanAccessFile(User $student, MaterialFile $file): bool
+    {
+        $batchId = $this->studentBatchId($student);
+
+        if ($batchId === null) {
+            return false;
+        }
+
+        if ($this->hasDirectBatchAssignment($file, $batchId)) {
+            return true;
+        }
+
+        $folder = $file->folder()->with('parent')->first();
+
+        while ($folder !== null) {
+            if ($this->hasDirectBatchAssignment($folder, $batchId)) {
+                return true;
+            }
+
+            $folder = $folder->parent;
+        }
+
+        return false;
+    }
+
+    /**
+     * @return array{enrolled: bool, folders: list<array<string, mixed>>, files: list<array<string, mixed>>}
+     */
+    public function materialsForStudent(User $student): array
+    {
+        $batchId = $this->studentBatchId($student);
+
+        if ($batchId === null) {
+            return [
+                'enrolled' => false,
+                'folders' => [],
+                'files' => [],
+            ];
+        }
+
+        $folderAssignments = MaterialBatchAssignment::query()
+            ->where('batch_id', $batchId)
+            ->where('assignable_type', MaterialFolder::class)
+            ->with('assignable')
+            ->get();
+
+        $fileAssignments = MaterialBatchAssignment::query()
+            ->where('batch_id', $batchId)
+            ->where('assignable_type', MaterialFile::class)
+            ->with(['assignable.folder'])
+            ->get();
+
+        /** @var Collection<int, MaterialFolder> $assignedFolders */
+        $assignedFolders = $folderAssignments
+            ->map(fn (MaterialBatchAssignment $assignment) => $assignment->assignable)
+            ->filter()
+            ->unique('id')
+            ->values();
+
+        $assignedFolderIds = $assignedFolders->pluck('id')->all();
+
+        $files = $fileAssignments
+            ->map(fn (MaterialBatchAssignment $assignment) => $assignment->assignable)
+            ->filter(function (?MaterialFile $file) use ($assignedFolderIds): bool {
+                if ($file === null) {
+                    return false;
+                }
+
+                $folder = $file->folder;
+
+                while ($folder !== null) {
+                    if (in_array($folder->id, $assignedFolderIds, true)) {
+                        return false;
+                    }
+                    $folder = $folder->parent;
+                }
+
+                return true;
+            })
+            ->unique('id')
+            ->values();
+
+        return [
+            'enrolled' => true,
+            'folders' => $assignedFolders->map(fn (MaterialFolder $folder): array => [
+                'id' => $folder->id,
+                'name' => $folder->name,
+                'type' => 'folder',
+            ])->all(),
+            'files' => $files->map(fn (MaterialFile $file): array => $this->presentStudentFile($file))->all(),
+        ];
+    }
+
     /**
      * @return array{folders: list<array<string, mixed>>, files: list<array<string, mixed>>}
      */
@@ -208,6 +322,9 @@ class MaterialAssignmentService
                 'kind' => $file->kind ?? MaterialFile::KIND_FILE,
                 'url' => $file->url,
                 'embed_url' => $file->embedUrl(),
+                'playlist_items' => $file->isYoutubePlaylist()
+                    ? ($file->playlist_items ?? [])
+                    : null,
                 'folder_name' => $file->folder?->name,
                 'created_at' => $file->created_at?->toIso8601String(),
                 'shared_batch_ids' => $this->sharedBatchIds($file),
@@ -417,5 +534,45 @@ class MaterialAssignmentService
             ->where('assignable_id', $assignable->id)
             ->where('trainer_id', $trainerId)
             ->exists();
+    }
+
+    private function hasDirectBatchAssignment(MaterialFolder|MaterialFile $assignable, int $batchId): bool
+    {
+        return MaterialBatchAssignment::query()
+            ->where('assignable_type', $assignable::class)
+            ->where('assignable_id', $assignable->id)
+            ->where('batch_id', $batchId)
+            ->exists();
+    }
+
+    private function studentBatchId(User $student): ?int
+    {
+        if (! $student->isStudent()) {
+            return null;
+        }
+
+        return $student->batchEnrollment?->batch_id;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function presentStudentFile(MaterialFile $file): array
+    {
+        return [
+            'id' => $file->id,
+            'name' => $file->display_name,
+            'extension' => $file->extension,
+            'kind' => $file->kind ?? MaterialFile::KIND_FILE,
+            'url' => $file->url,
+            'embed_url' => $file->embedUrl(),
+            'playlist_items' => $file->isYoutubePlaylist()
+                ? ($file->playlist_items ?? [])
+                : null,
+            'preview_url' => $file->isFile() ? route('student.study-bank.files.preview', $file) : null,
+            'folder_name' => $file->folder?->name,
+            'created_at' => $file->created_at?->toIso8601String(),
+            'type' => 'file',
+        ];
     }
 }

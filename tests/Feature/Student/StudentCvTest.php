@@ -46,6 +46,7 @@ class StudentCvTest extends TestCase
 
         StudentProfile::query()->create([
             'user_id' => $user->id,
+            'registration_purpose' => 'training_and_placement',
             'mobile_whatsapp' => '+911234567890',
         ]);
 
@@ -177,6 +178,7 @@ class StudentCvTest extends TestCase
 
         StudentProfile::query()->create([
             'user_id' => $user->id,
+            'registration_purpose' => 'training_and_placement',
         ]);
 
         $certFile = UploadedFile::fake()->create('bls-cert.pdf', 100, 'application/pdf');
@@ -236,6 +238,7 @@ class StudentCvTest extends TestCase
 
         StudentProfile::query()->create([
             'user_id' => $user->id,
+            'registration_purpose' => 'training_and_placement',
         ]);
 
         $seminarFile = UploadedFile::fake()->create('seminar-cert.pdf', 100, 'application/pdf');
@@ -303,6 +306,7 @@ class StudentCvTest extends TestCase
 
         StudentProfile::query()->create([
             'user_id' => $user->id,
+            'registration_purpose' => 'training_and_placement',
         ]);
 
         $this->actingAs($user)
@@ -333,6 +337,50 @@ class StudentCvTest extends TestCase
         $this->assertSame([], $profile->vitae_data['experiences']);
     }
 
+    public function test_cv_saves_qualification_certificate_and_keeps_it_on_resave(): void
+    {
+        Storage::fake('public');
+
+        $user = User::factory()->paid()->create([
+            'role' => UserRole::Student,
+            'first_name' => 'Dominique',
+            'last_name' => 'Sangbo',
+            'email_verified_at' => now(),
+        ]);
+        StudentProfile::query()->create(['user_id' => $user->id, 'registration_purpose' => 'training_and_placement']);
+
+        $payload = fn (array $qualification): array => [
+            'first_name' => 'Dominique',
+            'last_name' => 'Sangbo',
+            'vitae' => [
+                'is_newbie' => true,
+                'qualifications' => [array_merge(['title' => 'B.Sc. Nursing', 'college' => 'SMCON'], $qualification)],
+            ],
+        ];
+
+        $this->actingAs($user)
+            ->post(route('student.cv.update'), $payload([
+                'certificate' => UploadedFile::fake()->create('degree.pdf', 100, 'application/pdf'),
+            ]))
+            ->assertRedirect(route('student.cv.edit'));
+
+        $path = $user->studentProfile()->first()->vitae_data['qualifications'][0]['certificate_path'];
+        $this->assertNotNull($path);
+        Storage::disk('public')->assertExists($path);
+
+        $this->actingAs($user)
+            ->post(route('student.cv.update'), $payload([]))
+            ->assertRedirect(route('student.cv.edit'));
+
+        $this->assertSame($path, $user->studentProfile()->first()->vitae_data['qualifications'][0]['certificate_path']);
+
+        $this->actingAs($user)
+            ->post(route('student.cv.update'), $payload([
+                'certificate' => UploadedFile::fake()->create('degree.exe', 10, 'application/x-msdownload'),
+            ]))
+            ->assertSessionHasErrors('vitae.qualifications.0.certificate');
+    }
+
     public function test_cv_saves_experience_with_dates_and_certificate(): void
     {
         Storage::fake('public');
@@ -346,6 +394,7 @@ class StudentCvTest extends TestCase
 
         StudentProfile::query()->create([
             'user_id' => $user->id,
+            'registration_purpose' => 'training_and_placement',
         ]);
 
         $certificate = UploadedFile::fake()->create('experience-letter.pdf', 100, 'application/pdf');
@@ -407,6 +456,7 @@ class StudentCvTest extends TestCase
 
         StudentProfile::query()->create([
             'user_id' => $user->id,
+            'registration_purpose' => 'training_and_placement',
         ]);
 
         $certificate = UploadedFile::fake()->create('goethe-b2.pdf', 100, 'application/pdf');
@@ -471,6 +521,7 @@ class StudentCvTest extends TestCase
 
         StudentProfile::query()->create([
             'user_id' => $user->id,
+            'registration_purpose' => 'training_and_placement',
         ]);
 
         $this->actingAs($user)
@@ -513,6 +564,7 @@ class StudentCvTest extends TestCase
 
         StudentProfile::query()->create([
             'user_id' => $user->id,
+            'registration_purpose' => 'training_and_placement',
         ]);
 
         $this->actingAs($user)
@@ -557,6 +609,7 @@ class StudentCvTest extends TestCase
     public function test_cv_saves_passport_and_license_documents(): void
     {
         Storage::fake('public');
+        Storage::fake('local');
 
         $user = User::factory()->paid()->create([
             'role' => UserRole::Student,
@@ -567,6 +620,7 @@ class StudentCvTest extends TestCase
 
         StudentProfile::query()->create([
             'user_id' => $user->id,
+            'registration_purpose' => 'training_and_placement',
         ]);
 
         $this->actingAs($user)
@@ -586,8 +640,10 @@ class StudentCvTest extends TestCase
         $this->assertSame('DL-2W-999', $profile->drivers_license);
         $this->assertNotNull($profile->passport_document_path);
         $this->assertNotNull($profile->drivers_license_document_path);
-        Storage::disk('public')->assertExists($profile->passport_document_path);
-        Storage::disk('public')->assertExists($profile->drivers_license_document_path);
+        Storage::disk('local')->assertExists($profile->passport_document_path);
+        Storage::disk('local')->assertExists($profile->drivers_license_document_path);
+        Storage::disk('public')->assertMissing($profile->passport_document_path);
+        Storage::disk('public')->assertMissing($profile->drivers_license_document_path);
     }
 
     public function test_cv_rejects_non_image_photo_upload(): void
@@ -603,6 +659,7 @@ class StudentCvTest extends TestCase
 
         StudentProfile::query()->create([
             'user_id' => $user->id,
+            'registration_purpose' => 'training_and_placement',
         ]);
 
         $this->actingAs($user)
@@ -625,6 +682,7 @@ class StudentCvTest extends TestCase
 
         StudentProfile::query()->create([
             'user_id' => $user->id,
+            'registration_purpose' => 'training_and_placement',
         ]);
 
         $this->actingAs($user)
@@ -650,6 +708,7 @@ class StudentCvTest extends TestCase
 
         $profile = StudentProfile::query()->create([
             'user_id' => $user->id,
+            'registration_purpose' => 'training_and_placement',
         ]);
 
         $this->actingAs($user)
@@ -687,6 +746,7 @@ class StudentCvTest extends TestCase
 
         StudentProfile::query()->create([
             'user_id' => $user->id,
+            'registration_purpose' => 'training_and_placement',
         ]);
 
         $this->actingAs($user)
@@ -717,6 +777,7 @@ class StudentCvTest extends TestCase
 
         StudentProfile::query()->create([
             'user_id' => $user->id,
+            'registration_purpose' => 'training_and_placement',
         ]);
 
         $this->actingAs($user)
@@ -754,6 +815,7 @@ class StudentCvTest extends TestCase
 
         $profile = StudentProfile::query()->create([
             'user_id' => $student->id,
+            'registration_purpose' => 'training_and_placement',
             'introduction' => 'Registered nurse.',
             'skills' => ['Leadership'],
             'vitae_data' => [
@@ -781,6 +843,8 @@ class StudentCvTest extends TestCase
             'email_verified_at' => now(),
         ]);
 
+        BatchEnrollment::factory()->create(['student_id' => $student->id]);
+
         $this->actingAs($recruiter)
             ->get(route('recruiter.students.show', $profile))
             ->assertOk()
@@ -797,10 +861,7 @@ class StudentCvTest extends TestCase
             'teacher_id' => $teacher->id,
         ]);
 
-        BatchEnrollment::factory()->create([
-            'batch_id' => $batch->id,
-            'student_id' => $student->id,
-        ]);
+        BatchEnrollment::query()->where('student_id', $student->id)->update(['batch_id' => $batch->id]);
 
         $this->actingAs($teacher)
             ->get(route('recruiter.students.show', $profile))

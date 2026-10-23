@@ -20,16 +20,22 @@ class InquiryController extends Controller
             ? ['qualification_certificate', 'resume', 'id_document']
             : [];
 
+        if ($this->isRecentDuplicate($type, $validated['email'])) {
+            Inertia::flash('inquirySubmitted', true);
+
+            return back();
+        }
+
         $storedFiles = [];
 
         foreach ($fileFields as $field) {
             if ($request->hasFile($field)) {
-                $storedFiles[$field] = $request->file($field)->store("inquiries/{$type}", 'public');
+                $storedFiles[$field] = $request->file($field)->store("inquiries/{$type}", 'local');
             }
         }
 
         $data = collect($validated)
-            ->except(array_merge(['type'], $fileFields))
+            ->except(array_merge(['type', 'fax_number', 'cf-turnstile-response'], $fileFields))
             ->merge($storedFiles)
             ->toArray();
 
@@ -44,5 +50,17 @@ class InquiryController extends Controller
         Inertia::flash('inquirySubmitted', true);
 
         return back();
+    }
+
+    /**
+     * Same email + type within the last hour is treated as an accidental or automated resubmission.
+     */
+    private function isRecentDuplicate(string $type, string $email): bool
+    {
+        return Inquiry::query()
+            ->where('type', $type)
+            ->where('data->email', $email)
+            ->where('created_at', '>=', now()->subHour())
+            ->exists();
     }
 }

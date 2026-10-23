@@ -11,10 +11,10 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from '@/components/ui/sidebar';
-import { UserInfo } from '@app/components/user-info';
-import { UserMenuContent } from '@app/components/user-menu-content';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import { UserInfo } from '@app/components/user-info';
+import { UserMenuContent } from '@app/components/user-menu-content';
 
 export function NavUser() {
     const { auth } = usePage().props;

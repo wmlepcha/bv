@@ -6,13 +6,13 @@ import {
     Languages,
     UserRound,
 } from 'lucide-react';
-import { PrivateSeoHead } from '@shared/components/seo-head';
-import InputError from '@shared/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
+import InputError from '@shared/components/input-error';
+import { PrivateSeoHead } from '@shared/components/seo-head';
 
 type FormOptions = {
     centers: Array<{ id: number; name: string }>;
@@ -76,6 +76,8 @@ function BatchForm({
         level?: string;
         teacher_id?: number;
         is_active?: boolean;
+        starts_on?: string;
+        ends_on?: string;
     };
 }) {
     return (
@@ -224,6 +226,31 @@ function BatchForm({
                                 ))}
                             </select>
                             <InputError message={errors.teacher_id} />
+                        </div>
+
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div className="grid gap-2">
+                                <Label htmlFor="starts_on">Start date</Label>
+                                <Input
+                                    id="starts_on"
+                                    name="starts_on"
+                                    type="date"
+                                    defaultValue={defaults?.starts_on}
+                                    className={cn(fieldClass, 'h-11')}
+                                />
+                                <InputError message={errors.starts_on} />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="ends_on">End date</Label>
+                                <Input
+                                    id="ends_on"
+                                    name="ends_on"
+                                    type="date"
+                                    defaultValue={defaults?.ends_on}
+                                    className={cn(fieldClass, 'h-11')}
+                                />
+                                <InputError message={errors.ends_on} />
+                            </div>
                         </div>
 
                         <div className="rounded-2xl border border-border/70 bg-muted/30 px-4 py-3">

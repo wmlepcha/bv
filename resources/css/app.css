@@ -448,7 +448,7 @@ html.lenis body {
 }
 
 .magic-nav .list.active .icon {
-    transform: translateY(-30px);
+    transform: translateY(var(--magic-nav-lift, -30px));
 }
 
 /*
@@ -811,9 +811,9 @@ iframe[src*='cashfreepayments'] {
     display: none;
 }
 
-/* Shared Full CV page body — generous padding on screen (print overrides above) */
+/* Shared Full CV page body — compact on phones, generous from 640px (print overrides above) */
 .cv-full-sheet-body {
-    padding: 2.75rem 2.5rem 2.5rem;
+    padding: 1.5rem 1.25rem 1.5rem;
 }
 
 @media (min-width: 640px) {
@@ -865,6 +865,98 @@ iframe[src*='cashfreepayments'] {
     left: -10000px;
     top: 0;
     width: 210mm;
+    height: 0;
     overflow: hidden;
     pointer-events: none;
+}
+
+/* Native-app feel on phones (see MobileAppLayout) */
+.mobile-app {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+}
+
+.mobile-app :where(a, button, [role='tab'], [role='radio']) {
+    touch-action: manipulation;
+}
+
+/* iOS Safari zooms the page when a focused field is under 16px */
+@media (hover: none) and (pointer: coarse) {
+    input:not(
+            [type='checkbox'],
+            [type='radio'],
+            [type='range'],
+            [type='file'],
+            [type='hidden']
+        ),
+    select,
+    textarea {
+        font-size: 16px;
+    }
+}
+
+@keyframes mobile-page-enter {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.mobile-page-enter {
+    animation: mobile-page-enter 180ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mobile-page-enter {
+        animation: none;
+    }
+}
+
+/* Confetti for the "you've been shortlisted" notification card */
+.confetti-piece {
+    position: absolute;
+    top: -12%;
+    opacity: 0;
+    animation-name: confetti-fall;
+    animation-timing-function: ease-in;
+    animation-iteration-count: 3;
+}
+
+@keyframes confetti-fall {
+    0% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) rotate(0deg);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate3d(var(--confetti-drift), 520%, 0) rotate(540deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .confetti-piece {
+        animation: none;
+        top: var(--confetti-rest);
+        opacity: 0.7;
+    }
+}
+
+/* Phone form controls: >= 44px targets, 16px text so iOS does not zoom on focus */
+.mobile-app :where(input:not([type='checkbox'], [type='radio'], [type='range'], [type='file']), select, textarea) {
+    font-size: 16px;
+}
+
+.mobile-app [data-slot='input'],
+.mobile-app [data-slot='select-trigger'][data-size='default'] {
+    min-height: 2.75rem;
+}
+
+.mobile-app [data-slot='button']:not([data-size='icon']):not([class*='size-']):not([class*='h-']) {
+    min-height: 2.75rem;
 }

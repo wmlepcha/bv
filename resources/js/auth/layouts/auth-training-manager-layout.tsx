@@ -4,10 +4,14 @@ import { ScrollConfigProvider } from '@marketing/providers/scroll-provider';
 export default function AuthTrainingManagerLayout({
     title = '',
     description = '',
+    tagline,
+    blurb,
     children,
 }: {
     title?: string;
     description?: string;
+    tagline?: string;
+    blurb?: string;
     children: React.ReactNode;
 }) {
     return (
@@ -15,6 +19,8 @@ export default function AuthTrainingManagerLayout({
             <AuthTrainingManagerLayoutTemplate
                 title={title}
                 description={description}
+                tagline={tagline}
+                blurb={blurb}
             >
                 {children}
             </AuthTrainingManagerLayoutTemplate>

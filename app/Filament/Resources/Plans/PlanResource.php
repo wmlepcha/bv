@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Plans;
 
 use App\Filament\Clusters\PaymentsCluster;
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\Plans\Pages\CreatePlan;
 use App\Filament\Resources\Plans\Pages\EditPlan;
 use App\Filament\Resources\Plans\Pages\ListPlans;
@@ -18,6 +19,8 @@ use UnitEnum;
 
 class PlanResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = Plan::class;
 
     protected static ?string $cluster = PaymentsCluster::class;

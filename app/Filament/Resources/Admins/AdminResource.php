@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Admins;
 
 use App\Enums\UserRole;
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\Admins\Pages\CreateAdmin;
 use App\Filament\Resources\Admins\Pages\EditAdmin;
 use App\Filament\Resources\Admins\Pages\ListAdmins;
@@ -19,6 +20,8 @@ use UnitEnum;
 
 class AdminResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = User::class;
 
     protected static ?string $slug = 'admins';

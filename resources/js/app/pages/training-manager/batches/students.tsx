@@ -1,8 +1,8 @@
 import { Form, Link, router, usePage } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
-import { PrivateSeoHead } from '@shared/components/seo-head';
-import InputError from '@shared/components/input-error';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
     Dialog,
     DialogClose,
@@ -11,10 +11,10 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from '@/components/ui/responsive-dialog';
 import { Spinner } from '@/components/ui/spinner';
+import InputError from '@shared/components/input-error';
+import { PrivateSeoHead } from '@shared/components/seo-head';
 
 type CandidateOption = { id: number; label: string };
 
@@ -97,6 +97,7 @@ export default function BatchStudents({
 
         if (query === '') {
             setOptions(candidateOptions);
+
             return;
         }
 
@@ -309,6 +310,7 @@ export default function BatchStudents({
                 open={enrollOpen}
                 onOpenChange={(open) => {
                     setEnrollOpen(open);
+
                     if (!open) {
                         setSearch('');
                         setSelected([]);

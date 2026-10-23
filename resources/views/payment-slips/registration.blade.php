@@ -133,8 +133,13 @@
                         <tr><td style="width: 42%; font-weight: 700; padding: 1px 0;">Candidate ID:</td><td>{{ $candidateId }}</td></tr>
                         <tr><td style="font-weight: 700; padding: 1px 0;">Date of Payment:</td><td>{{ $paidDateLabel }}</td></tr>
                         <tr><td style="font-weight: 700; padding: 1px 0;">Payment Mode:</td><td>{{ $mark($isUpi) }} UPI  {{ $mark($isCard) }} Card  {{ $mark($isBank) }} Bank Transfer  {{ $mark($isOther) }} Other</td></tr>
-                        <tr><td style="font-weight: 700; padding: 1px 0;">Transaction / Reference ID:</td><td>{{ $gatewayPaymentId ?? '—' }}</td></tr>
-                        <tr><td style="font-weight: 700; padding: 1px 0;">Gateway Order ID:</td><td>{{ $gatewayOrderId ?? '—' }}</td></tr>
+                        @if ($isOffline ?? false)
+                            <tr><td style="font-weight: 700; padding: 1px 0;">Received As:</td><td>{{ $offlineMethodLabel ?? 'Offline' }} (offline payment)</td></tr>
+                            <tr><td style="font-weight: 700; padding: 1px 0;">Receipt / Reference No.:</td><td>{{ filled($offlineReference ?? null) ? $offlineReference : '—' }}</td></tr>
+                        @else
+                            <tr><td style="font-weight: 700; padding: 1px 0;">Transaction / Reference ID:</td><td>{{ $gatewayPaymentId ?? '—' }}</td></tr>
+                            <tr><td style="font-weight: 700; padding: 1px 0;">Gateway Order ID:</td><td>{{ $gatewayOrderId ?? '—' }}</td></tr>
+                        @endif
                     </table>
                 </div>
 

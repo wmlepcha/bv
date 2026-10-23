@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Inquiries;
 
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\Inquiries\Pages\ListInquiries;
 use App\Filament\Resources\Inquiries\Schemas\InquiryForm;
 use App\Filament\Resources\Inquiries\Schemas\InquiryInfolist;
@@ -16,6 +17,8 @@ use UnitEnum;
 
 class InquiryResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = Inquiry::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

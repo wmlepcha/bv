@@ -1,6 +1,6 @@
+import { cn } from '@/lib/utils';
 import { FadeUp } from '@marketing/components/animations/primitives';
 import type { JourneyMilestone } from '@marketing/types/about-page';
-import { cn } from '@/lib/utils';
 
 function TimelineLoop() {
     return (

@@ -14,27 +14,29 @@ class ActivationCodesTable
     {
         return $table
             ->columns([
-                TextColumn::make('code')
-                    ->label('Registration code')
-                    ->searchable(),
                 TextColumn::make('assignedUser.name')
                     ->label('Student')
+                    ->searchable(),
+                TextColumn::make('code')
+                    ->label('Registration code')
                     ->searchable(),
                 TextColumn::make('email')
                     ->label('Email address')
                     ->searchable(),
                 TextColumn::make('student_number')
                     ->label('Candidate ID')
-                    ->searchable(),
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('used_at')
                     ->label('Used')
                     ->dateTime()
                     ->placeholder('Unused')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('usedBy.name')
                     ->label('Redeemed by')
                     ->placeholder('—')
-                    ->toggleable(),
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

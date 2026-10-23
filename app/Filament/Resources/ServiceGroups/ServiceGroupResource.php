@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ServiceGroups;
 
 use App\Filament\Clusters\FrontendEditsCluster;
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\ServiceGroups\Pages\CreateServiceGroup;
 use App\Filament\Resources\ServiceGroups\Pages\EditServiceGroup;
 use App\Filament\Resources\ServiceGroups\Pages\ListServiceGroups;
@@ -18,6 +19,8 @@ use UnitEnum;
 
 class ServiceGroupResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = ServiceGroup::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

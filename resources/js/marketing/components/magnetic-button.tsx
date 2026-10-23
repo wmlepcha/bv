@@ -1,4 +1,5 @@
-import { useRef, type ReactNode, type ButtonHTMLAttributes } from 'react';
+import { useRef   } from 'react';
+import type {ReactNode, ButtonHTMLAttributes} from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 
@@ -21,7 +22,9 @@ export function MagneticButton({
         if (isMobile) {
             return;
         }
+
         const btn = buttonRef.current;
+
         if (!btn) {
             return;
         }
@@ -35,6 +38,7 @@ export function MagneticButton({
 
     const handleLeave = () => {
         const btn = buttonRef.current;
+
         if (btn) {
             btn.style.transform = 'translate(0, 0)';
         }

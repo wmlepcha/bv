@@ -6,8 +6,10 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\TrainingManager\StoreTrainerRequest;
 use App\Http\Requests\TrainingManager\UpdateTrainerRequest;
+use App\Models\BatchEnrollment;
 use App\Models\User;
 use App\Notifications\WelcomeWithCredentials;
+use App\Support\TrainerPresenter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -20,17 +22,21 @@ class TrainerController extends Controller
     {
         $trainers = User::query()
             ->where('role', UserRole::Teacher)
-            ->withCount('teachingBatches')
+            ->withCount(['teachingBatches', 'createdAssignments'])
+            ->selectSub(
+                BatchEnrollment::query()
+                    ->selectRaw('count(distinct batch_enrollments.student_id)')
+                    ->join('batches', 'batches.id', '=', 'batch_enrollments.batch_id')
+                    ->whereColumn('batches.teacher_id', 'users.id'),
+                'students_count',
+            )
+            ->with(['teachingBatches' => fn ($query) => $query
+                ->select('id', 'teacher_id', 'name', 'ends_on', 'is_active')
+                ->orderByDesc('is_active')
+                ->orderBy('ends_on')])
             ->orderBy('name')
             ->get()
-            ->map(fn (User $trainer): array => [
-                'id' => $trainer->id,
-                'name' => $trainer->name,
-                'email' => $trainer->email,
-                'photo_url' => $this->photoUrl($trainer->avatar_path),
-                'batches_count' => $trainer->teaching_batches_count,
-                'created_at' => $trainer->created_at?->toIso8601String(),
-            ]);
+            ->map(fn (User $trainer): array => TrainerPresenter::forIndex($trainer));
 
         return Inertia::render('app/training-manager/trainers/index', [
             'trainers' => $trainers,
@@ -76,6 +82,18 @@ class TrainerController extends Controller
             ->with('success', 'Trainer created.');
     }
 
+    public function show(User $trainer): Response
+    {
+        abort_unless($trainer->isTeacher(), 404);
+
+        $trainer->loadCount('teachingBatches');
+
+        return Inertia::render(
+            'app/training-manager/trainers/show',
+            TrainerPresenter::show($trainer),
+        );
+    }
+
     public function edit(User $trainer): Response
     {
         abort_unless($trainer->isTeacher(), 404);
@@ -85,7 +103,7 @@ class TrainerController extends Controller
                 'id' => $trainer->id,
                 'name' => $trainer->name,
                 'email' => $trainer->email,
-                'photo_url' => $this->photoUrl($trainer->avatar_path),
+                'photo_url' => TrainerPresenter::photoUrl($trainer->avatar_path),
             ],
         ]);
     }
@@ -152,14 +170,5 @@ class TrainerController extends Controller
         }
 
         return $file->store("trainers/{$userId}", 'public');
-    }
-
-    private function photoUrl(?string $path): ?string
-    {
-        if (blank($path)) {
-            return null;
-        }
-
-        return '/storage/'.ltrim(str_replace('\\', '/', $path), '/');
     }
 }

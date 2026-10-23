@@ -1,6 +1,6 @@
 import { GraduationCap } from 'lucide-react';
-import { PrivateSeoHead } from '@shared/components/seo-head';
 import { BatchForm } from '@app/pages/training-manager/batches/create';
+import { PrivateSeoHead } from '@shared/components/seo-head';
 
 type FormOptions = {
     centers: Array<{ id: number; name: string }>;
@@ -18,6 +18,8 @@ type Props = {
         level: string;
         teacher_id: number;
         is_active: boolean;
+        starts_on?: string;
+        ends_on?: string;
     };
     formOptions: FormOptions;
 };

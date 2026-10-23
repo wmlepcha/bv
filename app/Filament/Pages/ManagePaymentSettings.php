@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Clusters\PaymentsCluster;
+use App\Filament\Concerns\AdminOnly;
 use App\Models\SiteSetting;
 use App\Support\RegistrationTerms;
 use BackedEnum;
@@ -24,6 +25,8 @@ use UnitEnum;
  */
 class ManagePaymentSettings extends Page
 {
+    use AdminOnly;
+
     /**
      * @var array<string, mixed>|null
      */

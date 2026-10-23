@@ -1,14 +1,16 @@
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
+import { LogOut } from 'lucide-react';
 import type { PropsWithChildren } from 'react';
-import Heading from '@shared/components/heading';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
+import { logout } from '@/routes';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
 import type { NavItem } from '@/types';
+import { FormGroup } from '@app/components/native/form';
+import { AppearanceToggle } from '@shared/components/appearance-toggle';
+import Heading from '@shared/components/heading';
 
 const sidebarNavItems: NavItem[] = [
     {
@@ -32,43 +34,53 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     const { isCurrentOrParentUrl } = useCurrentUrl();
 
     return (
-        <div className="px-4 py-6">
+        <div className="px-2 py-4 sm:px-4 md:py-6">
             <Heading
                 title="Settings"
                 description="Manage your profile and account settings"
             />
 
-            <div className="flex flex-col lg:flex-row lg:space-x-12">
+            <div className="mt-4 flex flex-col lg:flex-row lg:space-x-12">
                 <aside className="w-full lg:w-48">
                     <nav
-                        className="flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:space-y-1 lg:space-x-0 lg:overflow-visible lg:pb-0"
+                        className="flex rounded-xl bg-muted p-1 lg:flex-col lg:space-y-1 lg:bg-transparent lg:p-0"
                         aria-label="Settings"
                     >
                         {sidebarNavItems.map((item, index) => (
-                            <Button
+                            <Link
                                 key={`${toUrl(item.href)}-${index}`}
-                                size="sm"
-                                variant="ghost"
-                                asChild
-                                className={cn('shrink-0 justify-start lg:w-full', {
-                                    'bg-muted': isCurrentOrParentUrl(item.href),
-                                })}
+                                href={item.href}
+                                className={cn(
+                                    'flex h-9 flex-1 items-center justify-center rounded-lg px-3 text-sm font-medium transition-all active:scale-95 lg:flex-none lg:justify-start',
+                                    isCurrentOrParentUrl(item.href)
+                                        ? 'bg-background text-foreground shadow-sm lg:bg-muted lg:shadow-none'
+                                        : 'text-muted-foreground lg:hover:bg-muted/60',
+                                )}
                             >
-                                <Link href={item.href}>
-                                    {item.icon && (
-                                        <item.icon className="h-4 w-4" />
-                                    )}
-                                    {item.title}
-                                </Link>
-                            </Button>
+                                {item.title}
+                            </Link>
                         ))}
                     </nav>
                 </aside>
 
-                <Separator className="my-6 lg:hidden" />
+                <div className="mt-5 flex-1 md:max-w-2xl lg:mt-0 lg:max-w-3xl">
+                    <FormGroup className="mb-5 md:hidden">
+                        <div className="flex min-h-12 items-center justify-between gap-3 px-4">
+                            <span className="text-sm font-medium">Theme</span>
+                            <AppearanceToggle />
+                        </div>
+                        <Link
+                            href={logout()}
+                            as="button"
+                            onClick={() => router.flushAll()}
+                            className="flex min-h-12 w-full items-center gap-3 px-4 text-left text-sm font-medium text-destructive active:bg-destructive/10"
+                        >
+                            <LogOut className="size-4" />
+                            Log out
+                        </Link>
+                    </FormGroup>
 
-                <div className="flex-1 md:max-w-2xl lg:max-w-3xl">
-                    <section className="w-full max-w-none space-y-12 md:max-w-2xl lg:max-w-3xl">
+                    <section className="w-full max-w-none space-y-8 md:max-w-2xl lg:max-w-3xl">
                         {children}
                     </section>
                 </div>

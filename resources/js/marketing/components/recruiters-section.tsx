@@ -1,9 +1,9 @@
 import { Link } from '@inertiajs/react';
-import { SequentialColumnSection } from '@marketing/components/sequential-column-section';
+import { cn } from '@/lib/utils';
 import { FloatingReviewCard } from '@marketing/components/floating-review-card';
 import { MagneticButton } from '@marketing/components/magnetic-button';
+import { SequentialColumnSection } from '@marketing/components/sequential-column-section';
 import type { HomePageRecruitersSection } from '@marketing/types/home-page';
-import { cn } from '@/lib/utils';
 
 interface RecruitersSectionProps {
     recruiters: HomePageRecruitersSection;

@@ -1,9 +1,9 @@
 import { Link } from '@inertiajs/react';
-import { SequentialColumnSection } from '@marketing/components/sequential-column-section';
+import { cn } from '@/lib/utils';
 import { FloatingReviewCard } from '@marketing/components/floating-review-card';
 import { MagneticButton } from '@marketing/components/magnetic-button';
+import { SequentialColumnSection } from '@marketing/components/sequential-column-section';
 import type { HomePageCraftingSection } from '@marketing/types/home-page';
-import { cn } from '@/lib/utils';
 
 interface CraftingSectionProps {
     crafting: HomePageCraftingSection;
@@ -15,7 +15,7 @@ export function CraftingSection({ crafting, onRegisterNow }: CraftingSectionProp
 
     return (
         <SequentialColumnSection
-            className="overflow-hidden px-4 py-16 sm:px-6 sm:py-24 md:py-32"
+            className="overflow-hidden px-4 py-12 sm:px-6 sm:py-16 md:py-20"
             leading={{
                 className: 'order-2 lg:order-1',
                 content: (

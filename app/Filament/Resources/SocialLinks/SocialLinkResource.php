@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\SocialLinks;
 
 use App\Filament\Clusters\FrontendEditsCluster;
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\SocialLinks\Pages\CreateSocialLink;
 use App\Filament\Resources\SocialLinks\Pages\EditSocialLink;
 use App\Filament\Resources\SocialLinks\Pages\ListSocialLinks;
@@ -18,6 +19,8 @@ use UnitEnum;
 
 class SocialLinkResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = SocialLink::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShare;

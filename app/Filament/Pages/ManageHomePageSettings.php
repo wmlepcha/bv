@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Clusters\FrontendEditsCluster;
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Support\ImageUploadField;
 use App\Models\SiteSetting;
 use App\Services\HomePageService;
@@ -28,6 +29,8 @@ use UnitEnum;
  */
 class ManageHomePageSettings extends Page
 {
+    use AdminOnly;
+
     /**
      * @var array<string, mixed>|null
      */

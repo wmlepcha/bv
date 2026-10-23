@@ -1,12 +1,12 @@
 import { Form } from '@inertiajs/react';
-import { PrivateSeoHead } from '@shared/components/seo-head';
-import InputError from '@shared/components/input-error';
-import PasswordInput from '@shared/components/password-input';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import { update } from '@/routes/password';
+import InputError from '@shared/components/input-error';
+import PasswordInput from '@shared/components/password-input';
+import { PrivateSeoHead } from '@shared/components/seo-head';
 
 type Props = {
     token: string;

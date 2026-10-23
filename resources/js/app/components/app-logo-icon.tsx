@@ -1,6 +1,6 @@
 import type { ImgHTMLAttributes } from 'react';
-import { BRAND_NAME_TM } from '@shared/lib/brand';
 import { cn } from '@/lib/utils';
+import { BRAND_NAME_TM } from '@shared/lib/brand';
 
 export const logoUrl = '/storage/images/bv-logo.png';
 

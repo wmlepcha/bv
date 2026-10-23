@@ -5,11 +5,13 @@ export default function AuthLayout({
     title = '',
     description = '',
     containerClassName,
+    backHref,
     children,
 }: {
     title?: string;
     description?: string;
     containerClassName?: string;
+    backHref?: string;
     children: React.ReactNode;
 }) {
     return (
@@ -18,6 +20,7 @@ export default function AuthLayout({
                 title={title}
                 description={description}
                 containerClassName={containerClassName}
+                backHref={backHref}
             >
                 {children}
             </AuthLayoutTemplate>

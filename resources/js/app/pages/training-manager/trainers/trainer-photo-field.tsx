@@ -1,8 +1,8 @@
 import { ImageIcon, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import InputError from '@shared/components/input-error';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import InputError from '@shared/components/input-error';
 
 const MAX_BYTES = 2 * 1024 * 1024;
 
@@ -41,8 +41,10 @@ export function TrainerPhotoField({
         if (previewUrl) {
             URL.revokeObjectURL(previewUrl);
         }
+
         setPreviewUrl(null);
         setFileName(null);
+
         if (inputRef.current) {
             inputRef.current.value = '';
         }
@@ -116,6 +118,7 @@ export function TrainerPhotoField({
                                     onClick={() => {
                                         setClientError(undefined);
                                         clearPendingFile();
+
                                         if (allowRemove && !fileName) {
                                             setRemoved(true);
                                         }

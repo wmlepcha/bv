@@ -9,6 +9,7 @@ use App\Services\CandidateImportService;
 use App\Services\CandidateImportTemplateService;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\FileUpload;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -38,7 +39,8 @@ class ImportCandidates extends Page
 
     /**
      * @var array{
-     *     created: list<array{email: string, candidate_id: string, temp_password: string}>,
+     *     created: list<array{email: string, candidate_id: string, temp_password: string, paid_on: string|null, expires_at: string|null}>,
+     *     mapped: list<array{row: int, email: string, candidate_id: string|null, paid_on: string, amount: int, expires_at: string|null}>,
      *     skipped: list<array{row: int, email: string, reason: string}>,
      *     failed: list<array{row: int, email: string|null, errors: string}>
      * }|null
@@ -79,7 +81,7 @@ class ImportCandidates extends Page
         return $schema
             ->components([
                 Section::make('Upload spreadsheet')
-                    ->description('Template columns (for candidate ID): last_name, first_name, email, state (full name, e.g. Sikkim), special_id (COI, RC, VC, or OTH), registration_year. Students fill phone, DOB, and other CV fields after login. Extra optional columns are still accepted if you add them: mobile_whatsapp (+country code), date_of_birth (Y-m-d), place_of_birth, civil_status, gender.')
+                    ->description('Template columns (for candidate ID): last_name, first_name, email, state (full name, e.g. Sikkim), special_id (COI, RC, VC, or OTH), registration_year. Students fill phone, DOB, and other CV fields after login. For older students who already paid, also fill paid_on (Y-m-d), amount and payment_method (cash, upi, bank_transfer, cheque, online or unknown), and optionally duration_months, access_until and reference: their payment is recorded and their dashboard unlocks from today. A student already in the system with those columns filled is mapped as paid, silently. Other optional columns still accepted: mobile_whatsapp (+country code), date_of_birth (Y-m-d), place_of_birth, civil_status, gender.')
                     ->components([
                         FileUpload::make('spreadsheet')
                             ->label('Candidates XLSX')
@@ -90,7 +92,7 @@ class ImportCandidates extends Page
                             ->disk('local')
                             ->directory('candidate-imports')
                             ->required()
-                            ->helperText('Download the template for the correct headers and a sample row. Imported candidates remain unpaid until they redeem a registration code.'),
+                            ->helperText('Download the template for the correct headers and sample rows. Candidates without payment columns stay unpaid until they redeem a registration code.'),
                     ]),
             ]);
     }
@@ -147,7 +149,9 @@ class ImportCandidates extends Page
         $absolutePath = Storage::disk('local')->path($path);
 
         try {
-            $this->importResult = $importService->import($absolutePath);
+            /** @var User $staff */
+            $staff = Filament::auth()->user();
+            $this->importResult = $importService->import($absolutePath, $staff);
         } catch (Throwable $exception) {
             Notification::make()
                 ->danger()
@@ -162,13 +166,14 @@ class ImportCandidates extends Page
         }
 
         $created = count($this->importResult['created']);
+        $mapped = count($this->importResult['mapped']);
         $skipped = count($this->importResult['skipped']);
         $failed = count($this->importResult['failed']);
 
         Notification::make()
             ->success()
             ->title('Import finished')
-            ->body("Created {$created}, skipped {$skipped}, failed {$failed}.")
+            ->body("Created {$created}, mapped as paid {$mapped}, skipped {$skipped}, failed {$failed}.")
             ->send();
     }
 
@@ -212,7 +217,11 @@ class ImportCandidates extends Page
             fputcsv($handle, ['status', 'email', 'candidate_id', 'temp_password', 'details']);
 
             foreach ($this->importResult['created'] as $row) {
-                fputcsv($handle, ['created', $row['email'], $row['candidate_id'], $row['temp_password'], '']);
+                fputcsv($handle, ['created', $row['email'], $row['candidate_id'], $row['temp_password'], $row['paid_on'] ? "paid {$row['paid_on']}, access until {$row['expires_at']}" : '']);
+            }
+
+            foreach ($this->importResult['mapped'] as $row) {
+                fputcsv($handle, ['mapped as paid', $row['email'], $row['candidate_id'], '', "paid {$row['paid_on']}, access until {$row['expires_at']}"]);
             }
 
             foreach ($this->importResult['skipped'] as $row) {
@@ -268,10 +277,10 @@ class ImportCandidates extends Page
                 ->label('Generate registration codes')
                 ->icon(Heroicon::OutlinedKey)
                 ->color('success')
-                ->visible(fn (): bool => ($this->importResult['created'] ?? []) !== [])
+                ->visible(fn (): bool => collect($this->importResult['created'] ?? [])->contains(fn (array $row): bool => $row['paid_on'] === null))
                 ->requiresConfirmation()
                 ->modalHeading('Generate registration codes')
-                ->modalDescription('Creates BV-26-XXXX codes for the candidates created in the last import. Students must redeem a code to unlock the dashboard.')
+                ->modalDescription('Creates BV-26-XXXX codes for the unpaid candidates created in the last import. Students must redeem a code to unlock the dashboard. Candidates imported as already paid are already unlocked.')
                 ->action(fn (BulkActivationCodeService $service) => $this->generateActivationCodes($service)),
             Action::make('downloadActivationCodes')
                 ->label('Download registration codes')

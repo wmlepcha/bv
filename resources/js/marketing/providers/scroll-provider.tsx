@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import { LenisProvider } from '@marketing/providers/lenis-provider';
 import { ScrollConfigContext } from '@marketing/hooks/use-scroll-config';
+import { LenisProvider } from '@marketing/providers/lenis-provider';
 
 export interface ScrollConfigProviderProps {
     children: ReactNode;

@@ -2,9 +2,15 @@
 
 namespace App\Notifications;
 
-use App\Enums\RegistrationFeePaidVia;
 use App\Enums\PaymentStatus;
+use App\Enums\RegistrationFeePaidVia;
 use App\Models\Payment;
+use App\Notifications\Concerns\BuildsWhatsAppBodyFromArray;
+use App\Services\PaymentInvoiceDownloadService;
+use App\Services\PaymentSlipPdfService;
+use App\Support\PaymentInvoiceSignedUrl;
+use App\Support\StudentNotificationChannels;
+use App\Support\WhatsAppContentMessage;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -13,6 +19,9 @@ use Throwable;
 
 class RegistrationActivated extends Notification implements ShouldQueue
 {
+    use BuildsWhatsAppBodyFromArray {
+        toWhatsAppContent as buildUpdateWhatsAppContent;
+    }
     use Queueable;
 
     public function __construct(
@@ -27,7 +36,7 @@ class RegistrationActivated extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return StudentNotificationChannels::for($notifiable);
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -50,24 +59,81 @@ class RegistrationActivated extends Notification implements ShouldQueue
         $expiryLabel = $this->expiryLabel();
 
         if ($this->isRenewalNotification()) {
-            return [
-                'title' => 'Access extended',
-                'body' => $expiryLabel
+            return $this->notificationPayload(
+                'Access extended',
+                $expiryLabel
                     ? 'Your renewal is complete. Your account is now active till '.$expiryLabel.'.'
                     : 'Your renewal is complete. Your dashboard access has been extended.',
-                'url' => url('/dashboard'),
-                'via' => $this->paidVia()?->value,
-            ];
+            );
         }
 
-        return [
-            'title' => 'Dashboard unlocked',
-            'body' => $expiryLabel
+        return $this->notificationPayload(
+            'Dashboard unlocked',
+            $expiryLabel
                 ? 'Your registration is complete. Your account will be active till '.$expiryLabel.'.'
                 : 'Your registration is complete. You can access your full candidate dashboard.',
+        );
+    }
+
+    public function toWhatsAppContent(object $notifiable): ?WhatsAppContentMessage
+    {
+        $payment = $this->payment();
+        $registrationSid = (string) config('services.whatsapp.twilio.templates.registration', '');
+
+        if (
+            $registrationSid !== ''
+            && $payment instanceof Payment
+            && $payment->status === PaymentStatus::Paid
+            && filled($payment->invoice_number)
+        ) {
+            $stored = app(PaymentInvoiceDownloadService::class)->storePublicPdf($payment);
+
+            if ($stored !== null) {
+                $name = filled($notifiable->name ?? null)
+                    ? (string) $notifiable->name
+                    : 'Candidate';
+
+                $expiryLabel = $this->expiryLabel() ?? 'your current plan period';
+
+                return new WhatsAppContentMessage($registrationSid, [
+                    '1' => $name,
+                    '2' => PaymentInvoiceSignedUrl::amountLabelInr($payment),
+                    '3' => (string) $payment->invoice_number,
+                    '4' => $expiryLabel,
+                    '5' => url('/dashboard'),
+                    '6' => $stored['path'],
+                ]);
+            }
+        }
+
+        return $this->buildUpdateWhatsAppContent($notifiable);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function notificationPayload(string $title, string $body): array
+    {
+        $payload = [
+            'title' => $title,
+            'body' => $body,
             'url' => url('/dashboard'),
             'via' => $this->paidVia()?->value,
         ];
+
+        $payment = $this->payment();
+
+        if (
+            $payment instanceof Payment
+            && $payment->status === PaymentStatus::Paid
+            && filled($payment->invoice_number)
+        ) {
+            $payload['invoice_number'] = (string) $payment->invoice_number;
+            $payload['amount_label'] = PaymentInvoiceSignedUrl::amountLabel($payment);
+            $payload['invoice_url'] = PaymentInvoiceSignedUrl::for($payment);
+        }
+
+        return $payload;
     }
 
     private function baseMailMessage(object $notifiable, ?string $expiryLabel): MailMessage
@@ -170,7 +236,7 @@ class RegistrationActivated extends Notification implements ShouldQueue
         }
 
         try {
-            $pdf = app(\App\Services\PaymentSlipPdfService::class)->renderPaymentSlip($payment);
+            $pdf = app(PaymentSlipPdfService::class)->renderPaymentSlip($payment);
             $filename = 'payment-slip-'.str_replace('/', '-', (string) $payment->invoice_number).'.pdf';
 
             $message->attachData($pdf, $filename, ['mime' => 'application/pdf']);

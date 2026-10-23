@@ -1,15 +1,15 @@
 import { usePage } from '@inertiajs/react';
-import { SeoHead } from '@shared/components/seo-head';
-import { HeroSection } from '@marketing/components/hero-section';
+import { ScrollProgressIndicator } from '@marketing/components/animations/progress';
 import { CraftingSection } from '@marketing/components/crafting-section';
+import { HeroSection } from '@marketing/components/hero-section';
+import { LearnMoreInquiryModal } from '@marketing/components/learn-more-inquiry-modal';
+import { ProgramsSection } from '@marketing/components/programs-section';
 import { RecruitersSection } from '@marketing/components/recruiters-section';
 import { ServicesSection } from '@marketing/components/services-section';
-import { ProgramsSection } from '@marketing/components/programs-section';
-import { LearnMoreInquiryModal } from '@marketing/components/learn-more-inquiry-modal';
-import { ScrollProgressIndicator } from '@marketing/components/animations/progress';
 import { useInquiryModal } from '@marketing/hooks/use-inquiry-modal';
 import { buildHomeJsonLd } from '@marketing/seo/json-ld';
 import type { HomePageProps } from '@marketing/types/home-page';
+import { SeoHead } from '@shared/components/seo-head';
 
 export default function Home() {
     const { open, initialRole, openModal, onOpenChange } = useInquiryModal();

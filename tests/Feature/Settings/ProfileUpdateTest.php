@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Settings;
 
+use App\Enums\AvatarAnimal;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -157,5 +158,39 @@ class ProfileUpdateTest extends TestCase
             ->assertRedirect(route('profile.edit'));
 
         $this->assertNotNull($user->fresh());
+    }
+
+    public function test_default_avatar_animal_is_stable_and_saved_choice_wins(): void
+    {
+        $user = User::factory()->create();
+
+        $default = $user->avatarAnimal();
+        $this->assertSame($default, $user->fresh()->avatarAnimal());
+        $this->assertSame($default->value, $user->toAuthArray()['avatar_animal']);
+
+        $this->actingAs($user)
+            ->patch(route('profile.update'), [
+                'name' => $user->name,
+                'email' => $user->email,
+                'avatar_animal' => AvatarAnimal::Panda->value,
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame(AvatarAnimal::Panda, $user->fresh()->avatarAnimal());
+        $this->get(route('profile.edit'))
+            ->assertInertia(fn (Assert $page) => $page->where('avatar_animal', 'panda'));
+    }
+
+    public function test_invalid_avatar_animal_is_rejected(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->patch(route('profile.update'), [
+                'name' => $user->name,
+                'email' => $user->email,
+                'avatar_animal' => 'dragon',
+            ])
+            ->assertSessionHasErrors('avatar_animal');
     }
 }

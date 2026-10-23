@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Recruiters;
 
 use App\Enums\UserRole;
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\Recruiters\Pages\CreateRecruiter;
 use App\Filament\Resources\Recruiters\Pages\EditRecruiter;
 use App\Filament\Resources\Recruiters\Pages\ListRecruiters;
@@ -19,6 +20,8 @@ use UnitEnum;
 
 class RecruiterResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = User::class;
 
     protected static ?string $slug = 'recruiters';

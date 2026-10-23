@@ -16,7 +16,7 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from '@/components/ui/select';
+} from '@/components/ui/responsive-select';
 import { cn } from '@/lib/utils';
 import { useIsExtraSmallPhone, useIsMobile } from '@shared/hooks/use-media-query';
 

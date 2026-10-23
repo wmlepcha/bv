@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\HomeProgramCards;
 
 use App\Filament\Clusters\FrontendEditsCluster;
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\HomeProgramCards\Pages\CreateHomeProgramCard;
 use App\Filament\Resources\HomeProgramCards\Pages\EditHomeProgramCard;
 use App\Filament\Resources\HomeProgramCards\Pages\ListHomeProgramCards;
@@ -18,6 +19,8 @@ use UnitEnum;
 
 class HomeProgramCardResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = HomeProgramCard::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

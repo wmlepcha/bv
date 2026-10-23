@@ -51,8 +51,8 @@ class BatchAssignmentTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('app/recruiter/students/index')
-                ->has('profiles', 1)
-                ->where('profiles.0.id', $myProfile->id));
+                ->has('profiles.data', 1)
+                ->where('profiles.data.0.id', $myProfile->id));
     }
 
     public function test_recruiter_still_sees_all_students(): void
@@ -61,15 +61,17 @@ class BatchAssignmentTest extends TestCase
         $a = User::factory()->paid()->create(['role' => UserRole::Student]);
         $b = User::factory()->paid()->create(['role' => UserRole::Student]);
 
-        StudentProfile::query()->create(['user_id' => $a->id]);
-        StudentProfile::query()->create(['user_id' => $b->id]);
+        StudentProfile::query()->create(['user_id' => $a->id, 'registration_purpose' => 'training_and_placement']);
+        StudentProfile::query()->create(['user_id' => $b->id, 'registration_purpose' => 'training_and_placement']);
+        BatchEnrollment::factory()->create(['student_id' => $a->id]);
+        BatchEnrollment::factory()->create(['student_id' => $b->id]);
 
         $this->actingAs($recruiter)
             ->get(route('recruiter.students.index'))
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('app/recruiter/students/index')
-                ->has('profiles', 2));
+                ->has('profiles.data', 2));
     }
 
     public function test_teacher_cannot_view_student_outside_their_batch(): void

@@ -340,6 +340,6 @@ class RegistrationPaymentTest extends TestCase
     {
         $user = User::factory()->student()->expired()->create();
 
-        $this->actingAs($user)->get(route('student.classes.index'))->assertForbidden();
+        $this->actingAs($user)->get(route('student.my-learning.index'))->assertForbidden();
     }
 }

@@ -1,10 +1,11 @@
 import { useCallback, useRef, useState } from 'react';
 import {
     createSplitText,
-    revertSplitText,
-    type SplitMode,
-    type SplitResult,
+    revertSplitText
+    
+    
 } from '@marketing/animations/split/split-text';
+import type {SplitMode, SplitResult} from '@marketing/animations/split/split-text';
 
 export function useSplitText(mode: SplitMode = 'chars') {
     const splitRef = useRef<SplitResult | null>(null);

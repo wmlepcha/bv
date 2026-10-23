@@ -1,11 +1,11 @@
 import { forwardRef, useRef } from 'react';
+import { cn } from '@/lib/utils';
 import { gsap } from '@marketing/animations/gsap/register-plugins';
 import type { AnimationComponentProps } from '@marketing/animations/types/animation-props';
 import { useScrollAnimation } from '@marketing/hooks/use-gsap-context';
 import { useReducedMotion } from '@marketing/hooks/use-reduced-motion';
 import { useScrollEffectsEnabled } from '@marketing/hooks/use-scroll-effects-enabled';
 import { resolveScrollVars, mergeRefs } from '@marketing/utils/animation-helpers';
-import { cn } from '@/lib/utils';
 
 interface PinProps extends AnimationComponentProps {
     pinSpacing?: boolean;
@@ -135,6 +135,7 @@ export const StickySection = forwardRef<HTMLDivElement, StickySectionProps>(
                     const el = containerRef.current?.querySelector(
                         `[data-step="${step.id}"]`,
                     );
+
                     if (el) {
                         tl.fromTo(
                             el,

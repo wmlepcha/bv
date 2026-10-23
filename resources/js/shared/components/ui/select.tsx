@@ -59,6 +59,7 @@ function useSlowSelectScroll(
 
   const updateVisibility = React.useCallback(() => {
     const viewport = viewportRef.current
+
     if (!viewport) {
       return
     }
@@ -73,6 +74,7 @@ function useSlowSelectScroll(
 
   React.useEffect(() => {
     const viewport = viewportRef.current
+
     if (!viewport) {
       return
     }
@@ -100,6 +102,7 @@ function useSlowSelectScroll(
 
   const scroll = React.useCallback(() => {
     const viewport = viewportRef.current
+
     if (!viewport) {
       return
     }
@@ -110,6 +113,7 @@ function useSlowSelectScroll(
 
   const startAutoScroll = React.useCallback(() => {
     scroll()
+
     if (timerRef.current === null) {
       timerRef.current = window.setInterval(scroll, intervalMs)
     }

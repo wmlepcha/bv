@@ -1,5 +1,5 @@
-import { FadeUp } from '@marketing/components/animations/primitives';
 import { cn } from '@/lib/utils';
+import { FadeUp } from '@marketing/components/animations/primitives';
 
 interface FloatingReviewCardProps {
     quote: string;
@@ -21,21 +21,23 @@ export function FloatingReviewCard({
     inline = false,
 }: FloatingReviewCardProps) {
     const cardClassName = cn(
-        'rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur-xl shadow-xl',
+        'rounded-2xl border p-6 shadow-xl',
         inline
-            ? 'relative w-full max-w-none'
-            : 'absolute bottom-6 left-6 right-6 max-w-xs md:left-auto md:right-8',
+            ? 'relative w-full max-w-none border-border bg-card'
+            : 'absolute bottom-6 left-6 right-6 max-w-xs border-white/20 bg-white/10 backdrop-blur-xl md:left-auto md:right-8',
         className,
     );
 
-    // Always light text — card sits on a dark glass overlay over photos.
+    // Overlay: light text on dark glass over the photo. Inline: theme colors, since it sits on the page background.
+    const text = inline ? 'text-foreground' : 'text-white';
+    const mutedText = inline ? 'text-muted-foreground' : 'text-white/70';
     const content = (
         <>
-            <p className="text-sm leading-relaxed text-white/95">&ldquo;{quote}&rdquo;</p>
+            <p className={cn('text-sm leading-relaxed', text)}>&ldquo;{quote}&rdquo;</p>
             <div className="mt-4">
-                <p className="text-sm font-semibold text-white">{author}</p>
+                <p className={cn('text-sm font-semibold', text)}>{author}</p>
                 {role && (
-                    <p className="text-xs text-white/70">{role}</p>
+                    <p className={cn('text-xs', mutedText)}>{role}</p>
                 )}
             </div>
         </>

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\AboutCoreValues;
 
 use App\Filament\Clusters\FrontendEditsCluster;
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\AboutCoreValues\Pages\CreateAboutCoreValue;
 use App\Filament\Resources\AboutCoreValues\Pages\EditAboutCoreValue;
 use App\Filament\Resources\AboutCoreValues\Pages\ListAboutCoreValues;
@@ -18,6 +19,8 @@ use UnitEnum;
 
 class AboutCoreValueResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = AboutCoreValue::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSparkles;

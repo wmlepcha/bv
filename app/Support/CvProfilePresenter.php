@@ -44,10 +44,10 @@ class CvProfilePresenter
             'permanent_address' => $profile?->permanent_address,
             'nationality' => $profile?->nationality,
             'passport_or_id_number' => $profile?->passport_or_id_number,
-            'passport_document_url' => self::publicUrl($profile?->passport_document_path),
+            'passport_document_url' => self::privateUrl($profile, 'passport'),
             'passport_document_path' => $profile?->passport_document_path,
             'drivers_license' => $profile?->drivers_license,
-            'drivers_license_document_url' => self::publicUrl($profile?->drivers_license_document_path),
+            'drivers_license_document_url' => self::privateUrl($profile, 'drivers-license'),
             'drivers_license_document_path' => $profile?->drivers_license_document_path,
             'passport_photo_url' => self::publicUrl($profile?->passport_photo_path),
             'full_body_photo_url' => self::publicUrl($profile?->full_body_photo_path),
@@ -64,6 +64,15 @@ class CvProfilePresenter
             'proficiency_summary' => $profile?->proficiency_summary,
             'vitae' => $vitae,
         ];
+    }
+
+    private static function privateUrl(?StudentProfile $profile, string $kind): ?string
+    {
+        if ($profile === null || blank($profile->{StudentProfile::PRIVATE_DOCUMENTS[$kind]})) {
+            return null;
+        }
+
+        return route('student-documents.show', ['studentProfile' => $profile->id, 'kind' => $kind], false);
     }
 
     private static function publicUrl(?string $path): ?string

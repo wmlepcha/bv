@@ -1,6 +1,6 @@
+import { cn } from '@/lib/utils';
 import { ProjectCard } from '@marketing/components/projects/project-card';
 import type { ProjectsPagePostCard } from '@marketing/types/projects-page';
-import { cn } from '@/lib/utils';
 
 type ProjectsMasonryGridProps = {
     posts: ProjectsPagePostCard[];

@@ -10,10 +10,10 @@ import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
 import AppLayout from '@app/layouts/app-layout';
+import SettingsLayout from '@app/layouts/settings/layout';
 import AuthLayout from '@auth/layouts/auth-layout';
 import AuthTrainingManagerLayout from '@auth/layouts/auth-training-manager-layout';
 import CinematicLayout from '@marketing/layouts/cinematic-layout';
-import SettingsLayout from '@app/layouts/settings/layout';
 import { BRAND_NAME_TM } from '@shared/lib/brand';
 
 const appName = BRAND_NAME_TM;
@@ -54,11 +54,18 @@ createInertiaApp({
         return module.default;
     },
     layout: (name) => {
+        if (name === 'marketing/referral') {
+            return null;
+        }
+
         if (name.startsWith('marketing/')) {
             return CinematicLayout;
         }
 
-        if (name === 'auth/training-manager-login') {
+        if (
+            name === 'auth/training-manager-login' ||
+            name === 'auth/recruitment-manager-login'
+        ) {
             return AuthTrainingManagerLayout;
         }
 

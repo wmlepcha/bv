@@ -2,6 +2,8 @@
 
 namespace App\Notifications;
 
+use App\Notifications\Concerns\BuildsWhatsAppBodyFromArray;
+use App\Support\StudentNotificationChannels;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -9,6 +11,7 @@ use Illuminate\Notifications\Notification;
 
 class ActivationCodeIssued extends Notification implements ShouldQueue
 {
+    use BuildsWhatsAppBodyFromArray;
     use Queueable;
 
     public function __construct(
@@ -20,7 +23,7 @@ class ActivationCodeIssued extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return StudentNotificationChannels::for($notifiable);
     }
 
     public function toMail(object $notifiable): MailMessage

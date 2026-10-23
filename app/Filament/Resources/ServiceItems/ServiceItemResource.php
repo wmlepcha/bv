@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ServiceItems;
 
 use App\Filament\Clusters\FrontendEditsCluster;
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\ServiceItems\Pages\CreateServiceItem;
 use App\Filament\Resources\ServiceItems\Pages\EditServiceItem;
 use App\Filament\Resources\ServiceItems\Pages\ListServiceItems;
@@ -18,6 +19,8 @@ use UnitEnum;
 
 class ServiceItemResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = ServiceItem::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAcademicCap;

@@ -87,7 +87,7 @@ class CvController extends Controller
             }
 
             if ($request->hasFile('passport_document')) {
-                $passportDocumentPath = $this->storePhoto(
+                $passportDocumentPath = $this->storePrivateDocument(
                     $request->file('passport_document'),
                     $user->id,
                     'passport-document',
@@ -96,7 +96,7 @@ class CvController extends Controller
             }
 
             if ($request->hasFile('drivers_license_document')) {
-                $driversLicenseDocumentPath = $this->storePhoto(
+                $driversLicenseDocumentPath = $this->storePrivateDocument(
                     $request->file('drivers_license_document'),
                     $user->id,
                     'drivers-license-document',
@@ -193,6 +193,20 @@ class CvController extends Controller
         ]);
     }
 
+    private function storePrivateDocument(UploadedFile $file, int $userId, string $kind, ?string $previous): string
+    {
+        if (filled($previous)) {
+            Storage::disk(StudentProfile::PRIVATE_DISK)->delete($previous);
+            Storage::disk('public')->delete($previous);
+        }
+
+        $path = $file->store("student-documents/{$userId}/{$kind}", StudentProfile::PRIVATE_DISK);
+
+        abort_if($path === false, 500, 'The document could not be saved.');
+
+        return $path;
+    }
+
     private function storePhoto(UploadedFile $file, int $userId, string $kind, ?string $previous): string
     {
         if (filled($previous)) {
@@ -240,11 +254,25 @@ class CvController extends Controller
         }
 
         $qualifications = [];
-        foreach ($vitaeInput['qualifications'] ?? [] as $row) {
+        foreach ($vitaeInput['qualifications'] ?? [] as $index => $row) {
             if (! is_array($row)) {
                 continue;
             }
-            $qualifications[] = array_merge(VitaeData::emptyQualification(), $row);
+            $merged = array_merge(VitaeData::emptyQualification(), $row);
+            unset($merged['certificate']);
+            $existingPath = $existing['qualifications'][$index]['certificate_path'] ?? null;
+            $merged['certificate_path'] = $existingPath;
+
+            if ($request->hasFile("vitae.qualifications.{$index}.certificate")) {
+                $merged['certificate_path'] = $this->storePhoto(
+                    $request->file("vitae.qualifications.{$index}.certificate"),
+                    $userId,
+                    "qualification-{$index}",
+                    is_string($existingPath) ? $existingPath : null,
+                );
+            }
+
+            $qualifications[] = $merged;
         }
 
         $trainings = [];

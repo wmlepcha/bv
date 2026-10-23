@@ -8,33 +8,9 @@ import {
     X,
     Youtube,
 } from 'lucide-react';
-import { useMemo, useRef, useState, type ChangeEvent, type DragEvent } from 'react';
-import {
-    MaterialFileCard,
-    type MaterialKind,
-} from '@app/components/material-file-card';
-import { MaterialFolderCard } from '@app/components/material-folder-card';
-import {
-    MoveCopyMaterialModal,
-    type FolderOption,
-    type RelocateTarget,
-} from '@app/components/move-copy-material-modal';
-import {
-    ShareToBatchesModal,
-    type ShareBatchOption,
-} from '@app/components/share-to-batches-modal';
-import { PrivateSeoHead } from '@shared/components/seo-head';
-import InputError from '@shared/components/input-error';
+import { useMemo, useRef, useState   } from 'react';
+import type {ChangeEvent, DragEvent} from 'react';
 import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -43,8 +19,36 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/responsive-dialog';
 import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
+import {
+    MaterialFileCard
+    
+} from '@app/components/material-file-card';
+import type {MaterialKind} from '@app/components/material-file-card';
+import { MaterialFolderCard } from '@app/components/material-folder-card';
+import {
+    MoveCopyMaterialModal
+    
+    
+} from '@app/components/move-copy-material-modal';
+import type {FolderOption, RelocateTarget} from '@app/components/move-copy-material-modal';
+import {
+    ShareToBatchesModal
+    
+} from '@app/components/share-to-batches-modal';
+import type {ShareBatchOption} from '@app/components/share-to-batches-modal';
+import InputError from '@shared/components/input-error';
+import { PrivateSeoHead } from '@shared/components/seo-head';
 
 type Trainer = { id: number; name: string; email: string };
 
@@ -67,6 +71,7 @@ type FileRow = {
     kind: MaterialKind;
     url: string | null;
     embed_url: string | null;
+    playlist_items?: Array<{ video_id: string; title: string }> | null;
     size: number;
     created_at: string | null;
     assigned_trainers: AssignedTrainer[];
@@ -75,6 +80,8 @@ type FileRow = {
 };
 
 type UploadMode = 'file' | 'youtube' | 'link';
+
+type YoutubeMode = 'video' | 'playlist';
 
 type DeleteTarget =
     | { type: 'folder'; id: number; name: string }
@@ -124,6 +131,7 @@ export default function LibraryIndex({
         null,
     );
     const [uploadMode, setUploadMode] = useState<UploadMode>('file');
+    const [youtubeMode, setYoutubeMode] = useState<YoutubeMode>('video');
     const [selectedFileName, setSelectedFileName] = useState<string | null>(
         null,
     );
@@ -163,6 +171,7 @@ export default function LibraryIndex({
             const id = stack.pop()!;
             ids.push(id);
             const children = folderChildrenByParent.get(id) ?? [];
+
             for (const childId of children) {
                 stack.push(childId);
             }
@@ -198,6 +207,7 @@ export default function LibraryIndex({
         currentTrainers: AssignedTrainer[],
     ) {
         const key = `${type}-${id}-${trainerId}`;
+
         if (removingTrainerKey !== null) {
             return;
         }
@@ -421,12 +431,14 @@ export default function LibraryIndex({
                                                         const file =
                                                             event.dataTransfer
                                                                 .files?.[0];
+
                                                         if (
                                                             !file ||
                                                             !fileInputRef.current
                                                         ) {
                                                             return;
                                                         }
+
                                                         const transfer =
                                                             new DataTransfer();
                                                         transfer.items.add(file);
@@ -509,81 +521,215 @@ export default function LibraryIndex({
                                 )}
 
                                 {uploadMode === 'youtube' && (
-                                    <Form
-                                        action={`/training-manager/library/folders/${currentFolder.id}/youtube`}
-                                        method="post"
-                                        className="flex flex-col gap-4"
-                                        resetOnSuccess
-                                    >
-                                        {({ processing, errors }) => (
-                                            <>
-                                                <div className="rounded-2xl border border-dashed border-primary/35 bg-primary/[0.04] p-4">
-                                                    <div className="mb-4 flex items-center gap-2">
-                                                        <span className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                                                            <Youtube className="size-4" />
-                                                        </span>
-                                                        <div>
-                                                            <p className="text-sm font-semibold">
-                                                                YouTube video
-                                                            </p>
-                                                            <p className="text-xs text-muted-foreground">
-                                                                Paste a watch,
-                                                                share, or Shorts
-                                                                link
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="grid gap-3">
-                                                        <div className="grid gap-1.5">
-                                                            <Label htmlFor="youtube-url">
-                                                                YouTube URL
-                                                            </Label>
-                                                            <Input
-                                                                id="youtube-url"
-                                                                name="url"
-                                                                type="url"
-                                                                required
-                                                                placeholder="https://www.youtube.com/watch?v=..."
-                                                                className="h-11 rounded-xl bg-background"
-                                                            />
-                                                            <InputError
-                                                                message={
-                                                                    errors.url
-                                                                }
-                                                            />
-                                                        </div>
-                                                        <div className="grid gap-1.5">
-                                                            <Label htmlFor="youtube-title">
-                                                                Title{' '}
-                                                                <span className="font-normal text-muted-foreground">
-                                                                    (optional)
+                                    <div className="flex flex-col gap-4">
+                                        <div className="grid grid-cols-2 gap-1 rounded-full bg-muted/70 p-1">
+                                            {(
+                                                [
+                                                    {
+                                                        value: 'video',
+                                                        label: 'Video',
+                                                    },
+                                                    {
+                                                        value: 'playlist',
+                                                        label: 'Playlist',
+                                                    },
+                                                ] as const
+                                            ).map((mode) => {
+                                                const active =
+                                                    youtubeMode === mode.value;
+
+                                                return (
+                                                    <button
+                                                        key={mode.value}
+                                                        type="button"
+                                                        onClick={() =>
+                                                            setYoutubeMode(
+                                                                mode.value,
+                                                            )
+                                                        }
+                                                        className={cn(
+                                                            'rounded-full px-2 py-1.5 text-xs font-medium transition-all',
+                                                            active
+                                                                ? 'bg-primary text-primary-foreground shadow-sm'
+                                                                : 'text-muted-foreground hover:bg-background/70 hover:text-foreground',
+                                                        )}
+                                                        aria-pressed={active}
+                                                    >
+                                                        {mode.label}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+
+                                        {youtubeMode === 'video' ? (
+                                            <Form
+                                                action={`/training-manager/library/folders/${currentFolder.id}/youtube`}
+                                                method="post"
+                                                className="flex flex-col gap-4"
+                                                resetOnSuccess
+                                            >
+                                                {({ processing, errors }) => (
+                                                    <>
+                                                        <div className="rounded-2xl border border-dashed border-primary/35 bg-primary/[0.04] p-4">
+                                                            <div className="mb-4 flex items-center gap-2">
+                                                                <span className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                                                    <Youtube className="size-4" />
                                                                 </span>
-                                                            </Label>
-                                                            <Input
-                                                                id="youtube-title"
-                                                                name="title"
-                                                                placeholder="Video title"
-                                                                className="h-11 rounded-xl bg-background"
-                                                            />
-                                                            <InputError
-                                                                message={
-                                                                    errors.title
-                                                                }
-                                                            />
+                                                                <div>
+                                                                    <p className="text-sm font-semibold">
+                                                                        YouTube
+                                                                        video
+                                                                    </p>
+                                                                    <p className="text-xs text-muted-foreground">
+                                                                        Paste a
+                                                                        watch,
+                                                                        share,
+                                                                        or
+                                                                        Shorts
+                                                                        link
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                            <div className="grid gap-3">
+                                                                <div className="grid gap-1.5">
+                                                                    <Label htmlFor="youtube-url">
+                                                                        YouTube
+                                                                        URL
+                                                                    </Label>
+                                                                    <Input
+                                                                        id="youtube-url"
+                                                                        name="url"
+                                                                        type="url"
+                                                                        required
+                                                                        placeholder="https://www.youtube.com/watch?v=..."
+                                                                        className="h-11 rounded-xl bg-background"
+                                                                    />
+                                                                    <InputError
+                                                                        message={
+                                                                            errors.url
+                                                                        }
+                                                                    />
+                                                                </div>
+                                                                <div className="grid gap-1.5">
+                                                                    <Label htmlFor="youtube-title">
+                                                                        Title{' '}
+                                                                        <span className="font-normal text-muted-foreground">
+                                                                            (optional)
+                                                                        </span>
+                                                                    </Label>
+                                                                    <Input
+                                                                        id="youtube-title"
+                                                                        name="title"
+                                                                        placeholder="Video title"
+                                                                        className="h-11 rounded-xl bg-background"
+                                                                    />
+                                                                    <InputError
+                                                                        message={
+                                                                            errors.title
+                                                                        }
+                                                                    />
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </div>
-                                                <Button
-                                                    type="submit"
-                                                    className="h-11 rounded-full"
-                                                    disabled={processing}
-                                                >
-                                                    {processing && <Spinner />}
-                                                    Add video
-                                                </Button>
-                                            </>
+                                                        <Button
+                                                            type="submit"
+                                                            className="h-11 rounded-full"
+                                                            disabled={
+                                                                processing
+                                                            }
+                                                        >
+                                                            {processing && (
+                                                                <Spinner />
+                                                            )}
+                                                            Add video
+                                                        </Button>
+                                                    </>
+                                                )}
+                                            </Form>
+                                        ) : (
+                                            <Form
+                                                action={`/training-manager/library/folders/${currentFolder.id}/youtube-playlist`}
+                                                method="post"
+                                                className="flex flex-col gap-4"
+                                                resetOnSuccess
+                                            >
+                                                {({ processing, errors }) => (
+                                                    <>
+                                                        <div className="rounded-2xl border border-dashed border-primary/35 bg-primary/[0.04] p-4">
+                                                            <div className="mb-4 flex items-center gap-2">
+                                                                <span className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                                                    <Youtube className="size-4" />
+                                                                </span>
+                                                                <div>
+                                                                    <p className="text-sm font-semibold">
+                                                                        YouTube
+                                                                        playlist
+                                                                    </p>
+                                                                    <p className="text-xs text-muted-foreground">
+                                                                        Paste a
+                                                                        playlist
+                                                                        link
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                            <div className="grid gap-3">
+                                                                <div className="grid gap-1.5">
+                                                                    <Label htmlFor="youtube-playlist-url">
+                                                                        Playlist
+                                                                        URL
+                                                                    </Label>
+                                                                    <Input
+                                                                        id="youtube-playlist-url"
+                                                                        name="url"
+                                                                        type="url"
+                                                                        required
+                                                                        placeholder="https://www.youtube.com/playlist?list=..."
+                                                                        className="h-11 rounded-xl bg-background"
+                                                                    />
+                                                                    <InputError
+                                                                        message={
+                                                                            errors.url
+                                                                        }
+                                                                    />
+                                                                </div>
+                                                                <div className="grid gap-1.5">
+                                                                    <Label htmlFor="youtube-playlist-title">
+                                                                        Title{' '}
+                                                                        <span className="font-normal text-muted-foreground">
+                                                                            (optional)
+                                                                        </span>
+                                                                    </Label>
+                                                                    <Input
+                                                                        id="youtube-playlist-title"
+                                                                        name="title"
+                                                                        placeholder="Playlist title"
+                                                                        className="h-11 rounded-xl bg-background"
+                                                                    />
+                                                                    <InputError
+                                                                        message={
+                                                                            errors.title
+                                                                        }
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <Button
+                                                            type="submit"
+                                                            className="h-11 rounded-full"
+                                                            disabled={
+                                                                processing
+                                                            }
+                                                        >
+                                                            {processing && (
+                                                                <Spinner />
+                                                            )}
+                                                            Add playlist
+                                                        </Button>
+                                                    </>
+                                                )}
+                                            </Form>
                                         )}
-                                    </Form>
+                                    </div>
                                 )}
 
                                 {uploadMode === 'link' && (
@@ -837,6 +983,16 @@ export default function LibraryIndex({
                                                         kind={file.kind ?? 'file'}
                                                         url={file.url}
                                                         embedUrl={file.embed_url}
+                                                        playlistItems={
+                                                            file.playlist_items
+                                                        }
+                                                        playlistItemsUrl={
+                                                            (file.kind ??
+                                                                'file') ===
+                                                            'youtube_playlist'
+                                                                ? `/training-manager/library/files/${file.id}/playlist-items`
+                                                                : null
+                                                        }
                                                         uploadedAt={
                                                             file.created_at
                                                         }

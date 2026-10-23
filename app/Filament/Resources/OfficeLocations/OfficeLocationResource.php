@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\OfficeLocations;
 
 use App\Filament\Clusters\FrontendEditsCluster;
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\OfficeLocations\Pages\CreateOfficeLocation;
 use App\Filament\Resources\OfficeLocations\Pages\EditOfficeLocation;
 use App\Filament\Resources\OfficeLocations\Pages\ListOfficeLocations;
@@ -18,6 +19,8 @@ use UnitEnum;
 
 class OfficeLocationResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = OfficeLocation::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;

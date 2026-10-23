@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\EducationLevels;
 
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\EducationLevels\Pages\CreateEducationLevel;
 use App\Filament\Resources\EducationLevels\Pages\EditEducationLevel;
 use App\Filament\Resources\EducationLevels\Pages\ListEducationLevels;
@@ -17,6 +18,8 @@ use UnitEnum;
 
 class EducationLevelResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = EducationLevel::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAcademicCap;

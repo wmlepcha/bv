@@ -1,5 +1,5 @@
-import type { ScrollAnimationProps } from '@marketing/animations/types/animation-props';
 import { gsap } from '@marketing/animations/gsap/register-plugins';
+import type { ScrollAnimationProps } from '@marketing/animations/types/animation-props';
 import { resolveScrollVars } from '@marketing/utils/animation-helpers';
 
 export interface PresetOptions extends ScrollAnimationProps {
@@ -39,6 +39,7 @@ export const presets = {
 
     fadeUp(target: gsap.TweenTarget, options: PresetOptions = {}) {
         const y = options.y ?? 60;
+
         return baseTween(
             target,
             { opacity: 0, y },
@@ -49,6 +50,7 @@ export const presets = {
 
     scaleIn(target: gsap.TweenTarget, options: PresetOptions = {}) {
         const scale = options.scale ?? 0.85;
+
         return baseTween(
             target,
             { opacity: 0, scale },
@@ -59,6 +61,7 @@ export const presets = {
 
     rotateIn(target: gsap.TweenTarget, options: PresetOptions = {}) {
         const rotation = options.rotation ?? 12;
+
         return baseTween(
             target,
             { opacity: 0, rotation },

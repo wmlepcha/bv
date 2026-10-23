@@ -1,8 +1,8 @@
 import { Link } from '@inertiajs/react';
+import { cn } from '@/lib/utils';
 import { FadeUp, StaggerChildren } from '@marketing/components/animations/primitives';
 import { ProgramCard } from '@marketing/components/program-card';
 import type { HomePageProps } from '@marketing/types/home-page';
-import { cn } from '@/lib/utils';
 
 interface ProgramsSectionProps {
     programs: HomePageProps['programs'];

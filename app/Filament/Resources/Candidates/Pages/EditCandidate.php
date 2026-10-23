@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Candidates\Pages;
 
+use App\Filament\Resources\Candidates\Actions\MarkAsAlreadyPaidAction;
 use App\Filament\Resources\Candidates\CandidateResource;
 use App\Filament\Resources\Users\Concerns\HandlesUserMutation;
 use App\Models\User;
@@ -18,6 +19,7 @@ class EditCandidate extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            MarkAsAlreadyPaidAction::make(),
             DeleteAction::make(),
         ];
     }

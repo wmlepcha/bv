@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
+import { cn } from '@/lib/utils';
 import { presets } from '@marketing/animations/gsap/timelines/presets';
 import type { ScrollAnimationProps } from '@marketing/animations/types/animation-props';
 import { useScrollAnimation } from '@marketing/hooks/use-gsap-context';
 import { useReducedMotion } from '@marketing/hooks/use-reduced-motion';
-import { cn } from '@/lib/utils';
 
 interface CountUpStatProps extends ScrollAnimationProps {
     value: number;

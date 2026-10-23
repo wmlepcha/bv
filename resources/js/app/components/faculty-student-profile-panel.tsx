@@ -1,47 +1,14 @@
-import { useState } from 'react';
-import {
-    ExternalLink,
-    FileText,
-    Image as ImageIcon,
-    Mail,
-    MapPin,
-    Phone,
-} from 'lucide-react';
+import { Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import type { CvBilingualEntry, CvProfile } from '@app/types/cv';
 import { BRAND_NAME_TM } from '@shared/lib/brand';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
-import { cn } from '@/lib/utils';
 
 type Props = {
     cv: CvProfile;
 };
 
-type DocumentItem = {
-    label: string;
-    href: string;
-    kind: 'file' | 'image' | 'link';
-};
-
-type PreviewMode = 'image' | 'pdf';
-
-type MediaPreview = {
-    src: string;
-    label: string;
-    mode: PreviewMode;
-};
-
 type LanguageLevel =
-    | 'Beginner'
-    | 'Intermediate'
-    | 'Professional'
-    | 'Native'
-    | 'Unknown';
+    'Beginner' | 'Intermediate' | 'Professional' | 'Native' | 'Unknown';
 
 type LanguageRow = {
     language: string;
@@ -50,9 +17,6 @@ type LanguageRow = {
     percent: number;
     barClassName: string;
 };
-
-const IMAGE_EXT_PATTERN = /\.(png|jpe?g|webp|gif|bmp|svg)(\?.*)?$/i;
-const PDF_EXT_PATTERN = /\.pdf(\?.*)?$/i;
 
 const LEVEL_META: Record<
     LanguageLevel,
@@ -93,7 +57,11 @@ function normalizeLevel(raw: string | null | undefined): LanguageLevel {
         return 'Native';
     }
 
-    if (value.includes('professional') || value.includes('fluent') || value.includes('advanced')) {
+    if (
+        value.includes('professional') ||
+        value.includes('fluent') ||
+        value.includes('advanced')
+    ) {
         return 'Professional';
     }
 
@@ -101,14 +69,21 @@ function normalizeLevel(raw: string | null | undefined): LanguageLevel {
         return 'Intermediate';
     }
 
-    if (value.includes('beginner') || value.includes('basic') || value.includes('elementary')) {
+    if (
+        value.includes('beginner') ||
+        value.includes('basic') ||
+        value.includes('elementary')
+    ) {
         return 'Beginner';
     }
 
     return 'Unknown';
 }
 
-function makeLanguageRow(language: string, proficiency: string | null | undefined): LanguageRow | null {
+function makeLanguageRow(
+    language: string,
+    proficiency: string | null | undefined,
+): LanguageRow | null {
     const name = language.trim();
 
     if (!name) {
@@ -173,44 +148,6 @@ function collectLanguageRows(cv: CvProfile): LanguageRow[] {
     return rows;
 }
 
-function pathFromHref(href: string): string {
-    try {
-        return new URL(href, 'http://localhost').pathname;
-    } catch {
-        return href;
-    }
-}
-
-function previewModeFor(doc: DocumentItem): PreviewMode | null {
-    if (doc.kind === 'link') {
-        return null;
-    }
-
-    const path = pathFromHref(doc.href);
-
-    if (doc.kind === 'image' || IMAGE_EXT_PATTERN.test(path)) {
-        return 'image';
-    }
-
-    if (PDF_EXT_PATTERN.test(path) || doc.kind === 'file') {
-        return 'pdf';
-    }
-
-    return null;
-}
-
-function storageUrl(path: string | null | undefined): string | null {
-    if (!path) {
-        return null;
-    }
-
-    if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('/')) {
-        return path;
-    }
-
-    return `/storage/${path.replace(/^\/+/, '')}`;
-}
-
 function ageFromDob(dateOfBirth: string | null): string | null {
     if (!dateOfBirth) {
         return null;
@@ -231,147 +168,6 @@ function ageFromDob(dateOfBirth: string | null): string | null {
     }
 
     return age >= 0 ? `${age} years old` : null;
-}
-
-function splitList(value: string | null | undefined): string[] {
-    if (!value?.trim()) {
-        return [];
-    }
-
-    return value
-        .split(/[|,;\n]+/)
-        .map((part) => part.trim())
-        .filter(Boolean);
-}
-
-function collectDocuments(cv: CvProfile): DocumentItem[] {
-    const items: DocumentItem[] = [];
-
-    if (cv.passport_document_url) {
-        items.push({
-            label: 'Passport / ID document',
-            href: cv.passport_document_url,
-            kind: 'file',
-        });
-    }
-
-    if (cv.drivers_license_document_url) {
-        items.push({
-            label: "Driver's license",
-            href: cv.drivers_license_document_url,
-            kind: 'file',
-        });
-    }
-
-    if (cv.passport_photo_url) {
-        items.push({
-            label: 'Passport photo',
-            href: cv.passport_photo_url,
-            kind: 'image',
-        });
-    }
-
-    if (cv.full_body_photo_url) {
-        items.push({
-            label: 'Full-body photo',
-            href: cv.full_body_photo_url,
-            kind: 'image',
-        });
-    }
-
-    for (const experience of cv.vitae.experiences) {
-        const href = storageUrl(experience.certificate_path);
-
-        if (href) {
-            items.push({
-                label: experience.organization
-                    ? `Experience letter — ${experience.organization}`
-                    : 'Experience letter',
-                href,
-                kind: 'file',
-            });
-        }
-    }
-
-    for (const training of cv.vitae.trainings) {
-        const href = storageUrl(training.certificate_path);
-
-        if (href) {
-            items.push({
-                label: training.topic
-                    ? `Training — ${training.topic}`
-                    : 'Training certificate',
-                href,
-                kind: 'file',
-            });
-        }
-    }
-
-    const activities = [
-        ...cv.vitae.seminars,
-        ...cv.vitae.presentations,
-        ...cv.vitae.publications,
-    ];
-
-    for (const entry of activities) {
-        const fileHref = storageUrl(entry.certificate_path);
-
-        if (fileHref) {
-            items.push({
-                label: entry.topic ?? 'Activity evidence',
-                href: fileHref,
-                kind: 'file',
-            });
-        }
-
-        if (entry.link_url) {
-            items.push({
-                label: entry.topic ? `Link — ${entry.topic}` : 'External link',
-                href: entry.link_url,
-                kind: 'link',
-            });
-        }
-    }
-
-    for (const cert of cv.vitae.certifications) {
-        const href = storageUrl(cert.certificate_path);
-
-        if (href) {
-            items.push({
-                label: cert.name ?? 'Certification',
-                href,
-                kind: 'file',
-            });
-        }
-    }
-
-    for (const license of cv.vitae.licenses) {
-        const href = storageUrl(license.certificate_path);
-
-        if (href) {
-            items.push({
-                label: license.title ?? 'License',
-                href,
-                kind: 'file',
-            });
-        }
-    }
-
-    for (const bilingual of cv.vitae.bilingual) {
-        const href = storageUrl(bilingual.certificate_path);
-
-        if (href) {
-            items.push({
-                label: bilingual.language
-                    ? `Language certificate — ${bilingual.language}`
-                    : 'Language certificate',
-                href,
-                kind: 'file',
-            });
-        }
-    }
-
-    return items;
 }
 
 function Fact({
@@ -397,36 +193,6 @@ function Fact({
     );
 }
 
-function PillList({
-    title,
-    items,
-}: {
-    title: string;
-    items: string[];
-}) {
-    if (items.length === 0) {
-        return null;
-    }
-
-    return (
-        <div>
-            <h3 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
-                {title}
-            </h3>
-            <ul className="mt-3 flex flex-wrap gap-2">
-                {items.map((item) => (
-                    <li
-                        key={`${title}-${item}`}
-                        className="rounded-full bg-brand-cool/15 px-3 py-1.5 text-sm font-medium text-brand-cool"
-                    >
-                        {item}
-                    </li>
-                ))}
-            </ul>
-        </div>
-    );
-}
-
 type VitaeHighlightItem = {
     title: string;
     subtitle?: string | null;
@@ -446,9 +212,11 @@ function VitaeHighlightSection({
                 {title}
             </h3>
             {items.length === 0 ? (
-                <p className="mt-3 text-sm text-muted-foreground">None listed.</p>
+                <p className="mt-3 text-sm text-muted-foreground">
+                    None listed.
+                </p>
             ) : (
-                <ul className="mt-3 space-y-3">
+                <ul className="mt-3 grid gap-3 sm:grid-cols-2">
                     {items.map((item, index) => (
                         <li
                             key={`${title}-${item.title}-${index}`}
@@ -477,7 +245,7 @@ function VitaeHighlightSection({
 
 function collectEducation(cv: CvProfile): VitaeHighlightItem[] {
     return (cv.vitae?.qualifications ?? [])
-        .map((item) => {
+        .map((item): VitaeHighlightItem | null => {
             const title = String(item.title ?? '').trim();
 
             if (!title) {
@@ -504,130 +272,6 @@ function collectEducation(cv: CvProfile): VitaeHighlightItem[] {
             };
         })
         .filter((item): item is VitaeHighlightItem => item !== null);
-}
-
-function collectWorkExperience(cv: CvProfile): VitaeHighlightItem[] {
-    if (cv.vitae?.is_newbie) {
-        return [];
-    }
-
-    return (cv.vitae?.experiences ?? [])
-        .map((job) => {
-            const title =
-                String(job.designation ?? '').trim() ||
-                String(job.organization ?? '').trim();
-
-            if (!title) {
-                return null;
-            }
-
-            const organization = String(job.organization ?? '').trim();
-            const subtitle =
-                organization && organization !== title ? organization : null;
-            const period =
-                String(job.duration ?? '').trim() ||
-                [job.start_date, job.end_date]
-                    .map((part) => String(part ?? '').trim())
-                    .filter(Boolean)
-                    .join(' – ');
-            const location = [job.city, job.state]
-                .map((part) => String(part ?? '').trim())
-                .filter(Boolean)
-                .join(', ');
-
-            return {
-                title,
-                subtitle,
-                meta: [period, location].filter(Boolean).join(' · ') || null,
-            };
-        })
-        .filter((item): item is VitaeHighlightItem => item !== null);
-}
-
-function collectCertifications(cv: CvProfile): VitaeHighlightItem[] {
-    return (cv.vitae?.certifications ?? [])
-        .map((cert) => {
-            const title = String(cert.name ?? '').trim();
-
-            if (!title) {
-                return null;
-            }
-
-            return {
-                title,
-                subtitle: String(cert.description ?? '').trim() || null,
-            };
-        })
-        .filter((item): item is VitaeHighlightItem => item !== null);
-}
-
-function collectLicenses(cv: CvProfile): VitaeHighlightItem[] {
-    return (cv.vitae?.licenses ?? [])
-        .map((license) => {
-            const title = String(license.title ?? '').trim();
-
-            if (!title) {
-                return null;
-            }
-
-            const registration = String(
-                license.registration_number ?? '',
-            ).trim();
-            const period = [license.issued_date, license.valid_till]
-                .map((part) => String(part ?? '').trim())
-                .filter(Boolean)
-                .join(' – ');
-
-            return {
-                title,
-                subtitle: registration || null,
-                meta: period || null,
-            };
-        })
-        .filter((item): item is VitaeHighlightItem => item !== null);
-}
-
-function collectAchievements(cv: CvProfile): VitaeHighlightItem[] {
-    const entries = [
-        ...(cv.vitae?.seminars ?? []),
-        ...(cv.vitae?.presentations ?? []),
-        ...(cv.vitae?.publications ?? []),
-        ...(cv.vitae?.trainings ?? []),
-    ];
-
-    const items: VitaeHighlightItem[] = [];
-    const seen = new Set<string>();
-
-    for (const entry of entries) {
-        const title = String(entry.topic ?? '').trim();
-
-        if (!title || seen.has(title.toLowerCase())) {
-            continue;
-        }
-
-        seen.add(title.toLowerCase());
-
-        const date = String(
-            'date' in entry ? (entry.date ?? '') : '',
-        ).trim();
-        const location = [
-            'organization' in entry ? entry.organization : null,
-            'organization_location' in entry
-                ? entry.organization_location
-                : null,
-            'location' in entry ? entry.location : null,
-        ]
-            .map((part) => String(part ?? '').trim())
-            .filter(Boolean)
-            .join(', ');
-
-        items.push({
-            title,
-            meta: [date, location].filter(Boolean).join(' · ') || null,
-        });
-    }
-
-    return items;
 }
 
 const LANGUAGE_SCALE = [
@@ -688,27 +332,14 @@ function LanguagesKnownBars({ rows }: { rows: LanguageRow[] }) {
     );
 }
 
-const documentCardClassName = cn(
-    'flex w-full items-center gap-3 rounded-2xl border border-brand-cool/20 bg-brand-cool/5 px-3.5 py-3 text-left text-sm transition-colors',
-    'hover:border-brand-cool/40 hover:bg-brand-cool/10',
-);
-
 export default function FacultyStudentProfilePanel({ cv }: Props) {
-    const [preview, setPreview] = useState<MediaPreview | null>(null);
-
     const title =
         [cv.first_name, cv.last_name].filter(Boolean).join(' ') || cv.name;
     const photoUrl = cv.full_body_photo_url || cv.passport_photo_url;
     const age = ageFromDob(cv.date_of_birth);
     const tag = cv.current_status || null;
-    const hobbies = splitList(cv.hobbies);
     const languageRows = collectLanguageRows(cv);
     const education = collectEducation(cv);
-    const workExperience = collectWorkExperience(cv);
-    const certifications = collectCertifications(cv);
-    const licenses = collectLicenses(cv);
-    const achievements = collectAchievements(cv);
-    const documents = collectDocuments(cv);
     // proficiency_summary is the flat "Language — Level · …" string; languages
     // are shown via progress bars instead.
     const backgroundParts = [
@@ -741,9 +372,139 @@ export default function FacultyStudentProfilePanel({ cv }: Props) {
         ] as const
     ).filter((item) => Boolean(item.value));
 
+    const whatsappDigits = cv.mobile_whatsapp?.replace(/\D/g, '') ?? '';
+    const actions = [
+        {
+            label: 'Call',
+            Icon: Phone,
+            href: cv.mobile_whatsapp
+                ? `tel:${cv.mobile_whatsapp.replace(/\s+/g, '')}`
+                : null,
+        },
+        {
+            label: 'WhatsApp',
+            Icon: MessageCircle,
+            href: whatsappDigits ? `https://wa.me/${whatsappDigits}` : null,
+        },
+        {
+            label: 'Email',
+            Icon: Mail,
+            href: cv.email ? `mailto:${cv.email}` : null,
+        },
+    ];
+
     return (
         <>
-            <div className="overflow-hidden rounded-3xl border border-border/70 bg-card p-2 shadow-lg shadow-black/5">
+            <div className="flex flex-col gap-4 lg:hidden">
+                <div className="relative aspect-[4/5] overflow-hidden rounded-3xl bg-brand-cool/10 shadow-lg shadow-black/10">
+                    {photoUrl ? (
+                        <img
+                            src={photoUrl}
+                            alt={`${title} photo`}
+                            className="size-full object-cover object-top"
+                        />
+                    ) : (
+                        <div className="flex size-full items-center justify-center text-sm text-muted-foreground">
+                            No photo uploaded
+                        </div>
+                    )}
+                    <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
+                    <div className="absolute inset-x-0 bottom-0 flex flex-col gap-1.5 p-5 text-white">
+                        {tag && (
+                            <span className="w-fit rounded-full bg-white/20 px-3 py-1 text-xs font-semibold backdrop-blur-md">
+                                {tag}
+                            </span>
+                        )}
+                        <h2 className="text-2xl leading-tight font-bold">
+                            {title}
+                        </h2>
+                        {cv.headline && (
+                            <p className="line-clamp-2 text-sm text-white/80">
+                                {cv.headline}
+                            </p>
+                        )}
+                        {(age || cv.current_address) && (
+                            <p className="flex items-center gap-1.5 text-xs text-white/70">
+                                {age}
+                                {age && cv.current_address && ' · '}
+                                {cv.current_address && (
+                                    <>
+                                        <MapPin className="size-3 shrink-0" />
+                                        <span className="truncate">
+                                            {cv.current_address}
+                                        </span>
+                                    </>
+                                )}
+                            </p>
+                        )}
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                    {actions.map(({ label, Icon, href }) => {
+                        const className =
+                            'flex flex-col items-center gap-1.5 rounded-2xl border border-border bg-card py-3 text-xs font-medium transition-transform active:scale-95';
+
+                        return href ? (
+                            <a
+                                key={label}
+                                href={href}
+                                target={
+                                    label === 'WhatsApp' ? '_blank' : undefined
+                                }
+                                rel="noreferrer"
+                                className={className}
+                            >
+                                <span className="flex size-10 items-center justify-center rounded-full bg-brand-cool/15 text-brand-cool">
+                                    <Icon className="size-5" />
+                                </span>
+                                {label}
+                            </a>
+                        ) : (
+                            <span
+                                key={label}
+                                aria-disabled
+                                className={`${className} opacity-40`}
+                            >
+                                <span className="flex size-10 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                                    <Icon className="size-5" />
+                                </span>
+                                {label}
+                            </span>
+                        );
+                    })}
+                </div>
+
+                <section className="rounded-3xl border border-border bg-card p-4">
+                    <h3 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
+                        Background
+                    </h3>
+                    {backgroundParts.length > 0 ? (
+                        <div className="mt-3 space-y-3 text-sm leading-relaxed text-foreground/90">
+                            {backgroundParts.map((part) => (
+                                <p key={part.slice(0, 48)}>{part}</p>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="mt-3 text-sm text-muted-foreground">
+                            No background details submitted yet.
+                        </p>
+                    )}
+                </section>
+
+                <section className="rounded-3xl border border-border bg-card p-4">
+                    <LanguagesKnownBars rows={languageRows} />
+                </section>
+
+                <section className="rounded-3xl border border-border bg-card p-4">
+                    <VitaeHighlightSection
+                        title="Education"
+                        items={education}
+                    />
+                </section>
+            </div>
+
+            <div className="hidden overflow-hidden rounded-3xl border border-border/70 bg-card p-2 shadow-lg shadow-black/5 lg:block">
                 <div className="grid overflow-hidden rounded-[1.25rem] lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] xl:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
                     <div className="flex flex-col border-b border-border/60 bg-muted/30 lg:border-r lg:border-b-0">
                         <div className="relative aspect-[3/4] w-full overflow-hidden bg-brand-cool/10">
@@ -810,72 +571,6 @@ export default function FacultyStudentProfilePanel({ cv }: Props) {
                                 value={cv.current_status || cv.headline}
                             />
                         </div>
-
-                        <div className="border-t border-border/60 bg-card px-4 py-4">
-                            <h3 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
-                                Submitted files & links
-                            </h3>
-                            {documents.length > 0 ? (
-                                <ul className="mt-3 grid gap-2">
-                                    {documents.map((doc) => {
-                                        const previewMode = previewModeFor(doc);
-                                        const Icon =
-                                            previewMode === 'image' ||
-                                            doc.kind === 'image'
-                                                ? ImageIcon
-                                                : doc.kind === 'link'
-                                                  ? ExternalLink
-                                                  : FileText;
-
-                                        const content = (
-                                            <>
-                                                <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-cool/15 text-brand-cool shadow-sm">
-                                                    <Icon className="size-4" />
-                                                </span>
-                                                <span className="min-w-0 truncate font-medium">
-                                                    {doc.label}
-                                                </span>
-                                            </>
-                                        );
-
-                                        return (
-                                            <li
-                                                key={`${doc.label}-${doc.href}`}
-                                            >
-                                                {previewMode ? (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            setPreview({
-                                                                src: doc.href,
-                                                                label: doc.label,
-                                                                mode: previewMode,
-                                                            })
-                                                        }
-                                                        className={documentCardClassName}
-                                                    >
-                                                        {content}
-                                                    </button>
-                                                ) : (
-                                                    <a
-                                                        href={doc.href}
-                                                        target="_blank"
-                                                        rel="noreferrer"
-                                                        className={documentCardClassName}
-                                                    >
-                                                        {content}
-                                                    </a>
-                                                )}
-                                            </li>
-                                        );
-                                    })}
-                                </ul>
-                            ) : (
-                                <p className="mt-3 text-sm text-muted-foreground">
-                                    No documents or links uploaded yet.
-                                </p>
-                            )}
-                        </div>
                     </div>
 
                     {/* Entire right section: 8px padding from the photo column */}
@@ -899,7 +594,9 @@ export default function FacultyStudentProfilePanel({ cv }: Props) {
                                 <div className="mt-3 rounded-2xl border border-border/60 bg-muted/35 p-4 shadow-sm sm:p-5">
                                     <div className="space-y-3 text-sm leading-relaxed text-foreground/90">
                                         {backgroundParts.map((part) => (
-                                            <p key={part.slice(0, 48)}>{part}</p>
+                                            <p key={part.slice(0, 48)}>
+                                                {part}
+                                            </p>
                                         ))}
                                     </div>
                                 </div>
@@ -912,79 +609,13 @@ export default function FacultyStudentProfilePanel({ cv }: Props) {
 
                         <LanguagesKnownBars rows={languageRows} />
 
-                        <div className="grid gap-8 sm:grid-cols-2">
-                            <VitaeHighlightSection
-                                title="Education"
-                                items={education}
-                            />
-                            <VitaeHighlightSection
-                                title="Work experience"
-                                items={workExperience}
-                            />
-                            <VitaeHighlightSection
-                                title="Certification"
-                                items={certifications}
-                            />
-                            <VitaeHighlightSection
-                                title="License"
-                                items={licenses}
-                            />
-                            <VitaeHighlightSection
-                                title="Achievements"
-                                items={achievements}
-                            />
-                        </div>
-
-                        <div className="flex flex-col gap-8">
-                            <PillList title="Skills" items={cv.skills} />
-                            <PillList
-                                title="Hobbies & interests"
-                                items={hobbies}
-                            />
-                        </div>
+                        <VitaeHighlightSection
+                            title="Education"
+                            items={education}
+                        />
                     </div>
                 </div>
             </div>
-
-            <Dialog
-                open={preview !== null}
-                onOpenChange={(open) => {
-                    if (!open) {
-                        setPreview(null);
-                    }
-                }}
-            >
-                <DialogContent
-                    className="gap-3 overflow-hidden border-border/60 bg-background/95 p-3 sm:max-w-4xl sm:p-4"
-                    overlayClassName="bg-black/85 backdrop-blur-[2px]"
-                >
-                    <DialogHeader className="pr-8">
-                        <DialogTitle>
-                            {preview?.label ?? 'Document'}
-                        </DialogTitle>
-                        <DialogDescription className="sr-only">
-                            On-page preview of{' '}
-                            {preview?.label ?? 'the submitted file'}
-                        </DialogDescription>
-                    </DialogHeader>
-                    {preview?.mode === 'image' && (
-                        <div className="flex max-h-[85vh] items-center justify-center overflow-hidden rounded-xl bg-muted/30">
-                            <img
-                                src={preview.src}
-                                alt={preview.label}
-                                className="max-h-[85vh] w-full object-contain"
-                            />
-                        </div>
-                    )}
-                    {preview?.mode === 'pdf' && (
-                        <iframe
-                            src={preview.src}
-                            title={preview.label}
-                            className="h-[85vh] w-full rounded-xl border border-border/60 bg-white"
-                        />
-                    )}
-                </DialogContent>
-            </Dialog>
         </>
     );
 }

@@ -1,21 +1,22 @@
-import { type ReactNode, useState } from 'react';
 import { useForm, usePage } from '@inertiajs/react';
-import InputError from '@shared/components/input-error';
-import RegistrationPlanPicker from '@app/components/registration-plan-picker';
-import { useRegistrationCheckout } from '@app/hooks/use-registration-checkout';
+import {  useState } from 'react';
+import type {ReactNode} from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
     Dialog,
     DialogContent,
     DialogDescription,
     DialogHeader,
     DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { BRAND_NAME_TM } from '@shared/lib/brand';
+} from '@/components/ui/responsive-dialog';
 import type { User } from '@/types/auth';
+import RegistrationPlanPicker from '@app/components/registration-plan-picker';
+import { useRegistrationCheckout } from '@app/hooks/use-registration-checkout';
+import InputError from '@shared/components/input-error';
+import { BRAND_NAME_TM } from '@shared/lib/brand';
 import type { RegistrationPlan } from '@shared/types/registration-plan';
 
 type SharedProps = {

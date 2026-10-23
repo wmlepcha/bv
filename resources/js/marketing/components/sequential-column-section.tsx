@@ -1,8 +1,9 @@
-import { useRef, type ReactNode } from 'react';
+import { useRef  } from 'react';
+import type {ReactNode} from 'react';
+import { cn } from '@/lib/utils';
 import { gsap, ScrollTrigger } from '@marketing/animations/gsap/register-plugins';
 import { useScrollAnimation } from '@marketing/hooks/use-gsap-context';
 import { useReducedMotion } from '@marketing/hooks/use-reduced-motion';
-import { cn } from '@/lib/utils';
 
 interface ColumnConfig {
     content: ReactNode;

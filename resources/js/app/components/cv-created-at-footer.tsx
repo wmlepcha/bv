@@ -1,6 +1,7 @@
-import AppLogoIcon from '@app/components/app-logo-icon';
-import { cvLabels, type CvLocale } from '@app/lib/cv-labels';
 import { cn } from '@/lib/utils';
+import AppLogoIcon from '@app/components/app-logo-icon';
+import { cvLabels  } from '@app/lib/cv-labels';
+import type {CvLocale} from '@app/lib/cv-labels';
 
 type Props = {
     locale?: CvLocale;

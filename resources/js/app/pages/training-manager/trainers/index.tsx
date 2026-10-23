@@ -1,7 +1,6 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { Users } from 'lucide-react';
+import { Flame, LayoutGrid, Users } from 'lucide-react';
 import { useState } from 'react';
-import { PrivateSeoHead } from '@shared/components/seo-head';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -11,12 +10,15 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from '@/components/ui/dialog';
+} from '@/components/ui/responsive-dialog';
 import { Spinner } from '@/components/ui/spinner';
+import { PrivateSeoHead } from '@shared/components/seo-head';
 import {
-    TrainerCard,
-    type TrainerCardData,
+    TrainerCard
+    
 } from './trainer-card';
+import type {TrainerCardData} from './trainer-card';
+import { TrainerHeatmap } from './trainer-heatmap';
 
 type Props = {
     trainers: TrainerCardData[];
@@ -30,6 +32,7 @@ export default function TrainersIndex({ trainers }: Props) {
         null,
     );
     const [deleting, setDeleting] = useState(false);
+    const [view, setView] = useState<'grid' | 'heatmap'>('grid');
 
     function confirmDelete() {
         if (!deleteTarget || deleting) {
@@ -58,11 +61,35 @@ export default function TrainersIndex({ trainers }: Props) {
                             Create and manage trainers assigned to batches.
                         </p>
                     </div>
-                    <Button asChild className="rounded-full">
-                        <Link href="/training-manager/trainers/create">
-                            Add trainer
-                        </Link>
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="rounded-full"
+                            onClick={() =>
+                                setView((current) =>
+                                    current === 'grid' ? 'heatmap' : 'grid',
+                                )
+                            }
+                        >
+                            {view === 'grid' ? (
+                                <>
+                                    <Flame className="size-4" />
+                                    View as heatmap
+                                </>
+                            ) : (
+                                <>
+                                    <LayoutGrid className="size-4" />
+                                    View as grid
+                                </>
+                            )}
+                        </Button>
+                        <Button asChild className="rounded-full">
+                            <Link href="/training-manager/trainers/create">
+                                Add trainer
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
 
                 {flash?.success && (
@@ -93,6 +120,8 @@ export default function TrainersIndex({ trainers }: Props) {
                             </Link>
                         </Button>
                     </div>
+                ) : view === 'heatmap' ? (
+                    <TrainerHeatmap trainers={trainers} />
                 ) : (
                     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                         {trainers.map((trainer) => (

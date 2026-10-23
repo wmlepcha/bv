@@ -1,7 +1,7 @@
 import { Link } from '@inertiajs/react';
+import { cn } from '@/lib/utils';
 import { FadeUp } from '@marketing/components/animations/primitives';
 import type { ServicesPageProps } from '@marketing/types/services-page';
-import { cn } from '@/lib/utils';
 
 interface ServicesHeroSectionProps {
     hero: ServicesPageProps['hero'];

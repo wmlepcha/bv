@@ -1,6 +1,6 @@
+import { cn } from '@/lib/utils';
 import { ServicesGroupBlock } from '@marketing/components/services/services-group-block';
 import type { ServiceCategory } from '@marketing/types/services-page';
-import { cn } from '@/lib/utils';
 
 interface ServicesCategorySectionProps {
     category: ServiceCategory;

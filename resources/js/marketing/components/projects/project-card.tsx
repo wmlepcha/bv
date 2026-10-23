@@ -1,7 +1,7 @@
 import { Link } from '@inertiajs/react';
+import { cn } from '@/lib/utils';
 import { ScaleIn } from '@marketing/components/animations/primitives';
 import type { ProjectsPagePostCard } from '@marketing/types/projects-page';
-import { cn } from '@/lib/utils';
 
 type ProjectCardProps = {
     post: ProjectsPagePostCard;

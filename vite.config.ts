@@ -8,15 +8,30 @@ import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// Set VITE_TUNNEL=true when sharing the dev server through `cloudflared tunnel
+// --url http://127.0.0.1:5173` (see README/CLAUDE.md). In that mode the tunnel
+// becomes the page origin, so HMR must ride the tunnel's HTTPS port (443)
+// instead of a bare 127.0.0.1 address the remote browser can't reach, and any
+// request that isn't a Vite/dev asset must be proxied on to Herd so the app
+// still works end to end through the single tunneled origin.
+const tunnelMode = process.env.VITE_TUNNEL === 'true';
+
 export default defineConfig({
     server: {
         host: '127.0.0.1',
         port: 5173,
         strictPort: true,
-        hmr: {
-            host: '127.0.0.1',
-            port: 5173,
-        },
+        hmr: tunnelMode ? { clientPort: 443 } : { host: '127.0.0.1', port: 5173 },
+        proxy: tunnelMode
+            ? {
+                  '^/(?!(@vite|@id|@fs|@react-refresh|node_modules|resources|storage|build|favicon|apple-touch-icon|mstile|pwa-|manifest\\.webmanifest|sw\\.js|registerSW\\.js)).*':
+                      {
+                          target: 'https://bilingualvitae.test',
+                          changeOrigin: true,
+                          secure: false,
+                      },
+              }
+            : undefined,
     },
     resolve: {
         alias: {

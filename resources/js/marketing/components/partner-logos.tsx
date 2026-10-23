@@ -1,5 +1,5 @@
-import type { SiteLayoutPartner } from '@/types/global';
 import { cn } from '@/lib/utils';
+import type { SiteLayoutPartner } from '@/types/global';
 
 interface PartnerLogosProps {
     partners: SiteLayoutPartner[];

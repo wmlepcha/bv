@@ -1,8 +1,8 @@
 import { Link } from '@inertiajs/react';
 import { useRef } from 'react';
-import { ScaleIn } from '@marketing/components/animations/primitives';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import { ScaleIn } from '@marketing/components/animations/primitives';
 
 interface ServiceCardProps {
     title: string;
@@ -20,7 +20,9 @@ export function ServiceCard({ title, href, image, index = 0 }: ServiceCardProps)
         if (isMobile) {
             return;
         }
+
         const card = cardRef.current;
+
         if (!card) {
             return;
         }
@@ -34,6 +36,7 @@ export function ServiceCard({ title, href, image, index = 0 }: ServiceCardProps)
 
     const handleLeave = () => {
         const card = cardRef.current;
+
         if (card) {
             card.style.transform = 'translate(0, 0)';
         }

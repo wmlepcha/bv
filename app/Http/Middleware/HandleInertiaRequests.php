@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Plan;
+use App\Services\ChatService;
 use App\Services\InquiryOptionsService;
 use App\Services\SiteLayoutService;
 use App\Support\RegistrationTerms;
@@ -62,6 +63,8 @@ class HandleInertiaRequests extends Middleware
                 ->all(),
             'registrationTermsHtml' => RegistrationTerms::html(),
             'studentPhone' => $request->user()?->studentProfile?->mobile_whatsapp,
+            'unread_notifications_count' => fn () => $request->user()?->unreadNotifications()->count() ?? 0,
+            'unread_messages_count' => fn () => $this->unreadMessagesCount($request),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
@@ -70,7 +73,29 @@ class HandleInertiaRequests extends Middleware
             'siteLayout' => app(SiteLayoutService::class)->toInertiaProps(),
             'inquiryOptions' => [
                 'educationLevels' => app(InquiryOptionsService::class)->educationLevels(),
+                'turnstileSiteKey' => config('services.turnstile.site_key'),
             ],
         ];
+    }
+
+    private function unreadMessagesCount(Request $request): int
+    {
+        $user = $request->user();
+
+        if ($user === null) {
+            return 0;
+        }
+
+        $chat = app(ChatService::class);
+
+        if ($user->isStudent()) {
+            return $chat->unreadCountForStudent($user);
+        }
+
+        if ($user->isTeacher()) {
+            return $chat->unreadCountForTeacher($user);
+        }
+
+        return 0;
     }
 }

@@ -1,11 +1,11 @@
 import { Form, Link } from '@inertiajs/react';
-import { PrivateSeoHead } from '@shared/components/seo-head';
-import InputError from '@shared/components/input-error';
-import PasswordInput from '@shared/components/password-input';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import InputError from '@shared/components/input-error';
+import PasswordInput from '@shared/components/password-input';
+import { PrivateSeoHead } from '@shared/components/seo-head';
 import { TrainerPhotoField } from './trainer-photo-field';
 
 export default function CreateTrainer() {

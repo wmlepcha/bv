@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use App\Filament\Clusters\CandidatesCluster;
 use App\Filament\Resources\Candidates\Pages\EditCandidate;
 use App\Filament\Resources\Candidates\Pages\ListCandidates;
+use App\Filament\Resources\Candidates\RelationManagers\PaymentsRelationManager;
 use App\Filament\Resources\Candidates\Schemas\CandidateForm;
 use App\Filament\Resources\Candidates\Tables\CandidatesTable;
 use App\Models\User;
@@ -59,7 +60,9 @@ class CandidateResource extends Resource
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            PaymentsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

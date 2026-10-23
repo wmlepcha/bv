@@ -1,3 +1,4 @@
+import type Lenis from 'lenis';
 import {
     createContext,
     useCallback,
@@ -5,18 +6,18 @@ import {
     useEffect,
     useMemo,
     useRef,
-    useState,
-    type ReactNode,
+    useState
+    
 } from 'react';
-import type Lenis from 'lenis';
+import type {ReactNode} from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { createLenis } from '@marketing/animations/lenis/create-lenis';
 import {
     syncLenisWithScrollTrigger,
     unsyncLenisFromScrollTrigger,
 } from '@marketing/animations/lenis/sync-scroll-trigger';
-import { useScrollConfig } from '@marketing/hooks/use-scroll-config';
 import { useReducedMotion } from '@marketing/hooks/use-reduced-motion';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useScrollConfig } from '@marketing/hooks/use-scroll-config';
 import { refreshScrollAnimations } from '@marketing/utils/scroll-cleanup';
 
 interface LenisContextValue {
@@ -44,12 +45,15 @@ export function LenisProvider({ children }: { children: ReactNode }) {
         if (!enabled || reducedMotion) {
             document.documentElement.classList.remove('lenis', 'lenis-smooth');
             setLenis(null);
+
             return;
         }
 
         const instance = createLenis({ isMobile, reducedMotion });
+
         if (!instance) {
             setLenis(null);
+
             return;
         }
 

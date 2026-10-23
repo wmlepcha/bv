@@ -1,11 +1,11 @@
 import { usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
-import { SeoHead } from '@shared/components/seo-head';
 import { ServicesCategorySection } from '@marketing/components/services/services-category-section';
 import { ServicesHeroSection } from '@marketing/components/services/services-hero-section';
 import { ServicesTabNav } from '@marketing/components/services/services-tab-nav';
 import { useLenis } from '@marketing/providers/lenis-provider';
 import type { ServicesPageProps } from '@marketing/types/services-page';
+import { SeoHead } from '@shared/components/seo-head';
 
 function getServicesStickyOffset(): number {
     const header = document.querySelector('header');
@@ -31,6 +31,7 @@ function scrollToCategorySection(
 
     if (lenisActive) {
         scrollTo(section, { offset: -offset, duration: 0.5 });
+
         return;
     }
 

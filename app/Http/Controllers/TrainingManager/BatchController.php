@@ -12,6 +12,7 @@ use App\Http\Requests\TrainingManager\UpdateBatchRequest;
 use App\Models\Batch;
 use App\Models\Center;
 use App\Models\User;
+use App\Support\BatchPresenter;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -25,22 +26,16 @@ class BatchController extends Controller
             ->withCount('enrollments')
             ->orderByDesc('created_at')
             ->get()
-            ->map(fn (Batch $batch): array => [
-                'id' => $batch->id,
-                'name' => $batch->name,
-                'center_name' => $batch->center?->name,
-                'language' => $batch->language->value,
-                'language_label' => $batch->language->label(),
-                'level' => $batch->level->value,
-                'teacher_name' => $batch->teacher?->name,
-                'teacher_id' => $batch->teacher_id,
-                'is_active' => $batch->is_active,
-                'enrollments_count' => $batch->enrollments_count,
-            ]);
+            ->map(fn (Batch $batch): array => BatchPresenter::forIndex($batch));
 
         return Inertia::render('app/training-manager/batches/index', [
             'batches' => $batches,
         ]);
+    }
+
+    public function show(Batch $batch): Response
+    {
+        return Inertia::render('app/training-manager/batches/show', BatchPresenter::show($batch));
     }
 
     public function create(): Response
@@ -70,6 +65,8 @@ class BatchController extends Controller
                 'level' => $batch->level->value,
                 'teacher_id' => $batch->teacher_id,
                 'is_active' => $batch->is_active,
+                'starts_on' => $batch->starts_on?->format('Y-m-d'),
+                'ends_on' => $batch->ends_on?->format('Y-m-d'),
             ],
             'formOptions' => $this->formOptions($batch),
         ]);

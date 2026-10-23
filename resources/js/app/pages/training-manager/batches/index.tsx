@@ -1,6 +1,7 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import {
     ArrowRight,
+    CalendarRange,
     GraduationCap,
     MapPin,
     MoreVertical,
@@ -9,8 +10,13 @@ import {
     Users,
 } from 'lucide-react';
 import { useState } from 'react';
-import { PrivateSeoHead } from '@shared/components/seo-head';
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
     Dialog,
     DialogClose,
@@ -19,15 +25,10 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from '@/components/ui/dialog';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/ui/responsive-dialog';
 import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
+import { PrivateSeoHead } from '@shared/components/seo-head';
 
 type Batch = {
     id: number;
@@ -38,6 +39,11 @@ type Batch = {
     teacher_name: string | null;
     is_active: boolean;
     enrollments_count: number;
+    starts_on: string | null;
+    ends_on: string | null;
+    starts_on_label: string | null;
+    ends_on_label: string | null;
+    setup_percent: number;
 };
 
 type Props = {
@@ -87,13 +93,25 @@ function batchColor(id: number) {
     return BATCH_PALETTE[Math.abs(id) % BATCH_PALETTE.length];
 }
 
-/** Soft visual fill from enrollment count (no hard capacity). */
-function enrollmentFill(count: number): number {
-    if (count <= 0) {
-        return 8;
+/** Progress from batch setup completeness. */
+function setupFill(percent: number): number {
+    return Math.max(8, Math.min(100, percent));
+}
+
+function formatCardDates(batch: Batch): string | null {
+    if (batch.starts_on_label && batch.ends_on_label) {
+        return `${batch.starts_on_label} – ${batch.ends_on_label}`;
     }
 
-    return Math.min(100, 18 + count * 7);
+    if (batch.starts_on_label) {
+        return `Starts ${batch.starts_on_label}`;
+    }
+
+    if (batch.ends_on_label) {
+        return `Ends ${batch.ends_on_label}`;
+    }
+
+    return null;
 }
 
 export default function BatchesIndex({ batches }: Props) {
@@ -183,9 +201,8 @@ export default function BatchesIndex({ batches }: Props) {
                     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                         {batches.map((batch) => {
                             const colors = batchColor(batch.id);
-                            const fill = enrollmentFill(
-                                batch.enrollments_count,
-                            );
+                            const fill = setupFill(batch.setup_percent);
+                            const dateLabel = formatCardDates(batch);
 
                             return (
                                 <article
@@ -195,7 +212,12 @@ export default function BatchesIndex({ batches }: Props) {
                                         colors.body,
                                     )}
                                 >
-                                    <div className="flex items-start justify-between gap-3">
+                                    <Link
+                                        href={`/training-manager/batches/${batch.id}`}
+                                        className="absolute inset-0 z-0 rounded-[1.75rem]"
+                                        aria-label={`View ${batch.name}`}
+                                    />
+                                    <div className="relative z-10 flex items-start justify-between gap-3">
                                         <div className="flex min-w-0 items-start gap-3">
                                             <span
                                                 className={cn(
@@ -229,12 +251,14 @@ export default function BatchesIndex({ batches }: Props) {
                                                 disabled={
                                                     togglingId === batch.id
                                                 }
-                                                onClick={() =>
+                                                onClick={(event) => {
+                                                    event.preventDefault();
+                                                    event.stopPropagation();
                                                     toggleActive(
                                                         batch,
                                                         !batch.is_active,
-                                                    )
-                                                }
+                                                    );
+                                                }}
                                                 className={cn(
                                                     'inline-flex h-8 items-center gap-1.5 rounded-full px-1.5 transition-colors',
                                                     'bg-white/20 hover:bg-white/30 disabled:opacity-60',
@@ -272,8 +296,11 @@ export default function BatchesIndex({ batches }: Props) {
                                                 <DropdownMenuTrigger asChild>
                                                     <button
                                                         type="button"
-                                                        className="inline-flex size-8 items-center justify-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/25"
+                                                        className="relative z-20 inline-flex size-8 items-center justify-center rounded-full bg-white/15 text-white transition-colors hover:bg-white/25"
                                                         aria-label="Batch actions"
+                                                        onClick={(event) =>
+                                                            event.stopPropagation()
+                                                        }
                                                     >
                                                         <MoreVertical className="size-4" />
                                                     </button>
@@ -303,7 +330,15 @@ export default function BatchesIndex({ batches }: Props) {
                                         </div>
                                     </div>
 
-                                    <div className="mt-5 space-y-2 text-sm text-white/85">
+                                    <div className="relative z-10 mt-5 space-y-2 text-sm text-white/85">
+                                        {dateLabel && (
+                                            <p className="flex items-center gap-2">
+                                                <CalendarRange className="size-3.5 shrink-0 opacity-80" />
+                                                <span className="truncate">
+                                                    {dateLabel}
+                                                </span>
+                                            </p>
+                                        )}
                                         <p className="flex items-center gap-2">
                                             <MapPin className="size-3.5 shrink-0 opacity-80" />
                                             <span className="truncate">
@@ -320,7 +355,7 @@ export default function BatchesIndex({ batches }: Props) {
                                         </p>
                                     </div>
 
-                                    <div className="mt-auto pt-6">
+                                    <div className="relative z-10 mt-auto pt-6">
                                         <div
                                             className={cn(
                                                 'h-1.5 overflow-hidden rounded-full',
@@ -346,7 +381,10 @@ export default function BatchesIndex({ batches }: Props) {
                                             </p>
                                             <Link
                                                 href={`/training-manager/batches/${batch.id}/students`}
-                                                className="inline-flex items-center gap-1.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                                                className="relative z-20 inline-flex items-center gap-1.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                                                onClick={(event) =>
+                                                    event.stopPropagation()
+                                                }
                                             >
                                                 Students
                                                 <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />

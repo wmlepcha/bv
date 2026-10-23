@@ -23,11 +23,13 @@ export type BilingualDisplayGroup = {
 
 function formatLanguageName(entry: CvBilingualEntry): string {
     const language = String(entry.language ?? '').trim();
+
     if (!language) {
         return '';
     }
 
     const level = String(entry.certification_level ?? '').trim();
+
     if (level) {
         return `${language} (${level})`;
     }
@@ -71,11 +73,13 @@ export function groupBilingualForDisplay(
 
     for (const entry of filled) {
         const formatted = formatLanguageName(entry);
+
         if (!formatted) {
             continue;
         }
 
         const rawType = String(entry.language_type ?? '').trim();
+
         if ((LANGUAGE_TYPE_ORDER as readonly string[]).includes(rawType)) {
             const type = rawType as LanguageType;
             const list = byType.get(type) ?? [];
@@ -90,6 +94,7 @@ export function groupBilingualForDisplay(
 
     for (const type of LANGUAGE_TYPE_ORDER) {
         const names = byType.get(type);
+
         if (!names || names.length === 0) {
             continue;
         }

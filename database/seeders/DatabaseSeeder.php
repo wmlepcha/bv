@@ -26,6 +26,14 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@bilingualvitae.com',
         ]);
 
+        if (! app()->isProduction()) {
+            // Default sales-team login for development and staging only; create real accounts in production from the admin panel.
+            User::factory()->salesTeam()->create([
+                'name' => 'Sales Team',
+                'email' => 'sales-team@bilingualvitae.com',
+            ]);
+        }
+
         $this->call(SiteLayoutSeeder::class);
         $this->call(HomePageSeeder::class);
         $this->call(AboutPageSeeder::class);
@@ -33,6 +41,11 @@ class DatabaseSeeder extends Seeder
         $this->call(ProjectsPageSeeder::class);
         $this->call(EducationLevelSeeder::class);
         $this->call(CenterSeeder::class);
+        $this->call(AssignmentDemoSeeder::class);
+
+        if (app()->environment('local')) {
+            $this->call(RecruiterDemoSeeder::class);
+        }
 
         HomePageService::forgetCache();
         SiteLayoutService::forgetCache();

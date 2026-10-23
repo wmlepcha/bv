@@ -4,13 +4,16 @@ export type UserRole =
     | 'employee'
     | 'admin'
     | 'teacher'
-    | 'training_manager';
+    | 'training_manager'
+    | 'recruitment_manager';
 
 export type User = {
     id: number;
     name: string;
     email: string;
     avatar?: string;
+    avatar_url: string | null;
+    avatar_animal?: string;
     email_verified_at: string | null;
     role: UserRole;
     student_number: string | null;

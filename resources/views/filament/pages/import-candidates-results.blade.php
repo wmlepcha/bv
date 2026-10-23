@@ -6,6 +6,7 @@
             </h3>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 Created {{ count($importResult['created']) }},
+                mapped as paid {{ count($importResult['mapped']) }},
                 skipped {{ count($importResult['skipped']) }},
                 failed {{ count($importResult['failed']) }}.
                 Use the header actions to download results or generate registration codes.
@@ -20,7 +21,8 @@
                         <tr class="text-gray-500 dark:text-gray-400">
                             <th class="py-1 pr-4">Email</th>
                             <th class="py-1 pr-4">Candidate ID</th>
-                            <th class="py-1">Temp password</th>
+                            <th class="py-1 pr-4">Temp password</th>
+                            <th class="py-1">Payment</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -28,7 +30,36 @@
                             <tr class="border-t border-gray-100 dark:border-white/5">
                                 <td class="py-2 pr-4">{{ $row['email'] }}</td>
                                 <td class="py-2 pr-4 font-mono">{{ $row['candidate_id'] }}</td>
-                                <td class="py-2 font-mono">{{ $row['temp_password'] }}</td>
+                                <td class="py-2 pr-4 font-mono">{{ $row['temp_password'] }}</td>
+                                <td class="py-2">{{ $row['paid_on'] ? 'Paid '.$row['paid_on'].', access until '.$row['expires_at'] : 'Unpaid' }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+
+        @if (count($importResult['mapped']) > 0)
+            <div class="px-6 py-4 overflow-x-auto border-t border-gray-200 dark:border-white/10">
+                <h4 class="text-sm font-medium text-gray-950 dark:text-white mb-2">Existing students mapped as paid</h4>
+                <table class="w-full text-sm text-left">
+                    <thead>
+                        <tr class="text-gray-500 dark:text-gray-400">
+                            <th class="py-1 pr-4">Email</th>
+                            <th class="py-1 pr-4">Candidate ID</th>
+                            <th class="py-1 pr-4">Paid on</th>
+                            <th class="py-1 pr-4">Amount</th>
+                            <th class="py-1">Access until</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($importResult['mapped'] as $row)
+                            <tr class="border-t border-gray-100 dark:border-white/5">
+                                <td class="py-2 pr-4">{{ $row['email'] }}</td>
+                                <td class="py-2 pr-4 font-mono">{{ $row['candidate_id'] }}</td>
+                                <td class="py-2 pr-4">{{ $row['paid_on'] }}</td>
+                                <td class="py-2 pr-4">₹{{ number_format($row['amount']) }}</td>
+                                <td class="py-2">{{ $row['expires_at'] }}</td>
                             </tr>
                         @endforeach
                     </tbody>

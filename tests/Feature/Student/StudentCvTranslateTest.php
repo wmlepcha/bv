@@ -49,6 +49,7 @@ class StudentCvTranslateTest extends TestCase
 
         $profile = StudentProfile::query()->create([
             'user_id' => $user->id,
+            'registration_purpose' => 'training_and_placement',
             'introduction' => 'Dedicated nurse with bilingual skills.',
             'nationality' => 'Indian',
             'current_address' => 'Gangtok, Sikkim',
@@ -198,6 +199,7 @@ class StudentCvTranslateTest extends TestCase
 
         $profile = StudentProfile::query()->create([
             'user_id' => $user->id,
+            'registration_purpose' => 'training_and_placement',
             'mobile_whatsapp' => '+911234567890',
             'introduction' => 'Original introduction',
             'skills' => ['Leadership'],
@@ -288,6 +290,7 @@ class StudentCvTranslateTest extends TestCase
 
         StudentProfile::query()->create([
             'user_id' => $user->id,
+            'registration_purpose' => 'training_and_placement',
             'introduction' => 'Hello world',
         ]);
 
@@ -312,6 +315,7 @@ class StudentCvTranslateTest extends TestCase
 
         $profile = StudentProfile::query()->create([
             'user_id' => $student->id,
+            'registration_purpose' => 'training_and_placement',
             'introduction' => 'Dedicated nurse with bilingual skills.',
             'permanent_address' => 'Home street, Gangtok',
             'vitae_data' => VitaeData::normalize([

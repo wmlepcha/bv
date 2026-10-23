@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Support\StudentNotificationPresenter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
@@ -19,14 +20,7 @@ class NotificationController extends Controller
             ->latest()
             ->limit(50)
             ->get()
-            ->map(fn (DatabaseNotification $notification): array => [
-                'id' => $notification->id,
-                'title' => (string) ($notification->data['title'] ?? 'Notification'),
-                'body' => (string) ($notification->data['body'] ?? ''),
-                'url' => isset($notification->data['url']) ? (string) $notification->data['url'] : null,
-                'read_at' => $notification->read_at?->toIso8601String(),
-                'created_at' => $notification->created_at?->toIso8601String(),
-            ])
+            ->map(fn (DatabaseNotification $notification): array => StudentNotificationPresenter::format($notification))
             ->values()
             ->all();
 

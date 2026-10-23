@@ -33,6 +33,8 @@ class UpdateBatchRequest extends FormRequest
                 Rule::exists(User::class, 'id')->where('role', UserRole::Teacher->value),
             ],
             'is_active' => ['required', 'boolean'],
+            'starts_on' => ['nullable', 'date'],
+            'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
         ];
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\HomeStats;
 
 use App\Filament\Clusters\FrontendEditsCluster;
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\HomeStats\Pages\CreateHomeStat;
 use App\Filament\Resources\HomeStats\Pages\EditHomeStat;
 use App\Filament\Resources\HomeStats\Pages\ListHomeStats;
@@ -18,6 +19,8 @@ use UnitEnum;
 
 class HomeStatResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = HomeStat::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;

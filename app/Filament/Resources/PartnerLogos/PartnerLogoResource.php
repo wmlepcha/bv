@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\PartnerLogos;
 
 use App\Filament\Clusters\FrontendEditsCluster;
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\PartnerLogos\Pages\CreatePartnerLogo;
 use App\Filament\Resources\PartnerLogos\Pages\EditPartnerLogo;
 use App\Filament\Resources\PartnerLogos\Pages\ListPartnerLogos;
@@ -18,6 +19,8 @@ use UnitEnum;
 
 class PartnerLogoResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = PartnerLogo::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPhoto;

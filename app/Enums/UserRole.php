@@ -10,6 +10,8 @@ enum UserRole: string
     case Admin = 'admin';
     case Teacher = 'teacher';
     case TrainingManager = 'training_manager';
+    case RecruitmentManager = 'recruitment_manager';
+    case SalesTeam = 'sales_team';
 
     /**
      * @return list<string>
@@ -29,6 +31,16 @@ enum UserRole: string
             self::Employee,
             self::Admin,
         ];
+    }
+
+    /**
+     * Roles that run the placement flow and receive its updates.
+     *
+     * @return list<self>
+     */
+    public static function placementStaff(): array
+    {
+        return [self::Admin, self::RecruitmentManager];
     }
 
     public function isStaff(): bool

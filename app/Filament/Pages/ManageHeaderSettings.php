@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Clusters\FrontendEditsCluster;
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Support\ImageUploadField;
 use App\Models\SiteSetting;
 use BackedEnum;
@@ -25,6 +26,8 @@ use UnitEnum;
  */
 class ManageHeaderSettings extends Page
 {
+    use AdminOnly;
+
     /**
      * @var array<string, mixed>|null
      */
@@ -63,6 +66,8 @@ class ManageHeaderSettings extends Page
                 'header.show_appearance_toggle',
                 '1',
             ) === '1',
+            'recruitment_manager_image' => $this->storagePathForUpload(SiteSetting::getValue('auth.recruitment_manager_image')),
+            'training_manager_image' => $this->storagePathForUpload(SiteSetting::getValue('auth.training_manager_image')),
         ]);
     }
 
@@ -72,6 +77,9 @@ class ManageHeaderSettings extends Page
 
         $this->saveLogoPath('header.logo_light_path', $data['logo_light_path'] ?? null);
         $this->saveLogoPath('header.logo_dark_path', $data['logo_dark_path'] ?? null);
+
+        $this->saveOptionalImage('auth.recruitment_manager_image', $data['recruitment_manager_image'] ?? null);
+        $this->saveOptionalImage('auth.training_manager_image', $data['training_manager_image'] ?? null);
 
         SiteSetting::setValue('header.partner_label', $data['partner_label']);
         SiteSetting::setValue(
@@ -121,6 +129,24 @@ class ManageHeaderSettings extends Page
                     ->label('Show theme selector')
                     ->helperText('When enabled, visitors can switch light, dark, or system theme from the site header.')
                     ->default(true),
+                ImageUploadField::configure(
+                    FileUpload::make('recruitment_manager_image')
+                        ->label('Recruitment manager login image')
+                        ->image()
+                        ->disk('public')
+                        ->directory('images')
+                        ->maxFiles(1),
+                    'Shown on the left of the recruitment manager sign-in page (desktop). Remove it to use the default gradient. Landscape or square works best. JPG, PNG, WebP, or GIF. Maximum size: 5 MB.',
+                ),
+                ImageUploadField::configure(
+                    FileUpload::make('training_manager_image')
+                        ->label('Training manager login image')
+                        ->image()
+                        ->disk('public')
+                        ->directory('images')
+                        ->maxFiles(1),
+                    'Shown on the left of the training manager sign-in page (desktop). Remove it to use the default gradient. Landscape or square works best. JPG, PNG, WebP, or GIF. Maximum size: 5 MB.',
+                ),
             ]);
     }
 
@@ -171,6 +197,19 @@ class ManageHeaderSettings extends Page
         SiteSetting::setValue(
             $key,
             str_starts_with($logoPath, '/storage/') ? $logoPath : '/storage/'.$logoPath,
+        );
+    }
+
+    /**
+     * Unlike logos, these images are optional: clearing the upload restores the default gradient.
+     */
+    protected function saveOptionalImage(string $key, mixed $value): void
+    {
+        $path = is_array($value) ? ($value[0] ?? null) : $value;
+
+        SiteSetting::setValue(
+            $key,
+            filled($path) ? (str_starts_with($path, '/storage/') ? $path : '/storage/'.$path) : '',
         );
     }
 }

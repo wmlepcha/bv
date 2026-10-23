@@ -1,7 +1,7 @@
-import type { MutableRefObject, Ref } from 'react';
-import type { ScrollAnimationProps } from '@marketing/animations/types/animation-props';
-import { resolveMarkers } from '@marketing/animations/gsap/defaults';
 import type { ScrollTrigger } from 'gsap/ScrollTrigger';
+import type { MutableRefObject, Ref } from 'react';
+import { resolveMarkers } from '@marketing/animations/gsap/defaults';
+import type { ScrollAnimationProps } from '@marketing/animations/types/animation-props';
 
 export function mergeBreakpoints(
     base: ScrollAnimationProps,

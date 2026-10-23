@@ -3,6 +3,8 @@
 namespace App\Notifications;
 
 use App\Models\Batch;
+use App\Notifications\Concerns\BuildsWhatsAppBodyFromArray;
+use App\Support\StudentNotificationChannels;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -10,6 +12,7 @@ use Illuminate\Notifications\Notification;
 
 class TransferredToBatch extends Notification implements ShouldQueue
 {
+    use BuildsWhatsAppBodyFromArray;
     use Queueable;
 
     public function __construct(
@@ -22,7 +25,7 @@ class TransferredToBatch extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return StudentNotificationChannels::for($notifiable);
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -31,7 +34,7 @@ class TransferredToBatch extends Notification implements ShouldQueue
             ->subject('You were transferred to a new batch')
             ->greeting('Hello'.(filled($notifiable->name ?? null) ? ', '.$notifiable->name : '').'!')
             ->line('You were transferred from '.$this->fromBatch->name.' to '.$this->toBatch->name.'.')
-            ->action('View classes', url('/student/classes'));
+            ->action('View study bank', url('/student/study-bank'));
     }
 
     /**
@@ -42,7 +45,7 @@ class TransferredToBatch extends Notification implements ShouldQueue
         return [
             'title' => 'Transferred to a new batch',
             'body' => 'Moved from '.$this->fromBatch->name.' to '.$this->toBatch->name.'.',
-            'url' => url('/student/classes'),
+            'url' => url('/student/study-bank'),
             'from_batch_id' => $this->fromBatch->id,
             'to_batch_id' => $this->toBatch->id,
         ];

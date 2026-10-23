@@ -3,9 +3,10 @@ import { useState } from 'react';
 import { MaterialFileCard } from '@app/components/material-file-card';
 import { MaterialFolderCard } from '@app/components/material-folder-card';
 import {
-    ShareToBatchesModal,
-    type ShareBatchOption,
+    ShareToBatchesModal
+    
 } from '@app/components/share-to-batches-modal';
+import type {ShareBatchOption} from '@app/components/share-to-batches-modal';
 import { PrivateSeoHead } from '@shared/components/seo-head';
 
 type MaterialFolder = {
@@ -19,9 +20,10 @@ type MaterialFile = {
     id: number;
     name: string;
     extension: string;
-    kind?: 'file' | 'youtube' | 'link';
+    kind?: 'file' | 'youtube' | 'youtube_playlist' | 'link';
     url?: string | null;
     embed_url?: string | null;
+    playlist_items?: Array<{ video_id: string; title: string }> | null;
     folder_name: string | null;
     created_at: string | null;
     type: string;
@@ -134,6 +136,13 @@ export default function TeacherMaterialsIndex({
                                             kind={file.kind ?? 'file'}
                                             url={file.url}
                                             embedUrl={file.embed_url}
+                                            playlistItems={file.playlist_items}
+                                            playlistItemsUrl={
+                                                (file.kind ?? 'file') ===
+                                                'youtube_playlist'
+                                                    ? `/teacher/materials/files/${file.id}/playlist-items`
+                                                    : null
+                                            }
                                             uploadedAt={file.created_at}
                                             categoryLabel={
                                                 file.folder_name ?? undefined

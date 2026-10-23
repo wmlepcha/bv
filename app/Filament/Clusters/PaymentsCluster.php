@@ -9,6 +9,14 @@ use UnitEnum;
 
 class PaymentsCluster extends Cluster
 {
+    /**
+     * The cluster page itself is only reachable when at least one page inside it is.
+     */
+    public static function canAccess(): bool
+    {
+        return static::canAccessClusteredComponents();
+    }
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCreditCard;
 
     protected static string|UnitEnum|null $navigationGroup = 'Accounts';

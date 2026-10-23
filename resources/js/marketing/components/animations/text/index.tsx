@@ -1,17 +1,18 @@
 import {
     forwardRef,
     useImperativeHandle,
-    useRef,
-    type ReactNode,
+    useRef
+    
 } from 'react';
+import type {ReactNode} from 'react';
+import { cn } from '@/lib/utils';
 import { gsap } from '@marketing/animations/gsap/register-plugins';
+import type { SplitMode } from '@marketing/animations/split/split-text';
 import type { ScrollAnimationProps } from '@marketing/animations/types/animation-props';
 import { useScrollAnimation } from '@marketing/hooks/use-gsap-context';
 import { useReducedMotion } from '@marketing/hooks/use-reduced-motion';
 import { useSplitText } from '@marketing/hooks/use-split-text';
-import type { SplitMode } from '@marketing/animations/split/split-text';
 import { resolveScrollVars } from '@marketing/utils/animation-helpers';
-import { cn } from '@/lib/utils';
 
 export interface SplitTextHandle {
     replay: () => void;
@@ -98,6 +99,7 @@ export const SplitText = forwardRef<SplitTextHandle, SplitTextProps>(
                 }
 
                 const result = doSplit(containerRef.current);
+
                 if (!result) {
                     return;
                 }

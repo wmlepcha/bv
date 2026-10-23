@@ -1,17 +1,17 @@
 import { Form } from '@inertiajs/react';
-import { PrivateSeoHead } from '@shared/components/seo-head';
-import InputError from '@shared/components/input-error';
-import PasskeyVerify from '@app/components/passkey-verify';
-import PasswordInput from '@shared/components/password-input';
-import TextLink from '@shared/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import { BRAND_NAME_TM } from '@shared/lib/brand';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
+import PasskeyVerify from '@app/components/passkey-verify';
+import InputError from '@shared/components/input-error';
+import PasswordInput from '@shared/components/password-input';
+import { PrivateSeoHead } from '@shared/components/seo-head';
+import TextLink from '@shared/components/text-link';
+import { BRAND_NAME_TM } from '@shared/lib/brand';
 
 type Props = {
     status?: string;
@@ -85,7 +85,9 @@ export default function TrainingManagerLogin({
                                         name="remember"
                                         tabIndex={3}
                                     />
-                                    <Label htmlFor="remember">Remember me</Label>
+                                    <Label htmlFor="remember">
+                                        Remember me
+                                    </Label>
                                 </div>
                                 {canResetPassword && (
                                     <TextLink
@@ -125,6 +127,7 @@ export default function TrainingManagerLogin({
 }
 
 TrainingManagerLogin.layout = {
+    panel: 'training_manager',
     title: 'Welcome back',
     description: 'Enter your email and password to access your account',
 };

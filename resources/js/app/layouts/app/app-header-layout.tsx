@@ -1,7 +1,7 @@
+import type { AppLayoutProps } from '@/types';
 import { AppContent } from '@app/components/app-content';
 import { AppHeader } from '@app/components/app-header';
 import { AppShell } from '@app/components/app-shell';
-import type { AppLayoutProps } from '@/types';
 
 export default function AppHeaderLayout({
     children,

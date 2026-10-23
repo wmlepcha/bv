@@ -28,7 +28,7 @@ class AccessGateTest extends TestCase
             ->get(route('dashboard'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('app/dashboard')
+                ->component('app/student/dashboard')
                 ->has('registrationPlans', 2)
             );
     }
@@ -37,7 +37,7 @@ class AccessGateTest extends TestCase
     {
         $user = User::factory()->student()->expired()->create();
 
-        $response = $this->actingAs($user)->get(route('student.classes.index'));
+        $response = $this->actingAs($user)->get(route('student.my-learning.index'));
 
         $response->assertForbidden();
     }
@@ -46,7 +46,7 @@ class AccessGateTest extends TestCase
     {
         $user = User::factory()->student()->unpaid()->create();
 
-        $response = $this->actingAs($user)->get(route('student.classes.index'));
+        $response = $this->actingAs($user)->get(route('student.my-learning.index'));
 
         $response->assertForbidden();
     }
@@ -55,7 +55,7 @@ class AccessGateTest extends TestCase
     {
         $user = User::factory()->student()->paid()->create();
 
-        $response = $this->actingAs($user)->get(route('student.classes.index'));
+        $response = $this->actingAs($user)->get(route('student.my-learning.index'));
 
         $response->assertOk();
     }

@@ -1,6 +1,6 @@
 import { Facebook, Linkedin, Twitter } from 'lucide-react';
-import type { ProjectShowPost } from '@marketing/types/projects-page';
 import { cn } from '@/lib/utils';
+import type { ProjectShowPost } from '@marketing/types/projects-page';
 
 type ProjectPostSidebarProps = {
     post: ProjectShowPost;

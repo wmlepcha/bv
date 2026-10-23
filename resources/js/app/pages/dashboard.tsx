@@ -1,6 +1,6 @@
-import { PrivateSeoHead } from '@shared/components/seo-head';
 import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
 import { dashboard } from '@/routes';
+import { PrivateSeoHead } from '@shared/components/seo-head';
 
 export default function Dashboard() {
     return (

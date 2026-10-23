@@ -1,12 +1,14 @@
-import { Mail, MapPin, Phone, type LucideIcon } from 'lucide-react';
+import { Mail, MapPin, Phone  } from 'lucide-react';
+import type {LucideIcon} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import CvCreatedAtFooter from '@app/components/cv-created-at-footer';
 import { groupBilingualForDisplay } from '@app/lib/bilingual-display';
 import {
     cvLabels,
-    localizeGender,
-    type CvLocale,
+    localizeGender
+    
 } from '@app/lib/cv-labels';
+import type {CvLocale} from '@app/lib/cv-labels';
 import { toStorageSrc } from '@app/lib/cv-media';
 import type { CvProfile } from '@app/types/cv';
 
@@ -188,6 +190,7 @@ export default function BasicCvProfile({ cv, locale = 'en' }: Props) {
     ]
         .map((entry) => {
             const topic = String(entry?.topic ?? '').trim();
+
             if (!topic) {
                 return null;
             }
@@ -233,6 +236,7 @@ export default function BasicCvProfile({ cv, locale = 'en' }: Props) {
     const certifications = (vitae.certifications ?? [])
         .map((cert) => {
             const name = String(cert?.name ?? '').trim();
+
             if (!name) {
                 return null;
             }
@@ -252,6 +256,7 @@ export default function BasicCvProfile({ cv, locale = 'en' }: Props) {
     const licenses = (vitae.licenses ?? [])
         .map((license) => {
             const title = String(license?.title ?? '').trim();
+
             if (!title) {
                 return null;
             }

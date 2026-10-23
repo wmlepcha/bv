@@ -92,6 +92,7 @@ class UpdateStudentCvRequest extends FormRequest
             'vitae.qualifications.*.country' => $plain,
             'vitae.qualifications.*.board' => $plain,
             'vitae.qualifications.*.language_of_instruction' => $plain100,
+            'vitae.qualifications.*.certificate' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
 
             'vitae.trainings' => ['nullable', 'array'],
             'vitae.trainings.*.date' => $plain50,

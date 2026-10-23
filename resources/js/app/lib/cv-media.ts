@@ -14,6 +14,7 @@ export function toStorageSrc(url: string | null | undefined): string | null {
 
     try {
         const parsed = new URL(url, window.location.origin);
+
         if (parsed.pathname.startsWith('/storage/')) {
             return `${parsed.pathname}${parsed.search}`;
         }

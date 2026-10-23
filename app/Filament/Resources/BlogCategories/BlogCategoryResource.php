@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\BlogCategories;
 
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\BlogCategories\Pages\CreateBlogCategory;
 use App\Filament\Resources\BlogCategories\Pages\EditBlogCategory;
 use App\Filament\Resources\BlogCategories\Pages\ListBlogCategories;
@@ -17,6 +18,8 @@ use UnitEnum;
 
 class BlogCategoryResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = BlogCategory::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTag;

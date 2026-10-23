@@ -1,12 +1,12 @@
 import { ChevronRight } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { FadeUp, StaggerChildren } from '@marketing/components/animations/primitives';
-import { HorizontalSnapScroll } from '@marketing/components/ui/horizontal-snap-scroll';
-import { ServiceLanguagePlaceholderCard } from '@marketing/components/services/service-language-placeholder-card';
-import { ServiceLanguageVariantCard } from '@marketing/components/services/service-language-variant-card';
-import type { ServiceItem } from '@marketing/types/services-page';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import { FadeUp, StaggerChildren } from '@marketing/components/animations/primitives';
+import { ServiceLanguagePlaceholderCard } from '@marketing/components/services/service-language-placeholder-card';
+import { ServiceLanguageVariantCard } from '@marketing/components/services/service-language-variant-card';
+import { HorizontalSnapScroll } from '@marketing/components/ui/horizontal-snap-scroll';
+import type { ServiceItem } from '@marketing/types/services-page';
 
 interface ServiceLanguageFamilyProps {
     label: string;
@@ -37,11 +37,13 @@ export function ServiceLanguageFamily({ label, items }: ServiceLanguageFamilyPro
         }
 
         const root = scrollRef.current;
+
         if (!root) {
             return;
         }
 
         const slides = slideRefs.current.filter(Boolean) as HTMLDivElement[];
+
         if (slides.length === 0) {
             return;
         }
@@ -57,6 +59,7 @@ export function ServiceLanguageFamily({ label, items }: ServiceLanguageFamilyPro
                 }
 
                 const index = slides.indexOf(visible.target as HTMLDivElement);
+
                 if (index >= 0) {
                     setActiveIndex(index);
                 }

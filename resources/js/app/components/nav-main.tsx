@@ -1,15 +1,11 @@
 import { Link } from '@inertiajs/react';
-import {
-    useCallback,
-    useLayoutEffect,
-    useRef,
-    useState,
-} from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import {
     SidebarGroup,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
+    useSidebar,
 } from '@/components/ui/sidebar';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn } from '@/lib/utils';
@@ -42,6 +38,7 @@ export function NavMain({
     locked?: boolean;
 }) {
     const { isCurrentOrParentUrl, currentUrl } = useCurrentUrl();
+    const { isMobile, setOpenMobile } = useSidebar();
     const listRef = useRef<HTMLDivElement>(null);
     const itemRefs = useRef(new Map<string, HTMLElement>());
     const [indicator, setIndicator] = useState<IndicatorState>({
@@ -57,6 +54,7 @@ export function NavMain({
 
         if (!list || !activeItem) {
             setIndicator((prev) => ({ ...prev, visible: false }));
+
             return;
         }
 
@@ -64,6 +62,7 @@ export function NavMain({
 
         if (!el) {
             setIndicator((prev) => ({ ...prev, visible: false }));
+
             return;
         }
 
@@ -81,6 +80,7 @@ export function NavMain({
         updateIndicator();
 
         const list = listRef.current;
+
         if (!list) {
             return;
         }
@@ -103,7 +103,7 @@ export function NavMain({
 
     return (
         <SidebarGroup className="p-0">
-                    <div ref={listRef} className="nav-rail-track relative">
+            <div ref={listRef} className="nav-rail-track relative">
                 <div
                     className={cn(
                         'nav-rail-indicator',
@@ -139,7 +139,10 @@ export function NavMain({
                                             children:
                                                 'Unlock your dashboard to continue',
                                         }}
-                                        className={itemButtonClass(active, true)}
+                                        className={itemButtonClass(
+                                            active,
+                                            true,
+                                        )}
                                     >
                                         {item.icon && <item.icon />}
                                         <span>{item.title}</span>
@@ -151,9 +154,23 @@ export function NavMain({
                                         tooltip={{ children: item.title }}
                                         className={itemButtonClass(active)}
                                     >
-                                        <Link href={item.href} prefetch>
+                                        <Link
+                                            href={item.href}
+                                            prefetch
+                                            onClick={() => {
+                                                if (isMobile) {
+                                                    setOpenMobile(false);
+                                                }
+                                            }}
+                                        >
                                             {item.icon && <item.icon />}
                                             <span>{item.title}</span>
+                                            {item.badge !== undefined &&
+                                                item.badge !== 0 && (
+                                                    <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-nav-active-fg px-1.5 text-xs font-semibold text-white tabular-nums">
+                                                        {item.badge}
+                                                    </span>
+                                                )}
                                         </Link>
                                     </SidebarMenuButton>
                                 )}

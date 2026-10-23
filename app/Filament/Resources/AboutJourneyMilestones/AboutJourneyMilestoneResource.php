@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\AboutJourneyMilestones;
 
 use App\Filament\Clusters\FrontendEditsCluster;
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\AboutJourneyMilestones\Pages\CreateAboutJourneyMilestone;
 use App\Filament\Resources\AboutJourneyMilestones\Pages\EditAboutJourneyMilestone;
 use App\Filament\Resources\AboutJourneyMilestones\Pages\ListAboutJourneyMilestones;
@@ -18,6 +19,8 @@ use UnitEnum;
 
 class AboutJourneyMilestoneResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = AboutJourneyMilestone::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMap;

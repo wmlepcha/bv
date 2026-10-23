@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Filament\Clusters\PaymentsCluster;
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Support\ImageUploadField;
 use App\Models\OfficeLocation;
 use App\Models\SiteSetting;
@@ -28,6 +29,8 @@ use UnitEnum;
  */
 class ManagePaymentSlipSettings extends Page
 {
+    use AdminOnly;
+
     public ?array $data = [];
 
     protected static ?string $cluster = PaymentsCluster::class;
@@ -238,4 +241,3 @@ class ManagePaymentSlipSettings extends Page
         );
     }
 }
-

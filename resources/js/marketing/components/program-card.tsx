@@ -1,6 +1,6 @@
 import { Link } from '@inertiajs/react';
-import { ScaleIn } from '@marketing/components/animations/primitives';
 import { cn } from '@/lib/utils';
+import { ScaleIn } from '@marketing/components/animations/primitives';
 
 interface ProgramCardProps {
     title: string;

@@ -1,7 +1,7 @@
 import { Link } from '@inertiajs/react';
 import type { ReactNode } from 'react';
-import { FadeUp } from '@marketing/components/animations/primitives';
 import { cn } from '@/lib/utils';
+import { FadeUp } from '@marketing/components/animations/primitives';
 
 interface ServicePageLayoutProps {
     title: string;

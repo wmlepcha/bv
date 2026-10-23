@@ -9,7 +9,7 @@ import {
     DialogFooter,
     DialogTitle,
     DialogTrigger,
-} from '@/components/ui/dialog';
+} from '@/components/ui/responsive-dialog';
 import type { Passkey } from '@/types/auth';
 
 type Props = {

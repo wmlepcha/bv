@@ -1,5 +1,5 @@
-import { FadeUp, StaggerChildren } from '@marketing/components/animations/primitives';
 import { LeapfrogValueCard } from '@marketing/components/about/leapfrog-value-card';
+import { FadeUp, StaggerChildren } from '@marketing/components/animations/primitives';
 import type { AboutPageProps, CoreValue } from '@marketing/types/about-page';
 
 interface AboutLeapfrogSectionProps {

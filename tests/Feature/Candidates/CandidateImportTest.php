@@ -2,16 +2,21 @@
 
 namespace Tests\Feature\Candidates;
 
+use App\Enums\RegistrationFeePaidVia;
 use App\Enums\SpecialId;
 use App\Enums\UserRole;
 use App\Models\ActivationCode;
 use App\Models\User;
+use App\Notifications\RegistrationActivated;
+use App\Notifications\WelcomeWithCredentials;
 use App\Services\BulkActivationCodeService;
 use App\Services\CandidateImportService;
 use App\Services\CandidateImportTemplateService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Tests\TestCase;
@@ -184,8 +189,10 @@ class CandidateImportTest extends TestCase
 
         try {
             $sheet = IOFactory::load($tmp)->getActiveSheet()->toArray(null, true, true, false);
-            $this->assertSame(CandidateImportService::REQUIRED_HEADERS, $sheet[0] ?? null);
+            $this->assertSame([...CandidateImportService::REQUIRED_HEADERS, ...CandidateImportService::PAYMENT_HEADERS], $sheet[0] ?? null);
             $this->assertSame(CandidateImportTemplateService::SAMPLE_ROW, array_slice($sheet[1] ?? [], 0, count(CandidateImportService::REQUIRED_HEADERS)));
+            $this->assertSame('dolma@example.com', $sheet[2][2] ?? null);
+            $this->assertSame('cash', $sheet[2][8] ?? null);
             $this->assertNotContains('mobile_whatsapp', $sheet[0] ?? []);
             $this->assertNotContains('date_of_birth', $sheet[0] ?? []);
         } finally {
@@ -250,6 +257,124 @@ class CandidateImportTest extends TestCase
      * @param  list<string>  $headers
      * @param  list<list<string>>  $dataRows
      */
+    public function test_rows_with_payment_columns_create_a_paid_unlocked_candidate_and_leave_others_unpaid(): void
+    {
+        Notification::fake();
+        $staff = User::factory()->salesTeam()->create();
+
+        $path = $this->writeSpreadsheetWithHeaders(
+            [...CandidateImportService::REQUIRED_HEADERS, ...CandidateImportService::PAYMENT_HEADERS],
+            [
+                ['Thapa', 'Nanuka', 'unpaid@import.test', 'Sikkim', 'COI', '2025', '', '', '', '', '', ''],
+                ['Lepcha', 'Dolma', 'paid@import.test', 'Sikkim', 'COI', '2025', '2025-06-15', '25000', 'cash', '12', '', 'RCPT-1'],
+            ],
+        );
+
+        $result = app(CandidateImportService::class)->import($path, $staff);
+
+        $this->assertCount(2, $result['created']);
+        $this->assertNull($result['created'][0]['paid_on']);
+        $this->assertSame('2025-06-15', $result['created'][1]['paid_on']);
+        $this->assertSame(now()->addMonths(12)->toDateString(), $result['created'][1]['expires_at']);
+
+        $unpaid = User::query()->where('email', 'unpaid@import.test')->firstOrFail();
+        $paid = User::query()->where('email', 'paid@import.test')->firstOrFail();
+        $this->assertFalse($unpaid->hasActiveRegistration());
+        $this->assertTrue($paid->hasActiveRegistration());
+        $this->assertSame(RegistrationFeePaidVia::Mapped, $paid->registration_fee_paid_via);
+        $this->assertDatabaseHas('payments', ['user_id' => $paid->id, 'channel' => 'legacy', 'amount' => 2500000, 'payment_mode' => 'cash', 'payment_mode_detail' => 'RCPT-1', 'collected_by_user_id' => $staff->id]);
+        $this->assertDatabaseMissing('payments', ['user_id' => $unpaid->id]);
+        Notification::assertSentTo($paid, WelcomeWithCredentials::class);
+        Notification::assertNotSentTo($paid, RegistrationActivated::class);
+
+        // Registration codes are only generated for the unpaid candidate.
+        $codes = app(BulkActivationCodeService::class)->generateForUnpaidStudents(User::query()->whereIn('email', ['unpaid@import.test', 'paid@import.test'])->pluck('id')->all());
+        $this->assertSame(['unpaid@import.test'], array_column($codes, 'email'));
+    }
+
+    public function test_existing_students_with_payment_columns_are_mapped_silently_and_others_skipped(): void
+    {
+        Notification::fake();
+        $staff = User::factory()->salesTeam()->create();
+        $existing = User::factory()->student()->unpaid()->create(['email' => 'old@import.test']);
+        $plain = User::factory()->student()->unpaid()->create(['email' => 'plain@import.test']);
+        $active = User::factory()->student()->paid()->create(['email' => 'active@import.test']);
+        $teacher = User::factory()->teacher()->create(['email' => 'teacher@import.test']);
+
+        $row = fn (string $email, array $payment): array => ['Doe', 'Jane', $email, 'Sikkim', 'COI', '2025', ...$payment];
+        $path = $this->writeSpreadsheetWithHeaders(
+            [...CandidateImportService::REQUIRED_HEADERS, ...CandidateImportService::PAYMENT_HEADERS],
+            [
+                $row('old@import.test', ['2025-06-15', '9000', 'upi', '', '', 'UTR1']),
+                $row('plain@import.test', ['', '', '', '', '', '']),
+                $row('active@import.test', ['2025-06-15', '9000', 'cash', '', '', '']),
+                $row('teacher@import.test', ['2025-06-15', '9000', 'cash', '', '', '']),
+            ],
+        );
+
+        $result = app(CandidateImportService::class)->import($path, $staff);
+
+        $this->assertCount(1, $result['mapped']);
+        $this->assertSame('old@import.test', $result['mapped'][0]['email']);
+        $this->assertSame(9000, $result['mapped'][0]['amount']);
+        $this->assertSame(now()->addMonths(24)->toDateString(), $result['mapped'][0]['expires_at']);
+        $this->assertTrue($existing->fresh()->hasActiveRegistration());
+        $this->assertFalse($plain->fresh()->hasActiveRegistration());
+        $this->assertSame(
+            [['row' => 3, 'email' => 'plain@import.test', 'reason' => 'Email already exists.'], ['row' => 4, 'email' => 'active@import.test', 'reason' => 'Already has active access.']],
+            $result['skipped'],
+        );
+        $this->assertCount(1, $result['failed']);
+        $this->assertStringContainsString('non-student', $result['failed'][0]['errors']);
+        Notification::assertNothingSent();
+    }
+
+    public function test_bad_payment_columns_fail_the_row_without_creating_the_account(): void
+    {
+        $staff = User::factory()->salesTeam()->create();
+        $headers = [...CandidateImportService::REQUIRED_HEADERS, ...CandidateImportService::PAYMENT_HEADERS];
+        $rows = [
+            ['A', 'One', 'no.amount@import.test', 'Sikkim', 'COI', '2025', '2025-06-15', '', 'cash', '', '', ''],
+            ['A', 'Two', 'bad.method@import.test', 'Sikkim', 'COI', '2025', '2025-06-15', '100', 'barter', '', '', ''],
+            ['A', 'Three', 'future@import.test', 'Sikkim', 'COI', '2025', now()->addDays(4)->toDateString(), '100', 'cash', '', '', ''],
+            ['A', 'Four', 'zero@import.test', 'Sikkim', 'COI', '2025', '2025-06-15', '0', 'cash', '', '', ''],
+        ];
+
+        $result = app(CandidateImportService::class)->import($this->writeSpreadsheetWithHeaders($headers, $rows), $staff);
+
+        $this->assertCount(0, $result['created']);
+        $this->assertSame([2, 3, 4, 5], array_column($result['failed'], 'row'));
+        $this->assertSame(0, User::query()->whereIn('email', array_column($rows, 2))->count());
+    }
+
+    public function test_payment_columns_need_a_signed_in_staff_member(): void
+    {
+        $path = $this->writeSpreadsheetWithHeaders(
+            [...CandidateImportService::REQUIRED_HEADERS, ...CandidateImportService::PAYMENT_HEADERS],
+            [['A', 'One', 'nostaff@import.test', 'Sikkim', 'COI', '2025', '2025-06-15', '100', 'cash', '', '', '']],
+        );
+
+        $result = app(CandidateImportService::class)->import($path);
+
+        $this->assertCount(1, $result['failed']);
+        $this->assertSame(0, User::query()->where('email', 'nostaff@import.test')->count());
+    }
+
+    public function test_excel_serial_dates_are_understood(): void
+    {
+        $staff = User::factory()->salesTeam()->create();
+        $serial = (string) Date::PHPToExcel(now()->subMonths(2));
+        $path = $this->writeSpreadsheetWithHeaders(
+            [...CandidateImportService::REQUIRED_HEADERS, ...CandidateImportService::PAYMENT_HEADERS],
+            [['A', 'Serial', 'serial@import.test', 'Sikkim', 'COI', '2025', $serial, '500', 'cash', '', '', '']],
+        );
+
+        $result = app(CandidateImportService::class)->import($path, $staff);
+
+        $this->assertCount(1, $result['created']);
+        $this->assertSame(now()->subMonths(2)->toDateString(), $result['created'][0]['paid_on']);
+    }
+
     private function writeSpreadsheetWithHeaders(array $headers, array $dataRows): string
     {
         $spreadsheet = new Spreadsheet;

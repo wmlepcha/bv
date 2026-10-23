@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\AboutParagraphs;
 
 use App\Filament\Clusters\FrontendEditsCluster;
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\AboutParagraphs\Pages\CreateAboutParagraph;
 use App\Filament\Resources\AboutParagraphs\Pages\EditAboutParagraph;
 use App\Filament\Resources\AboutParagraphs\Pages\ListAboutParagraphs;
@@ -18,6 +19,8 @@ use UnitEnum;
 
 class AboutParagraphResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = AboutParagraph::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;

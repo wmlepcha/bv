@@ -1,8 +1,8 @@
 import { usePage } from '@inertiajs/react';
-import { SeoHead } from '@shared/components/seo-head';
 import { ProjectsHeroSection } from '@marketing/components/projects/projects-hero-section';
 import { ProjectsMasonryGrid } from '@marketing/components/projects/projects-masonry-grid';
 import type { ProjectsPageProps } from '@marketing/types/projects-page';
+import { SeoHead } from '@shared/components/seo-head';
 
 export default function Projects() {
     const { projectsPage } = usePage<{ projectsPage: ProjectsPageProps }>().props;

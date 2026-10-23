@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Teachers;
 
 use App\Enums\UserRole;
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\Teachers\Pages\CreateTeacher;
 use App\Filament\Resources\Teachers\Pages\EditTeacher;
 use App\Filament\Resources\Teachers\Pages\ListTeachers;
@@ -19,6 +20,8 @@ use UnitEnum;
 
 class TeacherResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = User::class;
 
     protected static ?string $slug = 'teachers';

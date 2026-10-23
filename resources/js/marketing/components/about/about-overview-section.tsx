@@ -7,7 +7,7 @@ interface AboutOverviewSectionProps {
 
 export function AboutOverviewSection({ overview }: AboutOverviewSectionProps) {
     return (
-        <section className="px-4 py-16 sm:px-6 sm:py-24 md:py-32">
+        <section className="px-4 pt-4 pb-16 sm:px-6 sm:pt-8 sm:pb-24 md:pt-12 md:pb-32">
             <div className="mx-auto w-full max-w-7xl 2xl:max-w-[90rem]">
                 <FadeUp>
                     <h2 className="changa-one-regular max-w-4xl text-3xl tracking-tight md:text-4xl lg:text-5xl">

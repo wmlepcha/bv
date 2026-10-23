@@ -6,11 +6,12 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { UserInfo } from '@app/components/user-info';
-import { useMobileNavigation } from '@app/hooks/use-mobile-navigation';
+import { useSidebar } from '@/components/ui/sidebar';
 import { logout } from '@/routes';
 import { edit } from '@/routes/profile';
 import type { User } from '@/types';
+import { UserInfo } from '@app/components/user-info';
+import { useMobileNavigation } from '@app/hooks/use-mobile-navigation';
 
 type Props = {
     user: User;
@@ -18,9 +19,17 @@ type Props = {
 
 export function UserMenuContent({ user }: Props) {
     const cleanup = useMobileNavigation();
+    const { isMobile, setOpenMobile } = useSidebar();
+
+    const closeMobileSidebar = () => {
+        if (isMobile) {
+            setOpenMobile(false);
+        }
+    };
 
     const handleLogout = () => {
         cleanup();
+        closeMobileSidebar();
         router.flushAll();
     };
 
@@ -38,7 +47,10 @@ export function UserMenuContent({ user }: Props) {
                         className="block w-full cursor-pointer"
                         href={edit()}
                         prefetch
-                        onClick={cleanup}
+                        onClick={() => {
+                            cleanup();
+                            closeMobileSidebar();
+                        }}
                     >
                         <Settings className="mr-2" />
                         Settings

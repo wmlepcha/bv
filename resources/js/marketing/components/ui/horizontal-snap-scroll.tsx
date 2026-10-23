@@ -1,6 +1,7 @@
-import { useReducedMotion } from '@marketing/hooks/use-reduced-motion';
+import { forwardRef  } from 'react';
+import type {ReactNode} from 'react';
 import { cn } from '@/lib/utils';
-import { forwardRef, type ReactNode } from 'react';
+import { useReducedMotion } from '@marketing/hooks/use-reduced-motion';
 
 interface HorizontalSnapScrollProps {
     children: ReactNode;

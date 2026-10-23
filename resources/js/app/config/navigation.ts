@@ -1,23 +1,38 @@
 import {
     Bell,
+    CalendarCheck,
     BookOpen,
-    FileText,
+    Briefcase,
+    ClipboardList,
     FileUser,
     FolderOpen,
+    Inbox,
     LayoutGrid,
+    LifeBuoy,
+    MessageCircle,
+    MessageSquareText,
     Presentation,
     Users,
 } from 'lucide-react';
 import { dashboard } from '@/routes';
-import { edit as cvEdit } from '@/routes/student/cv';
-import { index as classesIndex } from '@/routes/student/classes';
-import { index as notificationsIndex } from '@/routes/student/notifications';
-import { index as pdfsIndex } from '@/routes/student/pdfs';
+import { index as projectsIndex } from '@/routes/recruiter/projects';
 import { index as studentsIndex } from '@/routes/recruiter/students';
+import { index as studentAttendanceIndex } from '@/routes/student/attendance';
+import { edit as cvEdit } from '@/routes/student/cv';
+import { index as helpCenterIndex } from '@/routes/student/help-center';
+import { index as myLearningIndex } from '@/routes/student/my-learning';
+import { index as notificationsIndex } from '@/routes/student/notifications';
+import { index as studyBankIndex } from '@/routes/student/study-bank';
+import { index as teacherAttendanceIndex } from '@/routes/teacher/attendance';
+import { index as teacherMessagesIndex } from '@/routes/teacher/messages';
 import type { NavItem } from '@/types';
 import type { UserRole } from '@/types/auth';
 
-export function getMainNavItems(role: UserRole): NavItem[] {
+export function getMainNavItems(
+    role: UserRole,
+    unreadMessagesCount = 0,
+    unreadNotificationsCount = 0,
+): NavItem[] {
     if (role === 'student') {
         return [
             {
@@ -31,19 +46,35 @@ export function getMainNavItems(role: UserRole): NavItem[] {
                 icon: FileUser,
             },
             {
-                title: 'Classes',
-                href: classesIndex(),
+                title: 'My Learning',
+                href: myLearningIndex(),
                 icon: BookOpen,
             },
             {
-                title: 'PDFs',
-                href: pdfsIndex(),
-                icon: FileText,
+                title: 'Assignments',
+                href: '/student/assignments',
+                icon: ClipboardList,
+            },
+            {
+                title: 'Attendance',
+                href: studentAttendanceIndex(),
+                icon: CalendarCheck,
+            },
+            {
+                title: 'Study Bank',
+                href: studyBankIndex(),
+                icon: FolderOpen,
             },
             {
                 title: 'Notifications',
                 href: notificationsIndex(),
                 icon: Bell,
+                badge: unreadNotificationsCount || undefined,
+            },
+            {
+                title: 'Help Center',
+                href: helpCenterIndex(),
+                icon: LifeBuoy,
             },
         ];
     }
@@ -66,9 +97,55 @@ export function getMainNavItems(role: UserRole): NavItem[] {
                 icon: BookOpen,
             },
             {
+                title: 'Assignments',
+                href: '/training-manager/assignments',
+                icon: ClipboardList,
+            },
+            {
                 title: 'Library',
                 href: '/training-manager/library',
                 icon: FolderOpen,
+            },
+            {
+                title: 'Feedback',
+                href: '/training-manager/feedback',
+                icon: MessageSquareText,
+            },
+        ];
+    }
+
+    if (role === 'recruitment_manager') {
+        return [
+            {
+                title: 'Dashboard',
+                href: '/recruitment-manager/dashboard',
+                icon: LayoutGrid,
+            },
+            {
+                title: 'Candidates',
+                href: '/recruitment-manager/candidates',
+                icon: Users,
+            },
+            {
+                title: 'Submissions',
+                href: '/recruitment-manager/projects',
+                icon: Briefcase,
+            },
+            {
+                title: 'Inquiries',
+                href: '/recruitment-manager/inquiries',
+                icon: Inbox,
+            },
+            {
+                title: 'Recruiters',
+                href: '/recruitment-manager/recruiters',
+                icon: FileUser,
+            },
+            {
+                title: 'Notifications',
+                href: notificationsIndex(),
+                icon: Bell,
+                badge: unreadNotificationsCount || undefined,
             },
         ];
     }
@@ -86,9 +163,30 @@ export function getMainNavItems(role: UserRole): NavItem[] {
                 icon: Users,
             },
             {
+                title: 'Projects',
+                href: projectsIndex(),
+                icon: Briefcase,
+            },
+            {
+                title: 'Assignments',
+                href: '/teacher/assignments',
+                icon: ClipboardList,
+            },
+            {
+                title: 'Attendance',
+                href: teacherAttendanceIndex(),
+                icon: CalendarCheck,
+            },
+            {
                 title: 'My Materials',
                 href: '/teacher/materials',
                 icon: FolderOpen,
+            },
+            {
+                title: 'Messages',
+                href: teacherMessagesIndex(),
+                icon: MessageCircle,
+                badge: unreadMessagesCount || undefined,
             },
         ];
     }
@@ -104,6 +202,17 @@ export function getMainNavItems(role: UserRole): NavItem[] {
                 title: 'Students',
                 href: studentsIndex(),
                 icon: Users,
+            },
+            {
+                title: 'Projects',
+                href: projectsIndex(),
+                icon: Briefcase,
+            },
+            {
+                title: 'Notifications',
+                href: notificationsIndex(),
+                icon: Bell,
+                badge: unreadNotificationsCount || undefined,
             },
         ];
     }

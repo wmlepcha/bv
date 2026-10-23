@@ -2,8 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\Payment;
+use App\Enums\OfflinePaymentMethod;
 use App\Models\OfficeLocation;
+use App\Models\Payment;
 use App\Models\SiteSetting;
 use App\Models\StudentProfile;
 use App\Support\Brand;
@@ -32,7 +33,14 @@ class PaymentSlipPdfService
 
         $paidAt = $payment->paid_at;
 
-        $paymentMode = $this->normalizePaymentMode((string) ($payment->payment_mode ?? 'Other'));
+        $offlineMethod = $payment->offlineMethod();
+        $paymentMode = $offlineMethod !== null
+            ? match ($offlineMethod) {
+                OfflinePaymentMethod::Upi => 'UPI',
+                OfflinePaymentMethod::BankTransfer => 'Bank Transfer',
+                default => 'Other',
+            }
+        : $this->normalizePaymentMode((string) ($payment->payment_mode ?? 'Other'));
 
         $configuredLogoPath = SiteSetting::getValue('payment_slip.logo_path');
         $logoSrc = $this->resolveLocalAbsolutePath($configuredLogoPath);
@@ -94,6 +102,9 @@ class PaymentSlipPdfService
             'customerPaidAt' => $paidAt,
             'customerPaymentMode' => $paymentMode,
             'paymentMode' => $paymentMode,
+            'isOffline' => $payment->isRecordedByStaff(),
+            'offlineMethodLabel' => $offlineMethod?->label(),
+            'offlineReference' => $payment->payment_mode_detail,
             'gatewayPaymentId' => $payment->gateway_payment_id,
             'gatewayOrderId' => $payment->gateway_order_id,
             'termsHtml' => $termsHtml,
@@ -221,7 +232,8 @@ class PaymentSlipPdfService
 
             return 'data:'.$mime.';base64,'.base64_encode($encoded);
         } finally {
-            ini_set('memory_limit', $previousMemoryLimit);
+            // PHP refuses to lower the limit below current usage; that must not fail the slip download.
+            @ini_set('memory_limit', $previousMemoryLimit);
         }
     }
 
@@ -264,4 +276,3 @@ class PaymentSlipPdfService
         return null;
     }
 }
-

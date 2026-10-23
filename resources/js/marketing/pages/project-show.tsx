@@ -1,13 +1,13 @@
 import { Link, usePage } from '@inertiajs/react';
-import { SeoHead } from '@shared/components/seo-head';
+import { FadeUp } from '@marketing/components/animations/primitives';
 import {
     BlogSectionRenderer,
     BlogVideoSection,
 } from '@marketing/components/projects/blog-section-renderer';
 import { ProjectPostSidebar } from '@marketing/components/projects/project-post-sidebar';
-import { FadeUp } from '@marketing/components/animations/primitives';
 import { buildArticleJsonLd } from '@marketing/seo/article-json-ld';
 import type { ProjectShowPageProps } from '@marketing/types/projects-page';
+import { SeoHead } from '@shared/components/seo-head';
 import { BRAND_NAME_TM } from '@shared/lib/brand';
 
 export default function ProjectShow() {

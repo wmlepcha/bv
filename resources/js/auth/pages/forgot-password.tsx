@@ -1,14 +1,14 @@
 // Components
 import { Form } from '@inertiajs/react';
-import { PrivateSeoHead } from '@shared/components/seo-head';
 import { LoaderCircle } from 'lucide-react';
-import InputError from '@shared/components/input-error';
-import TextLink from '@shared/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { login } from '@/routes';
 import { email } from '@/routes/password';
+import InputError from '@shared/components/input-error';
+import { PrivateSeoHead } from '@shared/components/seo-head';
+import TextLink from '@shared/components/text-link';
 
 export default function ForgotPassword({ status }: { status?: string }) {
     return (

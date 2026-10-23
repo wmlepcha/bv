@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\HomeServiceCards;
 
 use App\Filament\Clusters\FrontendEditsCluster;
+use App\Filament\Concerns\AdminOnly;
 use App\Filament\Resources\HomeServiceCards\Pages\CreateHomeServiceCard;
 use App\Filament\Resources\HomeServiceCards\Pages\EditHomeServiceCard;
 use App\Filament\Resources\HomeServiceCards\Pages\ListHomeServiceCards;
@@ -18,6 +19,8 @@ use UnitEnum;
 
 class HomeServiceCardResource extends Resource
 {
+    use AdminOnly;
+
     protected static ?string $model = HomeServiceCard::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSquares2x2;

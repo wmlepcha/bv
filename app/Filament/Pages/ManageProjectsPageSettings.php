@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Concerns\AdminOnly;
 use App\Models\SiteSetting;
 use App\Services\ProjectsPageService;
 use BackedEnum;
@@ -25,6 +26,8 @@ use UnitEnum;
  */
 class ManageProjectsPageSettings extends Page
 {
+    use AdminOnly;
+
     /**
      * @var array<string, mixed>|null
      */

@@ -28,6 +28,7 @@ export type CvQualification = {
     country: string | null;
     board: string | null;
     language_of_instruction: string | null;
+    certificate_path: string | null;
 };
 
 export type CvTraining = {

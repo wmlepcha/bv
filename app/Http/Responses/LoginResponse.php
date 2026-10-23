@@ -12,9 +12,11 @@ class LoginResponse implements LoginResponseContract
     {
         $user = $request->user();
 
-        $redirect = $user !== null && $user->isTrainingManager()
-            ? route('training-manager.dashboard')
-            : route('dashboard');
+        $redirect = match (true) {
+            $user?->isTrainingManager() === true => route('training-manager.dashboard'),
+            $user?->isRecruitmentManager() === true => route('recruitment-manager.dashboard'),
+            default => route('dashboard'),
+        };
 
         return $request->wantsJson()
             ? new JsonResponse(['two_factor' => false], 200)

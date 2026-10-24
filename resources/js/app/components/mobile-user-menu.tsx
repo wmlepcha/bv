@@ -1,5 +1,5 @@
 import { Link, router } from '@inertiajs/react';
-import { LogOut, Shield, ShieldCheck, UserPen } from 'lucide-react';
+import { LogOut, Shield, UserPen } from 'lucide-react';
 import { useState } from 'react';
 import {
     Sheet,
@@ -10,7 +10,6 @@ import {
 import { cn } from '@/lib/utils';
 import { logout } from '@/routes';
 import { edit as editProfile } from '@/routes/profile';
-import { edit as editSecurity } from '@/routes/security';
 import type { User } from '@/types';
 import { UserAvatar } from '@app/components/user-avatar';
 import { AppearanceToggle } from '@shared/components/appearance-toggle';
@@ -60,17 +59,6 @@ export function MobileUserMenu({ user }: { user: User }) {
                             >
                                 <UserPen className="size-5" />
                                 Edit profile
-                            </Link>
-                        </li>
-                        <li>
-                            <Link
-                                href={editSecurity()}
-                                prefetch
-                                onClick={() => setOpen(false)}
-                                className={rowClass}
-                            >
-                                <ShieldCheck className="size-5" />
-                                Security
                             </Link>
                         </li>
                         {user.role === 'admin' && (

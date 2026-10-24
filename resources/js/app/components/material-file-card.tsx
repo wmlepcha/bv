@@ -1,3 +1,4 @@
+import { router } from '@inertiajs/react';
 import {
     Bookmark,
     BookmarkCheck,
@@ -11,17 +12,30 @@ import {
     Play,
     Share2,
     Trash2,
+    X,
     Youtube,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
     Dialog,
+    DialogClose,
     DialogContent,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/responsive-dialog';
 import { cn } from '@/lib/utils';
+import {
+    TYPE_HINTS,
+    materialType,
+} from '@app/components/material-preview-dialog';
+import { PlaylistVideoSelect } from '@app/components/playlist-video-select';
+import {
+    YoutubeDescription,
+    YoutubeEmbed,
+} from '@app/components/youtube-embed';
 
 export type MaterialKind = 'file' | 'youtube' | 'youtube_playlist' | 'link';
 
@@ -126,6 +140,10 @@ type MaterialFileCardProps = {
     onMove?: () => void;
     isSavedToLearning?: boolean;
     onToggleLearning?: () => void;
+    /** Id of the student's saved copy, used to jump to their notes. */
+    learningItemId?: number | null;
+    /** Tapping the row opens the material (students). */
+    onOpen?: () => void;
     className?: string;
 };
 
@@ -146,6 +164,8 @@ export function MaterialFileCard({
     onMove,
     isSavedToLearning,
     onToggleLearning,
+    learningItemId = null,
+    onOpen,
     className,
 }: MaterialFileCardProps) {
     const [youtubeOpen, setYoutubeOpen] = useState(false);
@@ -285,6 +305,19 @@ export function MaterialFileCard({
                     >
                         {name}
                     </button>
+                ) : onOpen && !isYoutubeMaterial ? (
+                    <button
+                        type="button"
+                        onClick={onOpen}
+                        className="min-w-0 text-left active:opacity-70"
+                    >
+                        <span className="line-clamp-2 block text-sm font-medium sm:truncate sm:text-base">
+                            {name}
+                        </span>
+                        <span className="mt-0.5 block text-xs text-muted-foreground sm:hidden">
+                            {TYPE_HINTS[materialType(kind, extension)]}
+                        </span>
+                    </button>
                 ) : (
                     <p className="min-w-0 truncate text-sm font-medium sm:text-base">
                         {name}
@@ -299,7 +332,7 @@ export function MaterialFileCard({
                     {formatUploadedAt(uploadedAt)}
                 </p>
 
-                <p className="text-sm text-muted-foreground lowercase">
+                <p className="hidden text-sm text-muted-foreground lowercase sm:block">
                     {extensionLabel}
                 </p>
 
@@ -463,8 +496,20 @@ export function MaterialFileCard({
                         phone="fullscreen"
                         className="max-w-3xl gap-0 overflow-hidden p-0 sm:max-w-3xl"
                     >
-                        <DialogHeader className="px-4 pt-4 pb-2">
-                            <DialogTitle className="truncate pr-8">
+                        <DialogHeader className="relative px-4 pt-4 pb-2">
+                            {/* Visible close button for phones; desktop dialogs already have one. */}
+                            <DialogClose asChild>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="absolute top-2.5 right-3 size-10 rounded-full bg-foreground/10 sm:hidden"
+                                    aria-label="Close"
+                                >
+                                    <X className="size-5" />
+                                </Button>
+                            </DialogClose>
+                            <DialogTitle className="truncate pr-12">
                                 {name}
                             </DialogTitle>
                         </DialogHeader>
@@ -473,37 +518,12 @@ export function MaterialFileCard({
                                 <Label htmlFor={`playlist-video-${name}`}>
                                     Video
                                 </Label>
-                                <select
-                                    id={`playlist-video-${name}`}
-                                    className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm"
-                                    value={selectedVideoId ?? ''}
-                                    disabled={
-                                        playlistLoading ||
-                                        playlistItems.length === 0
-                                    }
-                                    onChange={(event) =>
-                                        setSelectedVideoId(
-                                            event.target.value || null,
-                                        )
-                                    }
-                                >
-                                    {playlistItems.length === 0 ? (
-                                        <option value="">
-                                            {playlistLoading
-                                                ? 'Loading videos…'
-                                                : 'No videos available'}
-                                        </option>
-                                    ) : (
-                                        playlistItems.map((item) => (
-                                            <option
-                                                key={item.video_id}
-                                                value={item.video_id}
-                                            >
-                                                {item.title}
-                                            </option>
-                                        ))
-                                    )}
-                                </select>
+                                <PlaylistVideoSelect
+                                    items={playlistItems}
+                                    value={selectedVideoId}
+                                    onChange={setSelectedVideoId}
+                                    loading={playlistLoading}
+                                />
                                 {!playlistLoading &&
                                     playlistItems.length === 0 && (
                                         <p className="text-xs text-muted-foreground">
@@ -514,19 +534,41 @@ export function MaterialFileCard({
                                     )}
                             </div>
                         )}
-                        <div className="aspect-video w-full bg-black">
-                            {youtubeOpen && (
-                                <iframe
-                                    key={activeEmbedUrl}
-                                    title={name}
-                                    src={activeEmbedUrl}
-                                    className="size-full border-0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                    allowFullScreen
-                                    referrerPolicy="strict-origin-when-cross-origin"
-                                />
-                            )}
-                        </div>
+                        {youtubeOpen && (
+                            <YoutubeEmbed src={activeEmbedUrl} title={name} />
+                        )}
+                        <YoutubeDescription title={name} url={url} />
+                        {onToggleLearning && (
+                            <DialogFooter className="flex-col gap-2 border-t border-border/60 px-4 py-3 sm:flex-col">
+                                <p className="text-sm text-muted-foreground">
+                                    {isSavedToLearning
+                                        ? 'Saved. Open it in My Learning to write your own private notes about this video.'
+                                        : 'Want to write notes while you watch? Save this video to My Learning first.'}
+                                </p>
+                                {isSavedToLearning && learningItemId != null ? (
+                                    <Button
+                                        type="button"
+                                        className="h-11 rounded-full"
+                                        onClick={() =>
+                                            router.visit(
+                                                `/student/my-learning?item=${learningItemId}`,
+                                            )
+                                        }
+                                    >
+                                        Open my notes
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        type="button"
+                                        className="h-11 rounded-full"
+                                        onClick={onToggleLearning}
+                                    >
+                                        <Bookmark className="mr-1.5 size-4" />
+                                        Save to take notes
+                                    </Button>
+                                )}
+                            </DialogFooter>
+                        )}
                     </DialogContent>
                 </Dialog>
             )}

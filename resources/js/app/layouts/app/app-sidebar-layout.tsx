@@ -80,8 +80,12 @@ function MobileAppLayout({ children }: { children: React.ReactNode }) {
                         unreadMessages,
                         unreadNotifications,
                     ).filter(
+                        // Students get attendance and notifications as header icons instead.
                         (item) =>
-                            role !== 'student' || item.title !== 'Attendance',
+                            role !== 'student' ||
+                            !['Attendance', 'Notifications'].includes(
+                                item.title,
+                            ),
                     )}
                 />
             )}

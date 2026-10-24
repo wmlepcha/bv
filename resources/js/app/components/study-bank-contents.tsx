@@ -1,4 +1,6 @@
 import { router } from '@inertiajs/react';
+import { Bookmark } from 'lucide-react';
+import { useState } from 'react';
 import {
     destroy as destroyLearningItem,
     store as storeLearningItem,
@@ -7,6 +9,7 @@ import { download as studyBankDownload } from '@/routes/student/study-bank/files
 import { show as studyBankFolder } from '@/routes/student/study-bank/folders';
 import { MaterialFileCard } from '@app/components/material-file-card';
 import { MaterialFolderCard } from '@app/components/material-folder-card';
+import { MaterialPreviewDialog } from '@app/components/material-preview-dialog';
 
 export type StudyBankFolder = {
     id: number;
@@ -36,6 +39,29 @@ export function StudyBankContents({
     folders: StudyBankFolder[];
     files: StudyBankFile[];
 }) {
+    const [openId, setOpenId] = useState<number | null>(null);
+    const openFile = files.find((file) => file.id === openId) ?? null;
+
+    const toggleLearning = (file: StudyBankFile) => {
+        if (file.learning_item_id != null) {
+            router.delete(destroyLearningItem.url(file.learning_item_id), {
+                preserveScroll: true,
+                onSuccess: () => router.flushAll(),
+            });
+
+            return;
+        }
+
+        router.post(
+            storeLearningItem.url(),
+            { material_file_id: file.id },
+            {
+                preserveScroll: true,
+                onSuccess: () => router.flushAll(),
+            },
+        );
+    };
+
     return (
         <div className="space-y-8">
             {folders.length > 0 && (
@@ -43,7 +69,7 @@ export function StudyBankContents({
                     <h2 className="text-sm font-medium text-muted-foreground">
                         Folders
                     </h2>
-                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
                         {folders.map((folder) => (
                             <MaterialFolderCard
                                 key={`folder-${folder.id}`}
@@ -62,6 +88,12 @@ export function StudyBankContents({
                     <h2 className="text-sm font-semibold tracking-tight">
                         Materials
                     </h2>
+                    <p className="flex flex-wrap items-center gap-x-1 text-sm text-muted-foreground">
+                        Tap
+                        <Bookmark className="inline size-4 text-foreground/70" />
+                        to save a material to My Learning. There you can open it
+                        and write your own private notes.
+                    </p>
                     <div className="rounded-2xl border border-border/60 bg-muted/20 p-2 sm:p-3">
                         {files.map((file) => (
                             <MaterialFileCard
@@ -87,36 +119,37 @@ export function StudyBankContents({
                                 isSavedToLearning={
                                     file.learning_item_id != null
                                 }
-                                onToggleLearning={() => {
-                                    if (file.learning_item_id != null) {
-                                        router.delete(
-                                            destroyLearningItem.url(
-                                                file.learning_item_id,
-                                            ),
-                                            {
-                                                preserveScroll: true,
-                                                onSuccess: () =>
-                                                    router.flushAll(),
-                                            },
-                                        );
-
-                                        return;
-                                    }
-
-                                    router.post(
-                                        storeLearningItem.url(),
-                                        { material_file_id: file.id },
-                                        {
-                                            preserveScroll: true,
-                                            onSuccess: () => router.flushAll(),
-                                        },
-                                    );
-                                }}
+                                onToggleLearning={() => toggleLearning(file)}
+                                learningItemId={file.learning_item_id}
+                                onOpen={() => setOpenId(file.id)}
                             />
                         ))}
                     </div>
                 </section>
             )}
+            <MaterialPreviewDialog
+                material={
+                    openFile
+                        ? {
+                              name: openFile.name,
+                              extension: openFile.extension,
+                              kind:
+                                  (openFile.kind ?? 'file') === 'link'
+                                      ? 'link'
+                                      : 'file',
+                              url: openFile.url,
+                              previewUrl: openFile.preview_url,
+                              downloadHref:
+                                  (openFile.kind ?? 'file') === 'file'
+                                      ? studyBankDownload.url(openFile.id)
+                                      : null,
+                              saved: openFile.learning_item_id != null,
+                          }
+                        : null
+                }
+                onClose={() => setOpenId(null)}
+                onToggleSaved={() => openFile && toggleLearning(openFile)}
+            />
         </div>
     );
 }

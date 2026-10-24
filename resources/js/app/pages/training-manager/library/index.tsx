@@ -8,8 +8,8 @@ import {
     X,
     Youtube,
 } from 'lucide-react';
-import { useMemo, useRef, useState   } from 'react';
-import type {ChangeEvent, DragEvent} from 'react';
+import { useMemo, useRef, useState } from 'react';
+import type { ChangeEvent, DragEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -30,23 +30,16 @@ import {
 } from '@/components/ui/responsive-dialog';
 import { Spinner } from '@/components/ui/spinner';
 import { cn } from '@/lib/utils';
-import {
-    MaterialFileCard
-    
-} from '@app/components/material-file-card';
-import type {MaterialKind} from '@app/components/material-file-card';
+import { MaterialFileCard } from '@app/components/material-file-card';
+import type { MaterialKind } from '@app/components/material-file-card';
 import { MaterialFolderCard } from '@app/components/material-folder-card';
-import {
-    MoveCopyMaterialModal
-    
-    
+import { MoveCopyMaterialModal } from '@app/components/move-copy-material-modal';
+import type {
+    FolderOption,
+    RelocateTarget,
 } from '@app/components/move-copy-material-modal';
-import type {FolderOption, RelocateTarget} from '@app/components/move-copy-material-modal';
-import {
-    ShareToBatchesModal
-    
-} from '@app/components/share-to-batches-modal';
-import type {ShareBatchOption} from '@app/components/share-to-batches-modal';
+import { ShareToBatchesModal } from '@app/components/share-to-batches-modal';
+import type { ShareBatchOption } from '@app/components/share-to-batches-modal';
 import InputError from '@shared/components/input-error';
 import { PrivateSeoHead } from '@shared/components/seo-head';
 
@@ -95,7 +88,11 @@ type ShareTarget = {
 };
 
 type Props = {
-    currentFolder: { id: number; name: string; parent_id: number | null } | null;
+    currentFolder: {
+        id: number;
+        name: string;
+        parent_id: number | null;
+    } | null;
     breadcrumbs: Array<{ id: number; name: string }>;
     folders: FolderRow[];
     files: FileRow[];
@@ -116,10 +113,12 @@ export default function LibraryIndex({
     const { flash } = usePage().props as {
         flash?: { success?: string; error?: string };
     };
-    const [assignTarget, setAssignTarget] = useState<
-        | { type: 'folder' | 'file'; id: number; name: string; selected: number[] }
-        | null
-    >(null);
+    const [assignTarget, setAssignTarget] = useState<{
+        type: 'folder' | 'file';
+        id: number;
+        name: string;
+        selected: number[];
+    } | null>(null);
     const [shareTarget, setShareTarget] = useState<ShareTarget | null>(null);
     const [renameFile, setRenameFile] = useState<FileRow | null>(null);
     const [relocateTarget, setRelocateTarget] = useState<RelocateTarget | null>(
@@ -241,8 +240,9 @@ export default function LibraryIndex({
                         Library
                     </h1>
                     <p className="mt-2 text-sm text-muted-foreground">
-                        Create folders, add PDF/Word/Excel files, YouTube videos,
-                        or website links, and assign them to trainers.
+                        Create folders, add PDF/Word/Excel/MP3/MP4 files,
+                        YouTube videos, or website links, and assign them to
+                        trainers.
                     </p>
                 </div>
 
@@ -260,7 +260,10 @@ export default function LibraryIndex({
                         Root
                     </Link>
                     {breadcrumbs.map((crumb) => (
-                        <span key={crumb.id} className="flex items-center gap-2">
+                        <span
+                            key={crumb.id}
+                            className="flex items-center gap-2"
+                        >
                             <span className="text-muted-foreground">/</span>
                             <Link
                                 href={`/training-manager/library?folder=${crumb.id}`}
@@ -356,7 +359,9 @@ export default function LibraryIndex({
                                                     key={mode.value}
                                                     type="button"
                                                     onClick={() =>
-                                                        setUploadMode(mode.value)
+                                                        setUploadMode(
+                                                            mode.value,
+                                                        )
                                                     }
                                                     className={cn(
                                                         'inline-flex items-center justify-center gap-1.5 rounded-full px-2 py-2 text-xs font-medium transition-all',
@@ -441,7 +446,9 @@ export default function LibraryIndex({
 
                                                         const transfer =
                                                             new DataTransfer();
-                                                        transfer.items.add(file);
+                                                        transfer.items.add(
+                                                            file,
+                                                        );
                                                         fileInputRef.current.files =
                                                             transfer.files;
                                                         setSelectedFileName(
@@ -459,7 +466,7 @@ export default function LibraryIndex({
                                                         <Upload className="size-5" />
                                                     </span>
                                                     <div className="space-y-1">
-                                                        <p className="text-sm font-semibold leading-snug">
+                                                        <p className="text-sm leading-snug font-semibold">
                                                             Drag & drop{' '}
                                                             <span className="text-primary">
                                                                 PDF
@@ -468,9 +475,17 @@ export default function LibraryIndex({
                                                             <span className="text-primary">
                                                                 Word
                                                             </span>
-                                                            , or{' '}
+                                                            ,{' '}
                                                             <span className="text-primary">
                                                                 Excel
+                                                            </span>
+                                                            ,{' '}
+                                                            <span className="text-primary">
+                                                                MP3
+                                                            </span>
+                                                            , or{' '}
+                                                            <span className="text-primary">
+                                                                MP4
                                                             </span>
                                                         </p>
                                                         <p className="text-xs text-muted-foreground">
@@ -492,7 +507,7 @@ export default function LibraryIndex({
                                                         type="file"
                                                         name="file"
                                                         required
-                                                        accept=".pdf,.doc,.docx,.xls,.xlsx"
+                                                        accept=".pdf,.doc,.docx,.xls,.xlsx,.mp3,.mp4"
                                                         className="sr-only"
                                                         onChange={(
                                                             event: ChangeEvent<HTMLInputElement>,
@@ -506,7 +521,9 @@ export default function LibraryIndex({
                                                         }}
                                                     />
                                                 </div>
-                                                <InputError message={errors.file} />
+                                                <InputError
+                                                    message={errors.file}
+                                                />
                                                 <Button
                                                     type="submit"
                                                     className="h-11 rounded-full"
@@ -947,9 +964,7 @@ export default function LibraryIndex({
                                                             removingTrainerKey
                                                         }
                                                         itemKeyPrefix={`folder-${folder.id}`}
-                                                        onRemove={(
-                                                            trainerId,
-                                                        ) =>
+                                                        onRemove={(trainerId) =>
                                                             removeTrainerAssignment(
                                                                 'folder',
                                                                 folder.id,
@@ -980,9 +995,13 @@ export default function LibraryIndex({
                                                         extension={
                                                             file.extension
                                                         }
-                                                        kind={file.kind ?? 'file'}
+                                                        kind={
+                                                            file.kind ?? 'file'
+                                                        }
                                                         url={file.url}
-                                                        embedUrl={file.embed_url}
+                                                        embedUrl={
+                                                            file.embed_url
+                                                        }
                                                         playlistItems={
                                                             file.playlist_items
                                                         }
@@ -998,7 +1017,8 @@ export default function LibraryIndex({
                                                         }
                                                         downloadHref={
                                                             (file.kind ??
-                                                                'file') === 'file'
+                                                                'file') ===
+                                                            'file'
                                                                 ? `/training-manager/library/files/${file.id}/download`
                                                                 : null
                                                         }
@@ -1011,7 +1031,8 @@ export default function LibraryIndex({
                                                                 id: file.id,
                                                                 name: file.display_name,
                                                                 currentParentId:
-                                                                    currentFolder!.id,
+                                                                    currentFolder!
+                                                                        .id,
                                                             })
                                                         }
                                                         onShare={() =>
@@ -1155,9 +1176,7 @@ function AssignmentList({
     onRemove: (trainerId: number) => void;
 }) {
     if (trainers.length === 0) {
-        return (
-            <p className="text-xs text-muted-foreground">Not assigned</p>
-        );
+        return <p className="text-xs text-muted-foreground">Not assigned</p>;
     }
 
     return (
@@ -1170,7 +1189,7 @@ function AssignmentList({
                 return (
                     <span
                         key={trainer.id}
-                        className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/50 py-0.5 pl-2.5 pr-1 text-xs"
+                        className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/50 py-0.5 pr-1 pl-2.5 text-xs"
                     >
                         <span>{trainer.name}</span>
                         <button

@@ -1,15 +1,11 @@
-import { Link, router } from '@inertiajs/react';
-import { LogOut } from 'lucide-react';
+import { Link } from '@inertiajs/react';
 import type { PropsWithChildren } from 'react';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
-import { logout } from '@/routes';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
 import type { NavItem } from '@/types';
-import { FormGroup } from '@app/components/native/form';
-import { AppearanceToggle } from '@shared/components/appearance-toggle';
 import Heading from '@shared/components/heading';
 
 const sidebarNavItems: NavItem[] = [
@@ -64,22 +60,6 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                 </aside>
 
                 <div className="mt-5 flex-1 md:max-w-2xl lg:mt-0 lg:max-w-3xl">
-                    <FormGroup className="mb-5 md:hidden">
-                        <div className="flex min-h-12 items-center justify-between gap-3 px-4">
-                            <span className="text-sm font-medium">Theme</span>
-                            <AppearanceToggle />
-                        </div>
-                        <Link
-                            href={logout()}
-                            as="button"
-                            onClick={() => router.flushAll()}
-                            className="flex min-h-12 w-full items-center gap-3 px-4 text-left text-sm font-medium text-destructive active:bg-destructive/10"
-                        >
-                            <LogOut className="size-4" />
-                            Log out
-                        </Link>
-                    </FormGroup>
-
                     <section className="w-full max-w-none space-y-8 md:max-w-2xl lg:max-w-3xl">
                         {children}
                     </section>

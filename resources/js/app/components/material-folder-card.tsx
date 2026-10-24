@@ -92,7 +92,7 @@ export function MaterialFolderCard({
         <div className={cn('group relative', className)}>
             <div
                 className={cn(
-                    'absolute top-0 left-3 z-10 h-3 w-16 rounded-t-lg',
+                    'absolute top-0 left-3 z-10 h-3 w-12 rounded-t-lg sm:w-16',
                     colors.tab,
                 )}
                 aria-hidden
@@ -100,19 +100,21 @@ export function MaterialFolderCard({
             <Link
                 href={href}
                 className={cn(
-                    'relative mt-2 flex min-h-[140px] flex-col justify-between rounded-2xl p-4 shadow-sm transition-transform duration-200',
-                    'hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    'relative mt-2 flex min-h-[104px] flex-col justify-between rounded-2xl p-3 shadow-sm transition-transform duration-200 sm:min-h-[140px] sm:p-4',
+                    'hover:-translate-y-0.5 hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
                     colors.body,
                     colors.text,
                 )}
             >
-                <div className={cn('pr-8', (onShare || menu) && 'pr-16')}>
-                    <p className="line-clamp-2 text-base font-semibold leading-snug tracking-tight">
+                <div
+                    className={cn('pr-2 sm:pr-8', (onShare || menu) && 'pr-16')}
+                >
+                    <p className="line-clamp-2 text-sm leading-snug font-semibold tracking-tight sm:text-base">
                         {name}
                     </p>
                 </div>
 
-                <div className="mt-6 flex items-end justify-between gap-2">
+                <div className="mt-3 flex items-end justify-between gap-2 sm:mt-6">
                     <div className="flex -space-x-1.5">
                         {assignees.slice(0, 3).map((assignee) => (
                             <span

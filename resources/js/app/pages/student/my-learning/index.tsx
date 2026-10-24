@@ -1,16 +1,19 @@
 import { router } from '@inertiajs/react';
 import {
+    Download,
     FileSpreadsheet,
     FileText,
     Link2,
     NotebookPen,
+    X,
     Youtube,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
     Dialog,
+    DialogClose,
     DialogContent,
     DialogDescription,
     DialogFooter,
@@ -25,13 +28,20 @@ import {
 } from '@/routes/student/my-learning';
 import { update as updateLearningItemNote } from '@/routes/student/my-learning/note';
 import { download as studyBankDownload } from '@/routes/student/study-bank/files';
+import { insertAtCursor } from '@app/components/assignments/german-char-toolbar';
 import {
     extractPlaylistId,
     playlistVideoEmbedUrl,
 } from '@app/components/material-file-card';
 import type { PlaylistVideoItem } from '@app/components/material-file-card';
 import { folderColor } from '@app/components/material-folder-card';
+import { PdfPages } from '@app/components/pdf-pages';
+import { PlaylistVideoSelect } from '@app/components/playlist-video-select';
 import type { StudyBankFile } from '@app/components/study-bank-contents';
+import {
+    YoutubeDescription,
+    YoutubeEmbed,
+} from '@app/components/youtube-embed';
 import { PrivateSeoHead } from '@shared/components/seo-head';
 
 type LearningItem = {
@@ -53,6 +63,32 @@ function isPdfMaterial(material: StudyBankFile): boolean {
     return (
         (material.kind ?? 'file') === 'file' &&
         material.extension.toLowerCase() === 'pdf'
+    );
+}
+
+const AUDIO_EXTENSIONS = ['mp3', 'wav', 'm4a', 'ogg'];
+const VIDEO_FILE_EXTENSIONS = ['mp4', 'webm', 'mov'];
+
+function isAudioMaterial(material: StudyBankFile): boolean {
+    return (
+        (material.kind ?? 'file') === 'file' &&
+        AUDIO_EXTENSIONS.includes(material.extension.toLowerCase())
+    );
+}
+
+function isImageMaterial(material: StudyBankFile): boolean {
+    return (
+        (material.kind ?? 'file') === 'file' &&
+        ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(
+            material.extension.toLowerCase(),
+        )
+    );
+}
+
+function isVideoFileMaterial(material: StudyBankFile): boolean {
+    return (
+        (material.kind ?? 'file') === 'file' &&
+        VIDEO_FILE_EXTENSIONS.includes(material.extension.toLowerCase())
     );
 }
 
@@ -249,10 +285,17 @@ function LearningItemModalContent({
 }) {
     const [note, setNote] = useState(item.note ?? '');
     const [saving, setSaving] = useState(false);
+    const [pane, setPane] = useState(0);
+    const scrollerRef = useRef<HTMLDivElement>(null);
+    const noteRef = useRef<HTMLTextAreaElement>(null);
     const isDirty = note !== (item.note ?? '');
     const material = item.material;
     const isPdf = isPdfMaterial(material);
     const isVideo = isVideoMaterial(material);
+    const isAudio = isAudioMaterial(material);
+    const isVideoFile = isVideoFileMaterial(material);
+    const isImage = isImageMaterial(material);
+    const isPlayable = isAudio || isVideoFile;
     const isPlaylist = material.kind === 'youtube_playlist';
     const playlistItemsUrl = isPlaylist
         ? `/student/study-bank/files/${material.id}/playlist-items`
@@ -322,6 +365,36 @@ function LearningItemModalContent({
             ? playlistVideoEmbedUrl(playlistId, selectedVideoId)
             : material.embed_url;
 
+    const goToPane = (index: number) => {
+        const el = scrollerRef.current;
+
+        el?.scrollTo({ left: index * el.clientWidth, behavior: 'smooth' });
+    };
+
+    const insertChar = (char: string) => {
+        const el = noteRef.current;
+        const start = el?.selectionStart ?? note.length;
+        const end = el?.selectionEnd ?? note.length;
+        const { value, cursor } = insertAtCursor(note, char, start, end);
+
+        setNote(value.slice(0, MAX_NOTE_LENGTH));
+        requestAnimationFrame(() => {
+            el?.focus();
+            el?.setSelectionRange(cursor, cursor);
+        });
+    };
+
+    const downloadNotes = () => {
+        const text = `${material.name}\n${materialKindLabel(material)}\n\n${note}\n`;
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(
+            new Blob([text], { type: 'text/plain;charset=utf-8' }),
+        );
+        link.download = `${material.name.replace(/[^\p{L}\p{N}]+/gu, '-')}-notes.txt`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+    };
+
     const saveNote = () => {
         setSaving(true);
 
@@ -353,17 +426,40 @@ function LearningItemModalContent({
                 htmlFor={`learning-note-${item.id}`}
                 className="text-xs font-medium tracking-wide text-muted-foreground uppercase"
             >
-                Your notes
+                Your private notes
             </Label>
+            <p className="text-sm text-muted-foreground">
+                Only you can see these. Write new words, grammar rules or
+                questions to ask your trainer.
+            </p>
+            <div className="flex items-center justify-between gap-2">
+                <p className="text-xs text-muted-foreground">
+                    Need a German letter? Tap to add it.
+                </p>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+                {['ä', 'ö', 'ü', 'ß', 'Ä', 'Ö', 'Ü'].map((char) => (
+                    <button
+                        key={char}
+                        type="button"
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => insertChar(char)}
+                        className="h-10 min-w-10 rounded-xl border border-border bg-card px-2 font-serif text-lg active:scale-95 active:bg-primary/15"
+                    >
+                        {char}
+                    </button>
+                ))}
+            </div>
             <Textarea
+                ref={noteRef}
                 id={`learning-note-${item.id}`}
                 value={note}
                 onChange={(event) =>
                     setNote(event.target.value.slice(0, MAX_NOTE_LENGTH))
                 }
                 maxLength={MAX_NOTE_LENGTH}
-                placeholder="Jot down what you want to remember about this…"
-                className="flex-1 resize-none"
+                placeholder="For example: der Tisch = table. Nebensatz: the verb goes to the end."
+                className="min-h-[40dvh] flex-1 resize-none text-base lg:min-h-0"
             />
             <div className="flex items-center justify-between">
                 <p
@@ -375,14 +471,26 @@ function LearningItemModalContent({
                     {note.length.toLocaleString()} /{' '}
                     {MAX_NOTE_LENGTH.toLocaleString()} characters
                 </p>
-                <Button
-                    type="button"
-                    size="sm"
-                    disabled={!isDirty || saving}
-                    onClick={saveNote}
-                >
-                    {saving ? 'Saving…' : 'Save note'}
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={note.trim() === ''}
+                        onClick={downloadNotes}
+                    >
+                        <Download className="mr-1.5 size-4" />
+                        Download
+                    </Button>
+                    <Button
+                        type="button"
+                        size="sm"
+                        disabled={!isDirty || saving}
+                        onClick={saveNote}
+                    >
+                        {saving ? 'Saving…' : 'Save note'}
+                    </Button>
+                </div>
             </div>
         </div>
     );
@@ -392,7 +500,19 @@ function LearningItemModalContent({
             phone="fullscreen"
             className="top-0 left-0 flex h-[100dvh] max-h-[100dvh] w-screen max-w-none translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden rounded-none border-0 p-0 sm:max-w-none"
         >
-            <DialogHeader className="border-b border-border/60 px-4 py-3 pr-14 text-left sm:px-6 sm:py-4">
+            <DialogHeader className="relative border-b border-border/60 px-4 py-3 pr-14 text-left sm:px-6 sm:py-4">
+                {/* Phones get a visible close button; desktop dialogs already have one. */}
+                <DialogClose asChild>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-2.5 right-3 size-10 rounded-full bg-foreground/10 sm:hidden"
+                        aria-label="Close"
+                    >
+                        <X className="size-5" />
+                    </Button>
+                </DialogClose>
                 <DialogTitle className="truncate text-base sm:text-lg">
                     {material.name}
                 </DialogTitle>
@@ -402,163 +522,210 @@ function LearningItemModalContent({
                 </DialogDescription>
             </DialogHeader>
 
+            {/* Phones: swipe between the material and your notes. */}
             <div
-                className={cn(
-                    'flex-1 overflow-y-auto p-4 sm:p-6',
-                    isPdf || isVideo
-                        ? 'flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-6 lg:overflow-hidden'
-                        : 'flex flex-col gap-4 sm:gap-6',
-                )}
+                role="tablist"
+                aria-label="Material or notes"
+                className="relative mx-4 mt-3 grid shrink-0 grid-cols-2 rounded-xl bg-muted p-1 lg:hidden"
             >
-                {isPdf && (
-                    <div className="flex flex-col gap-4 lg:h-full lg:overflow-hidden">
-                        {/* Inline PDF viewers are unreliable on mobile browsers, so phones get an "open" prompt instead. */}
-                        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border/60 p-8 text-center lg:hidden">
-                            <FileText className="size-10 text-muted-foreground" />
-                            <p className="text-sm text-muted-foreground">
-                                PDFs preview best on a larger screen. Open it in
-                                a new tab to read comfortably.
-                            </p>
-                            {material.preview_url && (
-                                <Button asChild variant="outline" size="sm">
-                                    <a
-                                        href={material.preview_url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        Open document
-                                    </a>
-                                </Button>
-                            )}
+                <span
+                    aria-hidden
+                    className="absolute inset-y-1 left-1 w-[calc((100%-0.5rem)/2)] rounded-lg bg-card shadow-sm transition-transform duration-300 ease-out"
+                    style={{ transform: `translateX(${pane * 100}%)` }}
+                />
+                {['Material', 'My notes'].map((label, index) => (
+                    <button
+                        key={label}
+                        type="button"
+                        role="tab"
+                        aria-selected={pane === index}
+                        onClick={() => goToPane(index)}
+                        className={cn(
+                            'relative z-10 h-10 rounded-lg text-sm font-semibold transition-colors',
+                            pane === index
+                                ? 'text-foreground'
+                                : 'text-muted-foreground',
+                        )}
+                    >
+                        {label}
+                        {index === 1 && note.trim() !== '' && (
+                            <span className="ml-1.5 inline-block size-1.5 rounded-full bg-primary align-middle" />
+                        )}
+                    </button>
+                ))}
+            </div>
+
+            <div
+                ref={scrollerRef}
+                onScroll={(event) => {
+                    const el = event.currentTarget;
+                    setPane(
+                        Math.round(el.scrollLeft / Math.max(el.clientWidth, 1)),
+                    );
+                }}
+                className="flex min-h-0 flex-1 snap-x snap-mandatory scrollbar-none overflow-x-auto overscroll-x-contain lg:grid lg:grid-cols-2 lg:gap-6 lg:overflow-hidden lg:p-6"
+            >
+                <div className="flex w-full shrink-0 snap-center flex-col gap-4 overflow-y-auto p-4 sm:p-6 lg:h-full lg:overflow-y-auto lg:p-0">
+                    {isPdf && (
+                        <div className="flex flex-col gap-4 lg:h-full lg:overflow-hidden">
+                            <div className="lg:hidden">
+                                {material.preview_url ? (
+                                    <PdfPages
+                                        url={material.preview_url}
+                                        title={material.name}
+                                    />
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">
+                                        Preview unavailable.
+                                    </p>
+                                )}
+                                <p className="mt-3 text-center text-xs text-muted-foreground">
+                                    Swipe left or tap “My notes” to write your
+                                    notes.
+                                </p>
+                            </div>
+                            <div className="hidden overflow-hidden rounded-xl border border-border/60 lg:block lg:h-full">
+                                {material.preview_url ? (
+                                    <iframe
+                                        src={material.preview_url}
+                                        title={material.name}
+                                        className="size-full"
+                                    />
+                                ) : (
+                                    <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                                        Preview unavailable.
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                        <div className="hidden overflow-hidden rounded-xl border border-border/60 lg:block lg:h-full">
-                            {material.preview_url ? (
-                                <iframe
-                                    src={material.preview_url}
-                                    title={material.name}
-                                    className="size-full"
-                                />
-                            ) : (
-                                <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                                    Preview unavailable.
+                    )}
+
+                    {isVideo && (
+                        <div className="flex flex-col justify-center gap-3 lg:h-full lg:overflow-y-auto">
+                            {isPlaylist && (
+                                <div className="space-y-1.5">
+                                    <Label
+                                        htmlFor={`playlist-video-${item.id}`}
+                                    >
+                                        Video
+                                    </Label>
+                                    <PlaylistVideoSelect
+                                        items={playlistItems}
+                                        value={selectedVideoId}
+                                        onChange={setSelectedVideoId}
+                                        loading={playlistLoading}
+                                    />
+                                    {!playlistLoading &&
+                                        playlistItems.length === 0 && (
+                                            <p className="text-xs text-muted-foreground">
+                                                {playlistApiConfigured
+                                                    ? 'Could not load playlist videos. You can still play the playlist below.'
+                                                    : 'The playlist video list is not configured. You can still play the playlist below.'}
+                                            </p>
+                                        )}
                                 </div>
                             )}
-                        </div>
-                    </div>
-                )}
 
-                {isVideo && (
-                    <div className="flex flex-col justify-center gap-3 lg:h-full lg:overflow-y-auto">
-                        {isPlaylist && (
-                            <div className="space-y-1.5">
-                                <Label htmlFor={`playlist-video-${item.id}`}>
-                                    Video
-                                </Label>
-                                <select
-                                    id={`playlist-video-${item.id}`}
-                                    className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm"
-                                    value={selectedVideoId ?? ''}
-                                    disabled={
-                                        playlistLoading ||
-                                        playlistItems.length === 0
-                                    }
-                                    onChange={(event) =>
-                                        setSelectedVideoId(
-                                            event.target.value || null,
-                                        )
-                                    }
-                                >
-                                    {playlistItems.length === 0 ? (
-                                        <option value="">
-                                            {playlistLoading
-                                                ? 'Loading videos…'
-                                                : 'No videos available'}
-                                        </option>
-                                    ) : (
-                                        playlistItems.map(
-                                            (playlistItem, index) => (
-                                                <option
-                                                    key={playlistItem.video_id}
-                                                    value={
-                                                        playlistItem.video_id
-                                                    }
-                                                >
-                                                    {index + 1}.{' '}
-                                                    {playlistItem.title}
-                                                </option>
-                                            ),
-                                        )
-                                    )}
-                                </select>
-                                {!playlistLoading &&
-                                    playlistItems.length === 0 && (
-                                        <p className="text-xs text-muted-foreground">
-                                            {playlistApiConfigured
-                                                ? 'Could not load playlist videos. You can still play the playlist below.'
-                                                : 'The playlist video list is not configured. You can still play the playlist below.'}
-                                        </p>
-                                    )}
-                            </div>
-                        )}
-
-                        <div className="mx-auto aspect-video w-full max-w-xl overflow-hidden rounded-xl bg-black lg:max-w-none">
                             {activeEmbedUrl ? (
-                                <iframe
-                                    key={activeEmbedUrl}
-                                    src={activeEmbedUrl}
-                                    title={material.name}
-                                    className="size-full border-0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                    allowFullScreen
-                                    referrerPolicy="strict-origin-when-cross-origin"
-                                />
+                                <>
+                                    <YoutubeEmbed
+                                        src={activeEmbedUrl}
+                                        title={material.name}
+                                        className="mx-auto max-w-xl overflow-hidden rounded-xl lg:max-w-none"
+                                    />
+                                    <div className="-mx-4">
+                                        <YoutubeDescription
+                                            title={material.name}
+                                            url={material.url}
+                                        />
+                                    </div>
+                                </>
                             ) : (
-                                <div className="flex h-full items-center justify-center text-sm text-white/70">
+                                <div className="flex aspect-video items-center justify-center rounded-xl bg-black text-sm text-white/70">
                                     Video unavailable.
                                 </div>
                             )}
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {!isPdf && !isVideo && (
-                    <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border/60 p-10 text-center">
-                        <MaterialGlyph
-                            material={material}
-                            className="size-10 text-muted-foreground"
-                        />
-                        <p className="text-sm text-muted-foreground">
-                            {material.kind === 'link'
-                                ? 'This is a web link.'
-                                : `This ${material.extension.toUpperCase()} file can’t be previewed here.`}
-                        </p>
-                        {material.kind === 'link' && material.url ? (
-                            <Button asChild variant="outline" size="sm">
-                                <a
-                                    href={material.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                    {isPlayable && material.preview_url && (
+                        <div className="overflow-hidden rounded-xl border border-border/60 bg-black/5 p-3 dark:bg-white/5">
+                            {isAudio ? (
+                                <audio
+                                    key={material.preview_url}
+                                    controls
+                                    preload="metadata"
+                                    className="w-full"
+                                    src={material.preview_url}
                                 >
-                                    Open link
-                                </a>
-                            </Button>
-                        ) : (
-                            <Button asChild variant="outline" size="sm">
-                                <a href={studyBankDownload.url(material.id)}>
-                                    Download to view
-                                </a>
-                            </Button>
-                        )}
-                    </div>
-                )}
+                                    Your browser does not support audio
+                                    playback.
+                                </audio>
+                            ) : (
+                                <video
+                                    key={material.preview_url}
+                                    controls
+                                    playsInline
+                                    preload="metadata"
+                                    className="mx-auto max-h-[60vh] w-full rounded-lg bg-black"
+                                    src={material.preview_url}
+                                >
+                                    Your browser does not support video
+                                    playback.
+                                </video>
+                            )}
+                        </div>
+                    )}
 
-                {isPdf || isVideo ? (
-                    <div className="flex flex-1 flex-col lg:h-full">
-                        {notesPanel}
-                    </div>
-                ) : (
-                    notesPanel
-                )}
+                    {isImage && material.preview_url && (
+                        <div className="overflow-hidden rounded-xl border border-border/60 p-2">
+                            <img
+                                src={material.preview_url}
+                                alt={material.name}
+                                className="mx-auto max-h-[70vh] w-auto max-w-full object-contain"
+                            />
+                        </div>
+                    )}
+
+                    {!isPdf && !isVideo && !isPlayable && !isImage && (
+                        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border/60 p-10 text-center">
+                            <MaterialGlyph
+                                material={material}
+                                className="size-10 text-muted-foreground"
+                            />
+                            <p className="text-sm text-muted-foreground">
+                                {material.kind === 'link'
+                                    ? 'This is a web link.'
+                                    : `This ${material.extension.toUpperCase()} file can’t be previewed here.`}
+                            </p>
+                            {material.kind === 'link' && material.url ? (
+                                <Button asChild variant="outline" size="sm">
+                                    <a
+                                        href={material.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        Open link
+                                    </a>
+                                </Button>
+                            ) : (
+                                <Button asChild variant="outline" size="sm">
+                                    <a
+                                        href={studyBankDownload.url(
+                                            material.id,
+                                        )}
+                                    >
+                                        Download to view
+                                    </a>
+                                </Button>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex w-full shrink-0 snap-center flex-col overflow-y-auto p-4 sm:p-6 lg:h-full lg:p-0">
+                    {notesPanel}
+                </div>
             </div>
 
             <DialogFooter className="border-t border-border/60 px-4 py-3 sm:px-6 sm:py-4">

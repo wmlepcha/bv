@@ -21,7 +21,7 @@ class StoreMaterialFileRequest extends FormRequest
                 'required',
                 'file',
                 'max:20480',
-                'mimes:pdf,doc,docx,xls,xlsx',
+                'mimes:pdf,doc,docx,xls,xlsx,mp3,mp4',
             ],
         ];
     }

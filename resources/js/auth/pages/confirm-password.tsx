@@ -1,4 +1,4 @@
-import { Form } from '@inertiajs/react';
+import { Form, Link } from '@inertiajs/react';
 import {
     index as confirmOptions,
     store as confirmStore,
@@ -6,6 +6,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { dashboard } from '@/routes';
 import { store } from '@/routes/password/confirm';
 import PasskeyVerify from '@app/components/passkey-verify';
 import InputError from '@shared/components/input-error';
@@ -53,6 +54,13 @@ export default function ConfirmPassword() {
                                 Confirm password
                             </Button>
                         </div>
+
+                        <Link
+                            href={dashboard()}
+                            className="block text-center text-sm font-medium text-muted-foreground underline-offset-4 hover:underline"
+                        >
+                            Cancel and go back
+                        </Link>
                     </div>
                 )}
             </Form>
@@ -61,6 +69,7 @@ export default function ConfirmPassword() {
 }
 
 ConfirmPassword.layout = {
+    backHref: '/dashboard',
     title: 'Confirm password',
     description:
         'This is a secure area of the application. Please confirm your password before continuing.',

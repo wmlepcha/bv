@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { Bell, CalendarCheck, MessageCircle } from 'lucide-react';
+import { Bell, CalendarCheck, ChevronLeft, MessageCircle } from 'lucide-react';
 import { dashboard } from '@/routes';
 import { index as attendanceIndex } from '@/routes/student/attendance';
 import { index as notificationsIndex } from '@/routes/student/notifications';
@@ -28,6 +28,14 @@ export function MobileTopBar({
         unread_messages_count: number;
     }>().props;
     const isStudent = auth.user?.role === 'student';
+    const { url } = usePage();
+    const path = url.split('?')[0];
+    // Pages reached from elsewhere (settings, a test) get a back arrow instead of the logo.
+    const backTarget = /^\/student\/assignments\/\d+$/.test(path)
+        ? '/student/assignments'
+        : path.startsWith('/settings')
+          ? '/dashboard'
+          : null;
 
     return (
         <header
@@ -35,10 +43,22 @@ export function MobileTopBar({
             style={{ paddingTop: 'env(safe-area-inset-top)' }}
         >
             <div className="flex h-14 items-center justify-between gap-3 px-4">
+                {backTarget && (
+                    <Link
+                        href={backTarget}
+                        className="-ml-2 flex h-10 shrink-0 items-center gap-0.5 rounded-full pr-3 pl-1 text-base font-medium text-primary transition-transform active:scale-95"
+                        aria-label="Back"
+                    >
+                        <ChevronLeft className="size-6" />
+                        Back
+                    </Link>
+                )}
                 {title ? (
                     <h2 className="min-w-0 flex-1 truncate text-[17px] font-semibold tracking-tight">
                         {title}
                     </h2>
+                ) : backTarget ? (
+                    <span className="flex-1" />
                 ) : locked ? (
                     <div className="h-8 w-32 opacity-50">
                         <AppLogo />

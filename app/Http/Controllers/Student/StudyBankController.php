@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class StudyBankController extends Controller
@@ -84,7 +85,7 @@ class StudyBankController extends Controller
         );
     }
 
-    public function preview(Request $request, MaterialFile $file): StreamedResponse
+    public function preview(Request $request, MaterialFile $file): StreamedResponse|BinaryFileResponse
     {
         $user = $request->user();
         abort_unless($user !== null && $this->assignments->studentCanAccessFile($user, $file), 403);
@@ -92,6 +93,13 @@ class StudyBankController extends Controller
         abort_unless($file->isFile(), 404);
         abort_unless(filled($file->disk) && filled($file->path), 404);
         abort_unless(Storage::disk($file->disk)->exists($file->path), 404);
+
+        // Audio/video needs HTTP Range support (iOS Safari, seeking); BinaryFileResponse provides it.
+        if (in_array($file->extension, ['mp3', 'mp4', 'wav', 'm4a'], true) && $file->disk === 'local') {
+            return response()->file(Storage::disk($file->disk)->path($file->path), [
+                'Content-Type' => $file->mime_type ?? 'application/octet-stream',
+            ]);
+        }
 
         return Storage::disk($file->disk)->response(
             $file->path,

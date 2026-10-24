@@ -17,7 +17,7 @@ class MaterialLibraryService
     /**
      * @var list<string>
      */
-    public const ALLOWED_EXTENSIONS = ['pdf', 'doc', 'docx', 'xls', 'xlsx'];
+    public const ALLOWED_EXTENSIONS = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'mp3', 'mp4'];
 
     public function __construct(private YoutubePlaylistService $youtubePlaylists) {}
 
@@ -81,7 +81,7 @@ class MaterialLibraryService
 
         if (! in_array($extension, self::ALLOWED_EXTENSIONS, true)) {
             throw ValidationException::withMessages([
-                'file' => 'Only PDF, Word, and Excel files are allowed.',
+                'file' => 'Only PDF, Word, Excel, MP3, and MP4 files are allowed.',
             ]);
         }
 

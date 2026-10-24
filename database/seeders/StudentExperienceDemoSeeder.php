@@ -344,7 +344,9 @@ class StudentExperienceDemoSeeder extends Seeder
 
         $this->materialLink($teacher, $grammar, 'Deutsche Welle: Deutsch lernen', 'https://www.dw.com/de/deutsch-lernen/s-2055', MaterialFile::KIND_LINK, 'link');
         $this->materialLink($teacher, $listening, 'Nicos Weg A1 – Folge 1', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', MaterialFile::KIND_YOUTUBE, 'youtube');
-        $this->materialLink($teacher, $listening, 'Playlist: Alltag & Beruf', 'https://www.youtube.com/playlist?list=PLDemoGermanB1', MaterialFile::KIND_YOUTUBE_PLAYLIST, 'youtube_playlist');
+        $this->materialPlaylist($teacher, $listening, 'Playlist: Alltag & Beruf', 'PLDemoGermanB1Alltag01', true);
+
+        $this->seedExtraFolders($teacher, $batch);
 
         MaterialBatchAssignment::query()->firstOrCreate([
             'assignable_type' => MaterialFolder::class,
@@ -360,6 +362,40 @@ class StudentExperienceDemoSeeder extends Seeder
             ['user_id' => $student->id, 'material_file_id' => $audio->id],
             ['note' => null],
         );
+    }
+
+    /** More top-level folders so the Study Bank grid (two per row on phones) has something to show. */
+    private function seedExtraFolders(User $teacher, Batch $batch): void
+    {
+        $files = $this->demoMediaFiles();
+
+        $folders = [
+            'Wortschatz' => fn (MaterialFolder $folder) => $this->materialFile($teacher, $folder, 'Wortschatz-Liste', 'pdf', $files['pdf']),
+            'Prüfungsvorbereitung' => fn (MaterialFolder $folder) => $this->materialLink($teacher, $folder, 'Goethe-Zertifikat B1: Übungssatz', 'https://www.goethe.de/de/spr/kup/prf/prf/gzb1.html', MaterialFile::KIND_LINK, 'link'),
+            'Videos' => fn (MaterialFolder $folder) => $this->materialLink($teacher, $folder, 'Easy German: Alltag', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', MaterialFile::KIND_YOUTUBE, 'youtube'),
+            'Landeskunde' => fn (MaterialFolder $folder) => $this->materialFile($teacher, $folder, 'Bild: Krankenhaus-Flur', 'png', $files['image']),
+            'Playlists' => function (MaterialFolder $folder) use ($teacher): void {
+                $this->materialPlaylist($teacher, $folder, 'Deutsch A1: Alle Lektionen', 'PLDemoGermanA1Lektion01', true);
+                // No cached video list: shows the "playlist only" state when the YouTube API is not configured.
+                $this->materialPlaylist($teacher, $folder, 'Aussprache-Training', 'PLDemoGermanAussprache02', false);
+            },
+            'Hausaufgaben' => fn (MaterialFolder $folder) => $this->materialFile($teacher, $folder, 'Hörübung: Testton', 'wav', $files['audio']),
+        ];
+
+        foreach ($folders as $name => $addFile) {
+            $folder = MaterialFolder::query()->firstOrCreate(
+                ['parent_id' => null, 'name' => 'Demo · '.$name],
+                ['created_by' => $teacher->id],
+            );
+
+            $addFile($folder);
+
+            MaterialBatchAssignment::query()->firstOrCreate([
+                'assignable_type' => MaterialFolder::class,
+                'assignable_id' => $folder->id,
+                'batch_id' => $batch->id,
+            ], ['assigned_by' => $teacher->id]);
+        }
     }
 
     /**
@@ -380,6 +416,33 @@ class StudentExperienceDemoSeeder extends Seeder
                 'mime_type' => $mime,
                 'extension' => $extension,
                 'size' => Storage::disk($file['disk'])->size($file['path']),
+                'created_by' => $teacher->id,
+            ],
+        );
+    }
+
+    /** A YouTube playlist, optionally with the cached video list the Study Bank shows without an API key. */
+    private function materialPlaylist(User $teacher, MaterialFolder $folder, string $name, string $playlistId, bool $withVideos): void
+    {
+        $url = 'https://www.youtube.com/playlist?list='.$playlistId;
+
+        MaterialFile::query()->updateOrCreate(
+            ['folder_id' => $folder->id, 'display_name' => $name],
+            [
+                'kind' => MaterialFile::KIND_YOUTUBE_PLAYLIST,
+                'original_name' => $url,
+                'disk' => null,
+                'path' => null,
+                'url' => $url,
+                'playlist_items' => $withVideos ? [
+                    ['video_id' => 'dQw4w9WgXcQ', 'title' => 'Lektion 1: Begrüßung'],
+                    ['video_id' => '9bZkp7q19f0', 'title' => 'Lektion 2: Sich vorstellen'],
+                    ['video_id' => 'jNQXAC9IMQE', 'title' => 'Lektion 3: Zahlen und Uhrzeit'],
+                    ['video_id' => 'kJQP7kiw5Fk', 'title' => 'Lektion 4: Im Restaurant'],
+                ] : null,
+                'mime_type' => null,
+                'extension' => 'youtube_playlist',
+                'size' => 0,
                 'created_by' => $teacher->id,
             ],
         );

@@ -13,6 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -206,6 +207,38 @@ class StudyBankTest extends TestCase
             ->assertOk();
 
         $this->assertStringContainsString('inline', $response->headers->get('content-disposition'));
+    }
+
+    public function test_student_can_stream_shared_mp3_with_range_support(): void
+    {
+        Notification::fake();
+        Storage::fake('local');
+
+        [$student, , $folder, $manager] = $this->sharedFolderForStudent();
+
+        $file = app(MaterialLibraryService::class)->uploadFile(
+            $manager,
+            $folder,
+            UploadedFile::fake()->createWithContent('lesson.mp3', str_repeat('a', 2048)),
+        );
+
+        $this->actingAs($student)
+            ->get(route('student.study-bank.files.preview', $file), ['Range' => 'bytes=0-9'])
+            ->assertStatus(206);
+    }
+
+    public function test_library_accepts_mp3_and_mp4_but_rejects_wav(): void
+    {
+        Storage::fake('local');
+
+        [, , $folder, $manager] = $this->sharedFolderForStudent();
+        $library = app(MaterialLibraryService::class);
+
+        $library->uploadFile($manager, $folder, UploadedFile::fake()->create('a.mp3', 10, 'audio/mpeg'));
+        $library->uploadFile($manager, $folder, UploadedFile::fake()->create('b.mp4', 10, 'video/mp4'));
+
+        $this->expectException(ValidationException::class);
+        $library->uploadFile($manager, $folder, UploadedFile::fake()->create('c.wav', 10, 'audio/wav'));
     }
 
     public function test_student_can_download_file_inside_shared_ancestor_folder(): void

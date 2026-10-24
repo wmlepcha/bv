@@ -83,6 +83,7 @@ export type AssignmentData = {
     questions?: AssignmentQuestion[];
     submission_status?: string;
     submission_id?: number;
+    final_score?: number | null;
 };
 
 export type SubmissionAnnotation = {

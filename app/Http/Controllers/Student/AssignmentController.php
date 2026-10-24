@@ -37,6 +37,7 @@ class AssignmentController extends Controller
                 $submission = $assignment->submissions->first();
                 $data['submission_status'] = $submission?->status->value;
                 $data['submission_id'] = $submission?->id;
+                $data['final_score'] = $submission?->final_score;
 
                 return $data;
             });

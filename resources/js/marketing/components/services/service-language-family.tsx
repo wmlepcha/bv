@@ -2,7 +2,10 @@ import { ChevronRight } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
-import { FadeUp, StaggerChildren } from '@marketing/components/animations/primitives';
+import {
+    FadeUp,
+    StaggerChildren,
+} from '@marketing/components/animations/primitives';
 import { ServiceLanguagePlaceholderCard } from '@marketing/components/services/service-language-placeholder-card';
 import { ServiceLanguageVariantCard } from '@marketing/components/services/service-language-variant-card';
 import { HorizontalSnapScroll } from '@marketing/components/ui/horizontal-snap-scroll';
@@ -23,7 +26,10 @@ function getFamilyDescription(items: ServiceItem[]): string | null {
     return null;
 }
 
-export function ServiceLanguageFamily({ label, items }: ServiceLanguageFamilyProps) {
+export function ServiceLanguageFamily({
+    label,
+    items,
+}: ServiceLanguageFamilyProps) {
     const isMultiVariant = items.length > 1;
     const familyDescription = getFamilyDescription(items);
     const isMobile = useIsMobile();
@@ -52,7 +58,9 @@ export function ServiceLanguageFamily({ label, items }: ServiceLanguageFamilyPro
             (entries) => {
                 const visible = entries
                     .filter((entry) => entry.isIntersecting)
-                    .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+                    .sort(
+                        (a, b) => b.intersectionRatio - a.intersectionRatio,
+                    )[0];
 
                 if (!visible) {
                     return;
@@ -82,10 +90,6 @@ export function ServiceLanguageFamily({ label, items }: ServiceLanguageFamilyPro
     return (
         <div className="min-w-0 space-y-8">
             <FadeUp className="text-center" disabled={isMobile}>
-                <p className="mb-4 hidden items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-1.5 text-xs font-medium tracking-wide text-foreground/80 sm:inline-flex">
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                    Language
-                </p>
                 <h4 className="text-2xl font-semibold tracking-tight md:text-3xl">
                     {label} Language Programs
                 </h4>
@@ -100,7 +104,10 @@ export function ServiceLanguageFamily({ label, items }: ServiceLanguageFamilyPro
                 {items.length > 1 && (
                     <p className="mb-3 flex items-center gap-1.5 text-xs text-muted-foreground">
                         <span>Swipe for more formats</span>
-                        <ChevronRight className="size-3.5 animate-pulse text-primary" aria-hidden />
+                        <ChevronRight
+                            className="size-3.5 animate-pulse text-primary"
+                            aria-hidden
+                        />
                     </p>
                 )}
 
@@ -123,7 +130,10 @@ export function ServiceLanguageFamily({ label, items }: ServiceLanguageFamilyPro
                                         : 'scale-[0.97] opacity-80',
                                 )}
                             >
-                                <ServiceLanguageVariantCard item={item} compact />
+                                <ServiceLanguageVariantCard
+                                    item={item}
+                                    compact
+                                />
                             </div>
                         ))}
                     </HorizontalSnapScroll>

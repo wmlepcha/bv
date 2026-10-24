@@ -100,7 +100,7 @@ export function CinematicHeader() {
                             />
                         </Link>
 
-                        <nav className="hidden items-center gap-8 lg:flex">
+                        <nav className="hidden items-center gap-5 lg:flex xl:gap-8">
                             {navigation.map((link) => {
                                 const isAccountLink = link.href === '/login';
                                 const showAccount = isAccountLink && !!user;
@@ -139,7 +139,7 @@ export function CinematicHeader() {
                                         key={link.href}
                                         href={link.href}
                                         className={cn(
-                                            'relative text-sm transition-colors hover:text-primary',
+                                            'relative text-sm whitespace-nowrap transition-colors hover:text-primary',
                                             isActive && 'text-primary',
                                         )}
                                     >

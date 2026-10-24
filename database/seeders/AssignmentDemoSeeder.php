@@ -549,6 +549,8 @@ class AssignmentDemoSeeder extends Seeder
      */
     private function syncWorksheetSections(Assignment $assignment, array $sections): void
     {
+        // Deleting sections only nulls section_id on their questions; remove the questions too or they linger as orphans.
+        AssignmentQuestion::query()->where('assignment_id', $assignment->id)->delete();
         AssignmentSection::query()->where('assignment_id', $assignment->id)->delete();
 
         $maxScore = 0;

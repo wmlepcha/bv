@@ -1,27 +1,43 @@
 import {
     DndContext,
-    PointerSensor,
+    KeyboardSensor,
+    MouseSensor,
+    TouchSensor,
     closestCenter,
-    
     useSensor,
-    useSensors
+    useSensors,
 } from '@dnd-kit/core';
-import type {DragEndEvent} from '@dnd-kit/core';
+import type { DragEndEvent } from '@dnd-kit/core';
 import {
     SortableContext,
     arrayMove,
     horizontalListSortingStrategy,
+    sortableKeyboardCoordinates,
     useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { AssignmentQuestion } from '@app/types/assignments';
 
-function SortableWord({ id, word }: { id: string; word: string }) {
-    const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-        useSortable({ id });
+function SortableWord({
+    id,
+    word,
+    onRemove,
+}: {
+    id: string;
+    word: string;
+    onRemove: () => void;
+}) {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id });
 
     return (
         <button
@@ -32,9 +48,11 @@ function SortableWord({ id, word }: { id: string; word: string }) {
                 transition,
             }}
             className={cn(
-                'cursor-grab rounded-md border bg-card px-3 py-1.5 text-sm shadow-sm active:cursor-grabbing',
-                isDragging && 'opacity-60',
+                // touch-none: the browser must not scroll the page while a word is being dragged
+                'min-h-11 cursor-grab touch-none rounded-xl border-2 border-primary/40 bg-card px-4 py-2 text-base font-medium shadow-sm select-none active:cursor-grabbing',
+                isDragging && 'z-10 scale-105 opacity-80 shadow-lg',
             )}
+            onClick={onRemove}
             {...attributes}
             {...listeners}
         >
@@ -77,9 +95,25 @@ export function WordReorderAnswer({
         [value],
     );
 
+    // Touch needs a short press-and-hold to start a drag, so a plain tap still works (and scrolling is not hijacked).
     const sensors = useSensors(
-        useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+        useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
+        useSensor(TouchSensor, {
+            activationConstraint: { delay: 150, tolerance: 8 },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        }),
     );
+    const justDragged = useRef(false);
+
+    const removeToken = (index: number) => {
+        if (justDragged.current) {
+            return;
+        }
+
+        onChange(value.filter((_, i) => i !== index));
+    };
 
     const addToken = (token: string) => {
         onChange([...value, token]);
@@ -87,6 +121,12 @@ export function WordReorderAnswer({
 
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
+
+        // the tap that ends a drag must not also remove the word
+        justDragged.current = true;
+        setTimeout(() => {
+            justDragged.current = false;
+        }, 100);
 
         if (!over || active.id === over.id) {
             return;
@@ -106,9 +146,13 @@ export function WordReorderAnswer({
 
     return (
         <div className="grid gap-3">
-            <p className="text-xs text-muted-foreground">
-                Tap words from the bank, then drag to reorder your sentence.
-            </p>
+            <ol className="space-y-1 text-sm text-muted-foreground">
+                <li>1. Tap the words below to build your sentence.</li>
+                <li>
+                    2. Press and hold a word, then drag it to change its place.
+                </li>
+                <li>3. Tap a word in your sentence to take it back.</li>
+            </ol>
 
             <DndContext
                 sensors={sensors}
@@ -116,14 +160,14 @@ export function WordReorderAnswer({
                 onDragEnd={handleDragEnd}
             >
                 <div className="grid gap-2">
-                    <p className="text-xs font-medium uppercase text-muted-foreground">
+                    <p className="text-xs font-medium text-muted-foreground uppercase">
                         Your sentence
                     </p>
                     <SortableContext
                         items={sortableIds}
                         strategy={horizontalListSortingStrategy}
                     >
-                        <div className="flex min-h-12 flex-wrap gap-2 rounded-lg border border-dashed border-border/70 bg-muted/20 p-3">
+                        <div className="flex min-h-16 flex-wrap gap-2 rounded-2xl border-2 border-dashed border-border/70 bg-muted/20 p-3">
                             {value.length === 0 && (
                                 <span className="text-sm text-muted-foreground">
                                     Add words from the bank below
@@ -134,6 +178,7 @@ export function WordReorderAnswer({
                                     key={sortableIds[index]}
                                     id={sortableIds[index]}
                                     word={token}
+                                    onRemove={() => removeToken(index)}
                                 />
                             ))}
                         </div>
@@ -142,15 +187,20 @@ export function WordReorderAnswer({
             </DndContext>
 
             <div className="grid gap-2">
-                <p className="text-xs font-medium uppercase text-muted-foreground">
+                <p className="text-xs font-medium text-muted-foreground uppercase">
                     Word bank
                 </p>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex min-h-12 flex-wrap gap-2">
+                    {bankTokens.length === 0 && (
+                        <span className="text-sm text-muted-foreground">
+                            All words used. Check the order, then continue.
+                        </span>
+                    )}
                     {bankTokens.map((token, index) => (
                         <button
                             key={`${token}-${index}`}
                             type="button"
-                            className="rounded-md border bg-muted/40 px-3 py-1.5 text-sm hover:bg-muted"
+                            className="min-h-11 rounded-xl border bg-muted/40 px-4 py-2 text-base font-medium transition-transform hover:bg-muted active:scale-95"
                             onClick={() => addToken(token)}
                         >
                             {token}

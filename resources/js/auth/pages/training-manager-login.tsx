@@ -55,7 +55,6 @@ export default function TrainingManagerLogin({
                                     type="email"
                                     name="email"
                                     required
-                                    autoFocus
                                     tabIndex={1}
                                     autoComplete="email"
                                     placeholder="Enter your email"

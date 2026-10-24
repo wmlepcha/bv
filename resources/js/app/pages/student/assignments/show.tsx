@@ -1,19 +1,21 @@
-import { router, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
+import { CheckCircle2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import {
     questionIdFromServerErrors,
-    validateStudentAnswers
-    
+    validateStudentAnswers,
 } from '@app/components/assignments/assignment-validation';
-import type {StudentAnswerState} from '@app/components/assignments/assignment-validation';
+import type { StudentAnswerState } from '@app/components/assignments/assignment-validation';
 import { FillInBlankAnswer } from '@app/components/assignments/fill-in-blank-answer';
 import { GermanTextInput } from '@app/components/assignments/german-text-input';
 import { MediaQuestionResource } from '@app/components/assignments/media-question-resource';
+import { QuestionStepper } from '@app/components/assignments/question-stepper';
 import { WordReorderAnswer } from '@app/components/assignments/word-reorder-answer';
 import {
     WorksheetItem,
@@ -34,6 +36,28 @@ type Props = {
     hasSubmitted: boolean;
     submission: AssignmentSubmissionData | null;
 };
+
+function SubmittedCard() {
+    return (
+        <div className="step-enter-forward flex flex-col items-center gap-4 rounded-3xl border border-emerald-500/30 bg-emerald-500/10 px-6 py-10 text-center">
+            <span className="flex size-20 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30">
+                <CheckCircle2 className="size-11" />
+            </span>
+            <div className="space-y-2">
+                <h2 className="text-2xl font-bold tracking-tight">
+                    Assignment submitted!
+                </h2>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                    Great job. Your trainer will review your answers and you
+                    will get a notification when your grade is ready.
+                </p>
+            </div>
+            <Button asChild className="mt-2 h-12 w-full rounded-full text-base">
+                <Link href="/student/assignments">Back to assignments</Link>
+            </Button>
+        </div>
+    );
+}
 
 function QuestionAnswer({
     assignmentId,
@@ -219,6 +243,7 @@ export default function StudentAssignmentShow({
     hasSubmitted,
 }: Props) {
     const { errors } = usePage().props as { errors?: Record<string, string> };
+    const isMobile = useIsMobile();
 
     const allQuestions = useMemo(() => {
         if (assignment.sections && assignment.sections.length > 0) {
@@ -324,41 +349,62 @@ export default function StudentAssignmentShow({
         <>
             <PrivateSeoHead title={assignment.title} />
             <div className="p-2 sm:px-4">
-                <WorksheetLayout assignment={assignment}>
-                    {hasSubmitted ? (
-                        <p className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
-                            You have submitted this assignment. Awaiting grade
-                            from your training manager.
-                        </p>
-                    ) : (
-                        <>
-                            <div className="grid gap-6">
-                                {renderSections(
-                                    assignment,
-                                    answers,
-                                    setAnswer,
-                                    errorQuestionId,
-                                )}
-                            </div>
+                {isMobile && !hasSubmitted ? (
+                    <QuestionStepper
+                        assignment={assignment}
+                        answers={answers}
+                        setAnswer={setAnswer}
+                        renderAnswer={(question) => (
+                            <QuestionAnswer
+                                assignmentId={assignment.id}
+                                question={question}
+                                answer={answers[question.id!] ?? {}}
+                                onChange={(next) =>
+                                    setAnswer(question.id!, next)
+                                }
+                            />
+                        )}
+                        focusQuestionId={errorQuestionId}
+                        submitError={submitError}
+                        submitting={submitting}
+                        onSubmit={submit}
+                    />
+                ) : (
+                    <WorksheetLayout assignment={assignment}>
+                        {hasSubmitted ? (
+                            <SubmittedCard />
+                        ) : (
+                            <>
+                                <div className="grid gap-6">
+                                    {renderSections(
+                                        assignment,
+                                        answers,
+                                        setAnswer,
+                                        errorQuestionId,
+                                    )}
+                                </div>
 
-                            <div className="sticky bottom-[var(--app-bottom-h,0px)] z-10 -mx-2 border-t border-border/70 bg-background/90 px-4 py-3 backdrop-blur-xl sm:-mx-4 md:bottom-0 md:py-4">
-                                <InputError
-                                    message={submitError}
-                                    className="mb-3"
-                                />
-                                <Button
-                                    type="button"
-                                    className="h-12 w-full rounded-full text-base sm:h-9 sm:w-auto sm:rounded-md sm:text-sm"
-                                    disabled={submitting}
-                                    onClick={submit}
-                                >
-                                    {submitting && <Spinner className="mr-2" />}
-                                    Submit assignment
-                                </Button>
-                            </div>
-                        </>
-                    )}
-                </WorksheetLayout>
+                                <div className="sticky bottom-[var(--app-bottom-h,0px)] z-10 -mx-2 border-t border-border/70 bg-background/90 px-4 py-3 backdrop-blur-xl sm:-mx-4 md:bottom-0 md:py-4">
+                                    <InputError
+                                        message={submitError}
+                                        className="mb-3"
+                                    />
+                                    <Button
+                                        type="button"
+                                        className="h-12 w-full rounded-full text-base sm:h-9 sm:w-auto sm:rounded-md sm:text-sm"
+                                        disabled={submitting}
+                                        onClick={submit}
+                                    >
+                                        {submitting && (
+                                            <Spinner className="mr-2" />
+                                        )}
+                                        Submit assignment
+                                    </Button>
+                                </div>
+                            </>
+                        )}
+                    </WorksheetLayout>
+                )}
             </div>
         </>
     );

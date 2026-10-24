@@ -119,10 +119,10 @@ export default function DashboardAccessGate({ children }: Props) {
                 {children}
             </div>
 
-            <div className="absolute inset-0 flex items-start overflow-y-hidden bg-background/85 p-2 backdrop-blur-md sm:p-4 md:items-center">
+            <div className="absolute inset-0 flex items-start overflow-y-hidden bg-background/85 p-2 backdrop-blur-md sm:p-4 md:pl-9">
                 <div className="mx-auto flex min-h-0 w-full max-w-5xl lg:max-w-7xl">
                     <div
-                        className="relative flex w-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-brand-cool-dark via-[#031835] to-[#042a5c] p-3 shadow-2xl shadow-brand-cool-dark/25 sm:rounded-[1.5rem] sm:p-5 md:p-6 max-h-[calc(100dvh-2rem)] overflow-y-hidden"
+                        className="relative flex w-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-brand-cool-dark via-[#031835] to-[#042a5c] p-3 shadow-2xl shadow-brand-cool-dark/25 sm:rounded-[1.5rem] sm:p-5 md:p-6 max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain md:overflow-y-hidden"
                     >
                         <div
                             className="pointer-events-none absolute -right-20 -top-24 size-72 rounded-full bg-brand-cool-light/10 blur-3xl"

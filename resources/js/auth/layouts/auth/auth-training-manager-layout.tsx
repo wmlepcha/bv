@@ -71,12 +71,9 @@ export default function AuthTrainingManagerLayout({
                 </div>
             </aside>
 
-            <div className="flex flex-col justify-center bg-background px-6 py-10 sm:px-10 lg:px-12">
+            <div className="auth-ios flex flex-col justify-center bg-background px-5 py-10 max-sm:pt-[calc(env(safe-area-inset-top)+2.5rem)] max-sm:pb-[calc(env(safe-area-inset-bottom)+2.5rem)] sm:px-10 lg:px-12">
                 <div className="mx-auto w-full max-w-md">
-                    <Link
-                        href={home()}
-                        className="mb-8 flex justify-center lg:justify-start"
-                    >
+                    <Link href={home()} className="mb-8 flex justify-start">
                         <AppLogoIcon
                             className="h-11 w-auto sm:h-12 dark:hidden"
                             alt={BRAND_NAME_TM}
@@ -89,12 +86,12 @@ export default function AuthTrainingManagerLayout({
                         />
                     </Link>
 
-                    <div className="mb-8 space-y-2 text-center lg:text-left">
-                        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+                    <div className="mb-8 space-y-1.5 text-left max-sm:mb-6 sm:space-y-2">
+                        <h1 className="text-2xl font-semibold tracking-tight max-sm:text-[1.75rem] max-sm:leading-tight max-sm:font-bold sm:text-3xl">
                             {title}
                         </h1>
                         {description && (
-                            <p className="text-sm leading-relaxed text-muted-foreground">
+                            <p className="text-sm leading-relaxed text-muted-foreground max-sm:text-[0.9375rem]">
                                 {description}
                             </p>
                         )}

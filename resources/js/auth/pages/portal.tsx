@@ -57,7 +57,7 @@ export default function Portal() {
                                 key={option.title}
                                 href={option.href}
                                 className={cn(
-                                    'group flex h-full flex-col items-center rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center transition-colors hover:bg-white/[0.06] max-sm:min-h-[72px] max-sm:flex-row max-sm:gap-4 max-sm:text-left max-sm:transition-transform max-sm:active:scale-[0.98] max-sm:active:bg-white/10 sm:p-5',
+                                    'group flex h-full flex-col items-center rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center transition-colors hover:bg-white/[0.06] max-sm:min-h-[72px] max-sm:flex-row max-sm:gap-4 max-sm:border-border max-sm:bg-card max-sm:text-left max-sm:transition-transform max-sm:active:scale-[0.98] max-sm:active:bg-white/10 sm:p-5',
                                     option.borderClassName,
                                 )}
                             >

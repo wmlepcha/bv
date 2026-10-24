@@ -24,6 +24,7 @@ export type ServiceItem = {
 export type ServiceGroup = {
     id: string;
     title: string;
+    description?: string | null;
     items: ServiceItem[];
 };
 

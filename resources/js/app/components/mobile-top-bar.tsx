@@ -11,7 +11,13 @@ import { OPEN_CHAT_EVENT } from '@app/components/student-chat-widget';
 const iconButton =
     'relative flex size-10 items-center justify-center rounded-full text-foreground/80 transition-transform active:scale-90 active:bg-foreground/10';
 
-export function MobileTopBar({ locked }: { locked: boolean }) {
+export function MobileTopBar({
+    locked,
+    title = null,
+}: {
+    locked: boolean;
+    title?: string | null;
+}) {
     const {
         auth,
         unread_notifications_count: unread,
@@ -29,7 +35,11 @@ export function MobileTopBar({ locked }: { locked: boolean }) {
             style={{ paddingTop: 'env(safe-area-inset-top)' }}
         >
             <div className="flex h-14 items-center justify-between gap-3 px-4">
-                {locked ? (
+                {title ? (
+                    <h2 className="min-w-0 flex-1 truncate text-[17px] font-semibold tracking-tight">
+                        {title}
+                    </h2>
+                ) : locked ? (
                     <div className="h-8 w-32 opacity-50">
                         <AppLogo />
                     </div>

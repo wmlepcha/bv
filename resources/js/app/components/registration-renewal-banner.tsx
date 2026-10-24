@@ -96,9 +96,9 @@ export default function RegistrationRenewalBanner() {
     const showRenewal = isWithinRenewalWindow(user.registration_expires_at);
 
     return (
-        <div className="ml-auto max-w-full min-w-0">
-            <div className="flex min-w-0 items-center justify-end gap-3">
-                <p className="max-w-[16rem] min-w-0 text-right text-xs leading-snug text-foreground sm:max-w-md sm:text-sm xl:max-w-lg">
+        <div className="ml-auto max-w-full min-w-0 max-md:mx-3 max-md:mt-2 max-md:rounded-2xl max-md:border max-md:border-border/60 max-md:bg-card max-md:p-3 max-md:shadow-sm">
+            <div className="flex min-w-0 items-center justify-end gap-3 max-md:flex-col max-md:items-stretch max-md:gap-2.5">
+                <p className="max-w-[16rem] min-w-0 text-right text-xs leading-snug text-foreground max-md:max-w-none max-md:text-left sm:max-w-md sm:text-sm xl:max-w-lg">
                     Your account is active till{' '}
                     <span className="font-semibold text-foreground">
                         {expiryLabel}
@@ -112,7 +112,7 @@ export default function RegistrationRenewalBanner() {
                     <Button
                         type="button"
                         size="sm"
-                        className="shrink-0 rounded-full px-5 shadow-sm"
+                        className="shrink-0 rounded-full px-5 shadow-sm max-md:h-11 max-md:w-full"
                         onClick={() => setPlanDialogOpen(true)}
                     >
                         Choose your plan

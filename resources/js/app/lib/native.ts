@@ -121,3 +121,42 @@ export function usePullToRefresh(enabled: boolean): {
 
     return { distance, refreshing };
 }
+
+/**
+ * iOS large-title behaviour: returns the page's first `<h1>` text once it has scrolled
+ * under the top bar, so the bar can show it as a compact title.
+ */
+export function useCollapsedPageTitle(pathname: string): string | null {
+    const [title, setTitle] = useState<string | null>(null);
+
+    useEffect(() => {
+        let observer: IntersectionObserver | undefined;
+        const frame = requestAnimationFrame(() => {
+            setTitle(null);
+
+            const heading = document.querySelector<HTMLElement>(
+                '.mobile-app main h1',
+            );
+
+            if (!heading) {
+                return;
+            }
+
+            const text = heading.textContent?.trim() ?? '';
+
+            observer = new IntersectionObserver(
+                ([entry]) =>
+                    setTitle(!entry.isIntersecting && text ? text : null),
+                { rootMargin: '-64px 0px 0px 0px' },
+            );
+            observer.observe(heading);
+        });
+
+        return () => {
+            cancelAnimationFrame(frame);
+            observer?.disconnect();
+        };
+    }, [pathname]);
+
+    return title;
+}

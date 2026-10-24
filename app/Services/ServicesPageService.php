@@ -59,6 +59,7 @@ class ServicesPageService
                         ->map(fn (ServiceGroup $group): array => [
                             'id' => $group->slug,
                             'title' => $group->title,
+                            'description' => $group->description,
                             'items' => $group->items
                                 ->map(fn (ServiceItem $item): array => $this->mapItem($item))
                                 ->values()

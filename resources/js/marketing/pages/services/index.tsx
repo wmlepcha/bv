@@ -9,7 +9,9 @@ import { SeoHead } from '@shared/components/seo-head';
 
 function getServicesStickyOffset(): number {
     const header = document.querySelector('header');
-    const tabNav = document.querySelector('nav[aria-label="Services sections"]');
+    const tabNav = document.querySelector(
+        'nav[aria-label="Services sections"]',
+    );
     const headerBottom = header?.getBoundingClientRect().bottom ?? 80;
     const tabNavHeight = tabNav?.getBoundingClientRect().height ?? 0;
 
@@ -39,7 +41,9 @@ function scrollToCategorySection(
     window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
 }
 
-function resolveInitialCategoryId(categories: ServicesPageProps['categories']): string {
+function resolveInitialCategoryId(
+    categories: ServicesPageProps['categories'],
+): string {
     if (typeof window !== 'undefined') {
         const hash = window.location.hash.replace('#', '');
 
@@ -52,7 +56,8 @@ function resolveInitialCategoryId(categories: ServicesPageProps['categories']): 
 }
 
 export default function Services() {
-    const { servicesPage } = usePage<{ servicesPage: ServicesPageProps }>().props;
+    const { servicesPage } = usePage<{ servicesPage: ServicesPageProps }>()
+        .props;
     const { lenis, scrollTo } = useLenis();
     const skipScrollOnMountRef = useRef(true);
     const lenisRef = useRef(lenis);
@@ -66,7 +71,10 @@ export default function Services() {
     useEffect(() => {
         const hash = window.location.hash.replace('#', '');
 
-        if (hash && servicesPage.categories.some((category) => category.id === hash)) {
+        if (
+            hash &&
+            servicesPage.categories.some((category) => category.id === hash)
+        ) {
             setActiveCategoryId(hash);
         }
     }, [servicesPage.categories]);
@@ -74,16 +82,6 @@ export default function Services() {
     const activeCategory = servicesPage.categories.find(
         (category) => category.id === activeCategoryId,
     );
-
-    const [tabNavPinned, setTabNavPinned] = useState(false);
-    const [tabNavHeight, setTabNavHeight] = useState(0);
-
-    const handleTabNavPinChange = (pinned: boolean, height: number) => {
-        setTabNavPinned(pinned);
-        setTabNavHeight(height);
-    };
-
-    const sidebarStickyTop = tabNavPinned ? 80 + tabNavHeight + 24 : 112;
 
     const handleCategoryChange = (categoryId: string) => {
         setActiveCategoryId(categoryId);
@@ -94,7 +92,9 @@ export default function Services() {
         const hasHashTarget =
             typeof window !== 'undefined' &&
             window.location.hash.replace('#', '') === activeCategoryId &&
-            servicesPage.categories.some((category) => category.id === activeCategoryId);
+            servicesPage.categories.some(
+                (category) => category.id === activeCategoryId,
+            );
 
         if (skipScrollOnMountRef.current) {
             skipScrollOnMountRef.current = false;
@@ -129,13 +129,14 @@ export default function Services() {
                     categories={servicesPage.categories}
                     activeId={activeCategoryId}
                     onChange={handleCategoryChange}
-                    onPinChange={handleTabNavPinChange}
                 />
                 {activeCategory && (
                     <ServicesCategorySection
                         key={activeCategory.id}
                         category={activeCategory}
-                        stickyTopOffset={sidebarStickyTop}
+                        categories={servicesPage.categories}
+                        activeId={activeCategoryId}
+                        onChange={handleCategoryChange}
                     />
                 )}
             </main>

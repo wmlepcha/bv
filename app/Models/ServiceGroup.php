@@ -15,6 +15,7 @@ class ServiceGroup extends Model
         'service_category_id',
         'title',
         'slug',
+        'description',
         'sort_order',
         'is_visible',
     ];

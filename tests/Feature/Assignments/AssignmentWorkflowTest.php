@@ -657,6 +657,28 @@ class AssignmentWorkflowTest extends TestCase
         )->assertForbidden();
     }
 
+    public function test_student_assignments_index_exposes_status_and_final_score(): void
+    {
+        $student = User::factory()->student()->paid()->create();
+        $batch = Batch::factory()->create();
+        BatchEnrollment::factory()->create(['batch_id' => $batch->id, 'student_id' => $student->id]);
+
+        $assignment = Assignment::factory()->published()->create(['batch_id' => $batch->id, 'max_score' => 8]);
+        $assignment->targets()->create(['scope' => 'batch', 'student_id' => null]);
+        AssignmentSubmission::factory()->create([
+            'assignment_id' => $assignment->id,
+            'student_id' => $student->id,
+            'status' => AssignmentSubmissionStatus::Graded,
+            'final_score' => 7,
+        ]);
+
+        $this->actingAs($student)
+            ->get(route('student.assignments.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('assignments.0.submission_status', 'graded')
+                ->where('assignments.0.final_score', 7));
+    }
+
     public function test_unpaid_student_cannot_access_assignments(): void
     {
         $student = User::factory()->student()->unpaid()->create();

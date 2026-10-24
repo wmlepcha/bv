@@ -11,9 +11,14 @@ import DashboardAccessGate from '@app/components/dashboard-access-gate';
 import { MobileBottomNav } from '@app/components/mobile-bottom-nav';
 import { MobileTopBar } from '@app/components/mobile-top-bar';
 import { PullToRefreshIndicator } from '@app/components/native/pull-to-refresh-indicator';
+import RegistrationRenewalBanner from '@app/components/registration-renewal-banner';
 import { StudentChatWidget } from '@app/components/student-chat-widget';
 import { getMainNavItems } from '@app/config/navigation';
-import { useKeyboardInset, usePullToRefresh } from '@app/lib/native';
+import {
+    useCollapsedPageTitle,
+    useKeyboardInset,
+    usePullToRefresh,
+} from '@app/lib/native';
 import { BrandPageBackground } from '@shared/components/brand-page-background';
 
 function MobileAppLayout({ children }: { children: React.ReactNode }) {
@@ -32,8 +37,11 @@ function MobileAppLayout({ children }: { children: React.ReactNode }) {
     const locked =
         role === 'student' && !(auth.user?.can_access_dashboard ?? false);
     const pathname = url.split('?')[0];
+    // The account/renewal banner only shows on the main dashboard on phones.
+    const isDashboard = pathname === '/dashboard';
     const keyboardOpen = useKeyboardInset();
     const pull = usePullToRefresh(!keyboardOpen);
+    const collapsedTitle = useCollapsedPageTitle(pathname);
 
     return (
         <div
@@ -47,7 +55,7 @@ function MobileAppLayout({ children }: { children: React.ReactNode }) {
                 } as React.CSSProperties
             }
         >
-            <MobileTopBar locked={locked} />
+            <MobileTopBar locked={locked} title={collapsedTitle} />
             <main
                 className={cn(
                     'min-w-0 overflow-x-clip px-1 pt-[var(--app-top-h)] print:overflow-visible print:p-0',
@@ -55,6 +63,7 @@ function MobileAppLayout({ children }: { children: React.ReactNode }) {
                 )}
             >
                 <DashboardAccessGate>
+                    {isDashboard && <RegistrationRenewalBanner />}
                     <div key={pathname} className="mobile-page-enter min-w-0">
                         {children}
                     </div>

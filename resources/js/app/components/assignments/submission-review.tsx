@@ -1,5 +1,6 @@
 import { AssignmentAudioPlayer } from '@app/components/assignments/assignment-audio-player';
 import { GradableAnswerCard } from '@app/components/assignments/gradable-answer-card';
+import StudentResultsReview from '@app/components/assignments/student-results-review';
 import type {
     AssignmentData,
     AssignmentSubmissionData,
@@ -17,14 +18,26 @@ export default function SubmissionReview({
     submission,
     portal = 'student',
 }: Props) {
+    if (portal === 'student') {
+        return (
+            <StudentResultsReview
+                assignment={assignment}
+                submission={submission}
+            />
+        );
+    }
+
     return (
         <>
             <PrivateSeoHead title={`Results: ${assignment.title}`} />
             <div className="mx-auto flex max-w-3xl flex-col gap-6 p-2 sm:px-4">
                 <div>
-                    <h1 className="text-2xl font-semibold">{assignment.title}</h1>
+                    <h1 className="text-2xl font-semibold">
+                        {assignment.title}
+                    </h1>
                     <p className="mt-2 text-sm text-muted-foreground">
-                        Score: {submission.final_score ?? submission.auto_score ?? 0} /{' '}
+                        Score:{' '}
+                        {submission.final_score ?? submission.auto_score ?? 0} /{' '}
                         {assignment.max_score}
                         {submission.score_overridden && ' (adjusted by grader)'}
                     </p>

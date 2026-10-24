@@ -32,11 +32,14 @@ export default function AuthSimpleLayout({
     );
 
     return (
-        <div className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden p-4 max-sm:justify-start max-sm:p-0 sm:p-6 md:p-10">
-            <AuthPageBackground />
+        <div className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden p-4 max-sm:justify-start max-sm:bg-background max-sm:p-0 sm:p-6 md:p-10">
+            {/* Phones use the same plain page background as the rest of the site. */}
+            <div className="contents max-sm:hidden">
+                <AuthPageBackground />
+            </div>
 
             <header
-                className="fixed inset-x-0 top-0 z-40 border-b border-white/10 bg-black/30 backdrop-blur-xl sm:hidden"
+                className="fixed inset-x-0 top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl sm:hidden"
                 style={{ paddingTop: 'env(safe-area-inset-top)' }}
             >
                 <div className="relative flex h-14 items-center justify-center px-2">
@@ -61,8 +64,8 @@ export default function AuthSimpleLayout({
                     containerClassName,
                 )}
             >
-                <div className="flex flex-col gap-8 rounded-2xl border border-white/10 bg-card/90 p-6 shadow-xl shadow-black/20 backdrop-blur-md max-sm:min-h-svh max-sm:rounded-none max-sm:border-0 max-sm:pt-[calc(env(safe-area-inset-top)+5rem)] max-sm:pb-[calc(1.5rem+env(safe-area-inset-bottom))] max-sm:shadow-none sm:p-8">
-                    <div className="flex flex-col items-center gap-5">
+                <div className="auth-ios flex flex-col gap-8 rounded-2xl border border-white/10 bg-card/90 p-6 shadow-xl shadow-black/20 backdrop-blur-md max-sm:min-h-svh max-sm:gap-6 max-sm:rounded-none max-sm:border-0 max-sm:bg-transparent max-sm:px-5 max-sm:pt-[calc(env(safe-area-inset-top)+5rem)] max-sm:pb-[calc(1.5rem+env(safe-area-inset-bottom))] max-sm:shadow-none max-sm:backdrop-blur-none sm:p-8">
+                    <div className="flex flex-col items-center gap-5 max-sm:items-start">
                         <Link
                             href={home()}
                             className="flex flex-col items-center max-sm:hidden"
@@ -70,11 +73,11 @@ export default function AuthSimpleLayout({
                             {logo('h-12 sm:h-14')}
                         </Link>
 
-                        <div className="space-y-2 text-center">
-                            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+                        <div className="space-y-2 text-center max-sm:space-y-1.5 max-sm:text-left">
+                            <h1 className="text-xl font-semibold tracking-tight max-sm:text-[1.75rem] max-sm:leading-tight max-sm:font-bold sm:text-2xl">
                                 {title}
                             </h1>
-                            <p className="text-center text-sm leading-relaxed text-muted-foreground">
+                            <p className="text-center text-sm leading-relaxed text-muted-foreground max-sm:text-left max-sm:text-[0.9375rem]">
                                 {description}
                             </p>
                         </div>

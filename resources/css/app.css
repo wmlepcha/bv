@@ -880,6 +880,30 @@ iframe[src*='cashfreepayments'] {
     touch-action: manipulation;
 }
 
+/* iOS large title: the first page heading; the top bar shows it compactly once scrolled away */
+.mobile-app main h1 {
+    font-size: 2rem;
+    line-height: 1.1;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+}
+
+.mobile-app {
+    overscroll-behavior-y: contain;
+}
+
+/* Pressable cards/links feel physical on touch */
+@media (hover: none) and (pointer: coarse) {
+    .mobile-app main a[class*='rounded'],
+    .mobile-app main [data-slot='card'] {
+        transition: transform 120ms ease;
+    }
+
+    .mobile-app main a[class*='rounded']:active {
+        transform: scale(0.98);
+    }
+}
+
 /* iOS Safari zooms the page when a focused field is under 16px */
 @media (hover: none) and (pointer: coarse) {
     input:not(
@@ -892,6 +916,62 @@ iframe[src*='cashfreepayments'] {
     select,
     textarea {
         font-size: 16px;
+    }
+}
+
+/* iOS-style forms on phones: tall rounded fields, full-width bold primary button (auth screens) */
+@media (max-width: 639px) {
+    .auth-ios input:not([type='checkbox'], [type='radio'], [type='hidden']),
+    .auth-ios select {
+        height: 3rem;
+        border-radius: 0.875rem;
+        background-color: var(--card);
+    }
+
+    .auth-ios textarea {
+        border-radius: 0.875rem;
+    }
+
+    .auth-ios button[type='submit'] {
+        height: 3.25rem;
+        border-radius: 0.875rem;
+        font-size: 1.0625rem;
+        font-weight: 600;
+    }
+
+    .auth-ios [data-slot='label'] {
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--muted-foreground);
+    }
+}
+
+@keyframes step-enter-forward {
+    from {
+        opacity: 0;
+        transform: translateX(24px);
+    }
+}
+
+@keyframes step-enter-back {
+    from {
+        opacity: 0;
+        transform: translateX(-24px);
+    }
+}
+
+.step-enter-forward {
+    animation: step-enter-forward 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.step-enter-back {
+    animation: step-enter-back 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .step-enter-forward,
+    .step-enter-back {
+        animation: none;
     }
 }
 

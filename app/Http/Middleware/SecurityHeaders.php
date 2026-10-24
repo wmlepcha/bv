@@ -36,13 +36,13 @@ class SecurityHeaders
 
         $csp = implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' https://sdk.cashfree.com{$viteSources['http']}",
+            "script-src 'self' 'unsafe-inline' https://sdk.cashfree.com https://challenges.cloudflare.com{$viteSources['http']}",
             "style-src 'self' 'unsafe-inline'{$viteSources['http']}",
             "img-src 'self' data: blob: https:",
             "font-src 'self' data:{$viteSources['http']}",
             "connect-src 'self' https://api.cashfree.com https://sandbox.cashfree.com https://sdk.cashfree.com https://payments.cashfree.com{$viteSources['connect']}",
-            "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://sdk.cashfree.com https://api.cashfree.com https://sandbox.cashfree.com https://payments.cashfree.com",
-            "child-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://sdk.cashfree.com https://api.cashfree.com https://sandbox.cashfree.com https://payments.cashfree.com",
+            "frame-src 'self' https://challenges.cloudflare.com https://www.youtube.com https://www.youtube-nocookie.com https://sdk.cashfree.com https://api.cashfree.com https://sandbox.cashfree.com https://payments.cashfree.com",
+            "child-src 'self' https://challenges.cloudflare.com https://www.youtube.com https://www.youtube-nocookie.com https://sdk.cashfree.com https://api.cashfree.com https://sandbox.cashfree.com https://payments.cashfree.com",
             "object-src 'none'",
             "base-uri 'self'",
             "form-action 'self' https://api.cashfree.com https://sandbox.cashfree.com https://payments.cashfree.com",

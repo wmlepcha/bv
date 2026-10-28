@@ -182,8 +182,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/messages/read', [StudentChatController::class, 'markRead'])->name('messages.read');
     });
 
-    Route::middleware(['role:recruiter,employee,admin'])->prefix('recruiter')->name('recruiter.')->group(function () {
-        Route::get('/projects', [RecruiterProjectController::class, 'index'])->name('projects.index');
+    Route::middleware(['role:recruiter,admin'])->prefix('recruiter')->name('recruiter.')->group(function () {
+        Route::get('/projects',[RecruiterProjectController::class, 'index'])->name('projects.index');
         Route::post('/projects', [RecruiterProjectController::class, 'store'])->name('projects.store');
         Route::get('/projects/{project}', [RecruiterProjectController::class, 'show'])->name('projects.show');
         Route::put('/projects/{project}', [RecruiterProjectController::class, 'update'])->name('projects.update');

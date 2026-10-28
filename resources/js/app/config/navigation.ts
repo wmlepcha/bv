@@ -163,11 +163,6 @@ export function getMainNavItems(
                 icon: Users,
             },
             {
-                title: 'Projects',
-                href: projectsIndex(),
-                icon: Briefcase,
-            },
-            {
                 title: 'Assignments',
                 href: '/teacher/assignments',
                 icon: ClipboardList,
